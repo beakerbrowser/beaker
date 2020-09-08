@@ -1,4 +1,5 @@
 import BeakerIndexer from 'beaker-index'
+import { dirname, extname } from 'path'
 import { getHyperspaceClient } from '../hyper/daemon'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import {
@@ -6,7 +7,8 @@ import {
   toArray,
   parseUrl
 } from './util'
-import { getRecord } from './index'
+import { getSite } from './index'
+import { getProfileUrl } from '../filesystem/index'
 
 const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a212435efaf2c12e1e5d18d' // TODO fetch from endpoint
 
@@ -19,6 +21,7 @@ const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a2124
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('./const').NotificationQuery} NotificationQuery
+ * @typedef {import('./const').HyperbeeBacklink} HyperbeeBacklink
  */
 
 // globals
@@ -55,38 +58,66 @@ export async function listRecords (opts, existingResults) {
     opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))
   }
 
-  var urls
+  var entries
   if (opts.links) {
-    urls = /** @type String[]*/(await beakerNetworkIndex.backlinks.getBacklinks(normalizeUrl(opts.links)))
-    urls = urls.filter(url => {
-      if (fileQuery) {
-        let {pathname} = parseUrl(url)
-        let test = q => (
-          (!q.extension || pathname.endsWith(q.extension))
-          && (!q.prefix || pathname.startsWith(q.prefix + '/'))
-        )
-        if (!fileQuery.find(test)) {
-          return false
-        }
-      }
-      if (opts.site) {
-        if (!opts.site.includes(normalizeOrigin(url))) {
-          return false
-        }
-      }
-      if (existingResults?.length) {
-        if (existingResults.find(res => res.url === url)) {
-          return false
-        }
-      }
-      return true
-    })
+    let backlinksOpts = {file: true}
+    if (typeof opts.limit === 'number') {
+      backlinksOpts.limit = opts.limit
+    }
+    if (typeof opts.reverse === 'boolean') {
+      backlinksOpts.reverse = opts.reverse
+    }
+    entries = /** @type String[]*/(await beakerNetworkIndex.backlinks.get(
+      normalizeUrl(opts.links),
+      backlinksOpts
+    ))
+  } else if (opts.notification) {
+    let backlinksOpts = {crtime: false, mrtime: false}
+    if (opts.sort === 'mtime' || opts.sort === 'mrtime') {
+      backlinksOpts.mrtime = true
+    } else {
+      backlinksOpts.crtime = true
+    }
+    if (typeof opts.limit === 'number') {
+      backlinksOpts.limit = opts.limit
+    }
+    if (typeof opts.reverse === 'boolean') {
+      backlinksOpts.reverse = opts.reverse
+    }
+    entries = /** @type String[]*/(await beakerNetworkIndex.backlinks.get(
+      normalizeOrigin(getProfileUrl()),
+      backlinksOpts
+    ))
   } else {
-    urls = []
+    entries = []
   }
 
-  var records = await Promise.all(urls.map(url => getRecord(url)))
-  records = records.filter(Boolean)
+  entries = entries.filter(entry => {
+    var url = entry.value.source
+    if (fileQuery) {
+      let {pathname} = parseUrl(url)
+      let test = q => (
+        (!q.extension || pathname.endsWith(q.extension))
+        && (!q.prefix || pathname.startsWith(q.prefix + '/'))
+      )
+      if (!fileQuery.find(test)) {
+        return false
+      }
+    }
+    if (opts.site) {
+      if (!opts.site.includes(normalizeOrigin(url))) {
+        return false
+      }
+    }
+    if (existingResults?.length) {
+      if (existingResults.find(res => res.url === url)) {
+        return false
+      }
+    }
+    return true
+  })
+
+  var records = await Promise.all(entries.map(backlinkToRecord))
   records.sort((a, b) => {
     if (opts.sort === 'ctime') {
       return opts.reverse ? (b.ctime - a.ctime) : (a.ctime - b.ctime)
@@ -104,7 +135,6 @@ export async function listRecords (opts, existingResults) {
       return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
     }
   })
-  records = records.slice(opts.offset, opts.offset + opts.limit)
 
   return {records, missedOrigins: undefined}
 }
@@ -123,35 +153,69 @@ export async function countRecords (opts, existingResultOrigins) {
     opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))
   }
 
-  var urls
+  var entries
   if (opts.links) {
-    urls = /** @type String[]*/(await beakerNetworkIndex.backlinks.getBacklinks(normalizeUrl(opts.links)))
-    urls = urls.filter(url => {
-      if (fileQuery) {
-        let {pathname} = parseUrl(url)
-        let test = q => (
-          (!q.extension || pathname.endsWith(q.extension))
-          && (!q.prefix || pathname.startsWith(q.prefix + '/'))
-        )
-        if (!fileQuery.find(test)) {
-          return false
-        }
-      }
-      if (opts.site) {
-        if (!opts.site.includes(normalizeOrigin(url))) {
-          return false
-        }
-      }
-      if (existingResultOrigins?.length) {
-        if (existingResultOrigins.find(res => res.url === url)) {
-          return false
-        }
-      }
-      return true
-    })
+    entries = /** @type String[]*/(await beakerNetworkIndex.backlinks.get(
+      normalizeUrl(opts.links),
+      {file: true}
+    ))
+  } else if (opts.notification) {
+    entries = /** @type String[]*/(await beakerNetworkIndex.backlinks.get(
+      normalizeOrigin(getProfileUrl())
+    ))
   } else {
-    urls = []
+    entries = []
   }
+
+  entries = entries.filter(entry => {
+    var url = entry.value.source
+    if (fileQuery) {
+      let {pathname} = parseUrl(url)
+      let test = q => (
+        (!q.extension || pathname.endsWith(q.extension))
+        && (!q.prefix || pathname.startsWith(q.prefix + '/'))
+      )
+      if (!fileQuery.find(test)) {
+        return false
+      }
+    }
+    if (opts.site) {
+      if (!opts.site.includes(normalizeOrigin(url))) {
+        return false
+      }
+    }
+    if (existingResultOrigins?.length) {
+      if (existingResultOrigins.find(res => res.url === url)) {
+        return false
+      }
+    }
+    return true
+  })
   
-  return {count: urls.length, missedOrigins: undefined}
+  return {count: entries.length, missedOrigins: undefined}
+}
+
+/**
+ * 
+ * @param {HyperbeeBacklink} backlink 
+ * @returns {Promise<RecordDescription>?}
+ */
+async function backlinkToRecord (backlink) {
+  var urlp = parseUrl(backlink.value.source)
+  var site = await getSite(backlink.value.drive, {cacheOnly: true})
+  return {
+    url: backlink.value.source,
+    prefix: dirname(urlp.pathname),
+    extension: extname(urlp.pathname),
+    ctime: backlink.value.crtime,
+    mtime: backlink.value.mrtime,
+    rtime: backlink.value.rtime,
+    site: {
+      url: backlink.value.drive,
+      title: site.title
+    },
+    metadata: backlink.value.metadata,
+    links: [],
+    content: undefined
+  }
 }

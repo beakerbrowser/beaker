@@ -38,7 +38,7 @@ import { TICK_INTERVAL, METADATA_KEYS } from './const'
 import * as hyperbees from './hyperbees'
 import * as local from './local'
 import lock from '../../lib/lock'
-import { joinPath } from '../../lib/strings'
+import { joinPath, toNiceUrl } from '../../lib/strings'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import {
   getIsFirstRun,
@@ -133,9 +133,11 @@ export async function clearAllData () {
 
 /**
  * @param {String} url 
+ * @param {Object} [opts]
+ * @param {Object} [opts.cacheOnly]
  * @returns {Promise<SiteDescription>}
  */
-export async function getSite (url) {
+export async function getSite (url, opts) {
   var origin = normalizeOrigin(url)
   if (!origin.startsWith('hyper://')) return undefined // hyper only for now
   var siteRows = await db('sites').select('*').where({origin}).limit(1)
@@ -146,6 +148,15 @@ export async function getSite (url) {
       title: siteRows[0].title,
       description: siteRows[0].description,
       writable: Boolean(siteRows[0].writable)
+    }
+  }
+  if (opts.cacheOnly) {
+    return {
+      origin: origin,
+      url: origin,
+      title: toNiceUrl(origin),
+      description: '',
+      writable: false
     }
   }
   var site = await loadSite(db, origin)
@@ -170,7 +181,9 @@ export async function listSites (opts) {
   var query = db('sites')
     .select('*')
     .offset(opts?.offset || 0)
-    .limit(opts?.limit || 25)
+  if (typeof opts?.limit === 'number') {
+    query = query.limit(opts.limit)
+  }
   if (opts?.search) {
     query = query.whereRaw(
       `sites.title LIKE ? OR sites.description LIKE ?`,
@@ -271,7 +284,6 @@ export async function listRecords (opts, permissions) {
     opts.sort = 'crtime'
   }
   opts.offset = opts.offset || 0
-  opts.limit = opts.limit || 25
   opts.index = opts.index ? toArray(opts.index) : ['local']
 
   var results = []
@@ -325,7 +337,13 @@ export async function listRecords (opts, permissions) {
         return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
       }
     })
-    records = records.slice(opts.offset, opts.offset + opts.limit)
+    if (typeof opts.offset === 'number' && typeof opts.limit === 'number') {
+      records = records.slice(opts.offset, opts.offset + opts.limit)
+    } else if (typeof opts.offset === 'number') {
+      records = records.slice(opts.offset)
+    } else if (typeof opts.limit === 'number') {
+      records = records.slice(0, opts.limit)
+    }
 
     // load data as needed
     for (let record of records) {
@@ -435,7 +453,9 @@ export async function searchRecords (q = '', opts, permissions) {
     .whereIn('records_data.key', ['_content', 'title'])
     .whereRaw(`records_data_fts.value MATCH ?`, [q])
     .offset(opts?.offset || 0)
-    .limit(opts?.limit || 25)
+  if (typeof opts?.limit === 'number') {
+    query = query.limit(opts.limit)
+  }
 
   if (opts?.site) {
     if (Array.isArray(opts.site)) {

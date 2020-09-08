@@ -64,8 +64,10 @@ export async function listRecords (db, opts, permissions) {
     )
     .groupBy('records.rowid')
     .offset(opts.offset)
-    .limit(opts.limit)
     .orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
+  if (typeof opts.limit === 'number') {
+    query = query.limit(opts.limit)
+  }
 
   if (opts.sort === 'crtime') {
     query = query.select(db.raw(`CASE rtime WHEN rtime < ctime THEN rtime ELSE ctime END AS crtime`))

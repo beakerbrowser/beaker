@@ -74,4 +74,14 @@ export const METADATA_KEYS = {
  * @typedef {Object} NotificationQuery
  * @prop {String} subject
  * @prop {Boolean} unread
+ * 
+ * @typedef {Object} HyperbeeBacklink
+ * @prop {String} key
+ * @prop {Object} value
+ * @prop {String} value.drive
+ * @prop {String} value.source
+ * @prop {Object} value.metadata
+ * @prop {Number} value.rtime
+ * @prop {Number} value.crtime
+ * @prop {Number} value.mrtime
  */
