@@ -314,6 +314,10 @@ a:hover {
   font-weight: normal;
 }
 
+.record.action .date {
+  color: inherit;
+}
+
 .action-content {
   letter-spacing: 0.1px;
   line-height: 1.4;

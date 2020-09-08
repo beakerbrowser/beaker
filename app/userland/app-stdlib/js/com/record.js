@@ -271,14 +271,15 @@ export class Record extends LitElement {
     const rtype = getRecordType(res)
    
     var subject
-    if (['subscription', 'vote'].includes(getRecordType(res))) {
-      subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title || res.metadata.href
+    if (['subscription', 'vote'].includes(rtype)) {
+      subject = (isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title) || fancyUrlAsync(res.metadata.href)
     } else {
-      if (res.metadata.title) subject = res.metadata.title
+      if (res.extension !== '.goto' && res.metadata.title) subject = res.metadata.title
       else if (res.content) subject = shorten(removeMarkdown(res.content), 150)
+      else if (rtype !== 'unknown') subject = `a ${rtype}`
       else subject = fancyUrlAsync(res.url)
     }
-    var showContentAfter = ['microblogpost', 'comment'].includes(getRecordType(res))
+    var showContentAfter = res.content && ['microblogpost', 'comment'].includes(rtype)
 
     return html`
       <div
@@ -299,7 +300,7 @@ export class Record extends LitElement {
           </a>
           ${rtype === 'subscription' ? html`
             <span class="action">subscribed to</span>
-            <a class="subject" href=${res.metadata.href} title=${subject}>${subject}</a>
+            <a class="subject" href=${res.metadata.href}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
           ` : rtype === 'vote' ? html`
             <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'} ${this.actionTarget}</span>
           ` : rtype === 'bookmark' ? html`
@@ -321,7 +322,7 @@ export class Record extends LitElement {
               @click=${e => this.onClickShowSites(e, res.mergedItems)}
             >${res.mergedItems.length} other ${pluralize(res.mergedItems.length, 'site')}</a>
           ` : ''}
-          <span class="date">${relativeDate(res.ctime)}</span>
+          <a class="date" href=${res.url}>${relativeDate(res.ctime)}</a>
         </div>
       </div>
       ${showContentAfter ? html`

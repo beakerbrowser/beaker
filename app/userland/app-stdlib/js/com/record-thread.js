@@ -290,7 +290,7 @@ export class RecordThread extends LitElement {
       <div class="replies">
         ${repeat(replies, r => r.url, reply => {
           var mode = 'action'
-          if (getRecordType(reply) === 'comment') {
+          if (reply.content && getRecordType(reply) === 'comment') {
             mode = 'comment'
           }
           return html`
