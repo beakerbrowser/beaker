@@ -7,7 +7,7 @@ import {
   toArray,
   parseUrl
 } from './util'
-import { getSite } from './index'
+import { getSite as fullGetSite } from './index'
 import { getProfileUrl } from '../filesystem/index'
 
 const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a212435efaf2c12e1e5d18d' // TODO fetch from endpoint
@@ -36,6 +36,25 @@ export async function setup () {
   var client = getHyperspaceClient()
   beakerNetworkIndex = new BeakerIndexer(client.corestore(), client.network, BEAKER_NETWORK_INDEX_KEY)
   await beakerNetworkIndex.ready()
+}
+
+/**
+ * @param {String} url 
+ * @returns {Promise<SiteDescription>}
+ */
+export async function getSite (url) {
+  var origin = normalizeOrigin(url)
+  if (!origin.startsWith('hyper://')) return undefined // hyper only for now
+  var indexJson = await beakerNetworkIndex.drives.get(origin)
+  if (indexJson) {
+    return {
+      origin: origin,
+      url: origin,
+      title: indexJson.title || origin,
+      description: indexJson.description || '',
+      writable: false
+    }
+  }
 }
 
 /**
@@ -202,7 +221,11 @@ export async function countRecords (opts, existingResultOrigins) {
  */
 async function backlinkToRecord (backlink) {
   var urlp = parseUrl(backlink.value.source)
-  var site = await getSite(backlink.value.drive, {cacheOnly: true})
+  var [site, content] = await Promise.all([
+    fullGetSite(backlink.value.drive, {cacheOnly: true}),
+    // ^ use fullGetSite() since that'll hit the sqlite first, which is faster than hyperbee
+    backlink.value.content ? beakerNetworkIndex.db.get(backlink.value.content) : undefined
+  ])
   return {
     url: backlink.value.source,
     prefix: dirname(urlp.pathname),
@@ -216,6 +239,6 @@ async function backlinkToRecord (backlink) {
     },
     metadata: backlink.value.metadata,
     links: [],
-    content: undefined
+    content: content ? content.value : undefined
   }
 }

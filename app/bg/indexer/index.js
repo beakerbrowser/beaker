@@ -150,6 +150,8 @@ export async function getSite (url, opts) {
       writable: Boolean(siteRows[0].writable)
     }
   }
+  var hyperbeeResult = await hyperbees.getSite(url)
+  if (hyperbeeResult) return hyperbeeResult
   if (opts.cacheOnly) {
     return {
       origin: origin,

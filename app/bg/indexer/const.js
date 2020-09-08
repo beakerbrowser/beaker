@@ -84,4 +84,5 @@ export const METADATA_KEYS = {
  * @prop {Number} value.rtime
  * @prop {Number} value.crtime
  * @prop {Number} value.mrtime
+ * @prop {String} value.content
  */
