@@ -117,7 +117,7 @@ class EditorApp extends LitElement {
       this.requestUpdate()
     })
     beaker.panes.addEventListener('pane-navigated', e => {
-      if (this.url !== e.detail.url) {
+      if (!this.url) {
         this.load(e.detail.url)
       }
     })
@@ -270,10 +270,6 @@ class EditorApp extends LitElement {
       }
       this.url = url
       history.replaceState({}, '', `/?url=${url}`)
-      this.attachedPane = beaker.panes.getAttachedPane()
-      if (this.attachedPane && this.attachedPane.url !== this.url) {
-        beaker.panes.navigate(this.attachedPane.id, this.url)
-      }
 
       this.resetEditor()
       console.log('Loading', url)
@@ -893,7 +889,8 @@ class EditorApp extends LitElement {
     await this.drive.writeFile(this.resolvedPath, model.getValue(), {metadata})
     this.lastSavedVersionId = model.getAlternativeVersionId()
     if (this.attachedPane) {
-      beaker.panes.navigate(this.attachedPane.id, this.url)
+      this.attachedPane = beaker.panes.getAttachedPane()
+      beaker.panes.navigate(this.attachedPane.id, this.attachedPane.url)
     }
     this.setSaveBtnState()
     this.setFocus()
