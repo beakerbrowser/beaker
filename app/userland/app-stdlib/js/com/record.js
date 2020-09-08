@@ -174,7 +174,7 @@ export class Record extends LitElement {
               </a>
             </div>
           </div>
-          <div class="content markdown">
+          <div class="content markdown ${this.constrainHeight ? 'scroll-shadows' : ''}">
             ${res.content ? (renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))) : ''}
           </div>
           <div class="ctrls">
@@ -215,6 +215,7 @@ export class Record extends LitElement {
           record: true,
           comment: true,
           'private': res.url.startsWith('hyper://private'),
+          'constrain-height': this.constrainHeight,
           'is-notification': !!res.notification,
           unread: res?.notification?.unread
         })}
@@ -246,7 +247,7 @@ export class Record extends LitElement {
             </div>
           ` : ''}
         </div>
-        <div class="content markdown">
+        <div class="content markdown ${this.constrainHeight ? 'scroll-shadows' : ''}">
           ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
         </div>
         <div class="ctrls">
