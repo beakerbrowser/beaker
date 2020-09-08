@@ -19,10 +19,11 @@ class NotificationsApp extends LitElement {
   constructor () {
     super()
     this.profile = undefined
-    this.results = []
+    this.currentView = 'activity'
+    this.results = undefined
 
     window.init = () => this.load()
-    window.reset = () => {} // TODO
+    window.reset = () => {}
 
     beaker.browser.getProfile().then(p => {
       this.profile = p
@@ -31,7 +32,6 @@ class NotificationsApp extends LitElement {
     // global event listeners
     window.addEventListener('blur', e => {
       beaker.browser.toggleNotifications(false)
-      this.reset()
     })
     window.addEventListener('contextmenu', e => e.preventDefault())
     window.addEventListener('keydown', e => {
@@ -54,22 +54,37 @@ class NotificationsApp extends LitElement {
     })
   }
 
-  async load () {
-    this.profile = await beaker.browser.getProfile()
-    var results = await beaker.index.listRecords({
-      notification: true,
-      limit: 100,
-      sort: 'rtime',
-      reverse: true
-    })
-    this.results = results
+  async load (view = 'activity') {
+    if (!this.profile) {
+      this.profile = await beaker.browser.getProfile()
+    }
+    this.currentView = view
+    this.results = undefined
+    if (view === 'activity') {
+      this.results = await beaker.index.listRecords({
+        notification: true,
+        limit: 100,
+        sort: 'crtime',
+        reverse: true,
+      })
+    } else if (view === 'subscribers') {
+      this.results = await beaker.index.listRecords({
+        notification: true,
+        file: {prefix: '/subscriptions', extension: '.goto'},
+        limit: 100,
+        sort: 'crtime',
+        reverse: true,
+        index: ['local', 'network']
+      })
+    }
+    console.log(this.results)
     setTimeout(() => {
       beaker.index.clearNotifications()
     }, 3e3)
   }
 
   getActionTarget (result) {
-    let url = result.notification.subject
+    let url = result.notification?.subject
     try {
       let urlp = new URL(url)
       if (/^\/blog\/[^\/]*.md/i.test(urlp.pathname)) {
@@ -98,10 +113,24 @@ class NotificationsApp extends LitElement {
   // =
 
   render () {
+    const navItem = (id, label) => html`
+      <a class=${this.currentView === id ? 'current' : ''} @click=${e => this.onClickNav(e, id)}>${label}</a>
+    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="heading">
+        Notifications
+        [
+          ${navItem('activity', 'Activity')}
+          |
+          ${navItem('subscribers', 'Subscribers')}
+        ]
+      </div>
       <div class="results">
-        ${repeat(this.results, result => result.url, result => this.renderResult(result))}
+        ${!this.results ? html`<div class="loading"><span class="spinner"></span></div>` : ''}
+        ${this.results ?
+          html`<div>${repeat(this.results, result => result.url, result => this.renderResult(result))}</div>`
+        : ''}
       </div>
     `
   }
@@ -109,7 +138,7 @@ class NotificationsApp extends LitElement {
   renderResult (result) {
     return html`
       <beaker-record
-        class=${result.notification.unread ? 'unread' : ''}
+        class=${result.notification?.unread ? 'unread' : ''}
         .record=${result}
         action-target=${this.getActionTarget(result)}
         render-mode="action"
@@ -123,11 +152,10 @@ class NotificationsApp extends LitElement {
   // events
   // =
 
-  onViewThread (e) {
-    ViewThreadPopup.create({
-      recordUrl: e.detail.record.url,
-      profileUrl: this.profile?.url
-    })
+  onClickNav (e, id) {
+    e.preventDefault()
+    e.stopPropagation()
+    this.load(id)
   }
 }
 

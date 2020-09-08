@@ -20,19 +20,10 @@ body {
   }
 }
 
-h1 {
-  background: var(--bg-color--light);
-  border: 1px solid var(--border-color--default);
-  border-bottom: 0;
-  font-size: 12px;
-  padding: 10px;
-  margin: 0;
-}
-
 notifications-app {
   display: block;
   background: var(--bg-color--default);
   border: 1px solid var(--border-color--default);
-  height: calc(100vh - 46px);
+  height: 100vh;
   overflow: scroll;
 }
