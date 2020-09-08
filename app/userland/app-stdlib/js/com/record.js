@@ -25,7 +25,8 @@ export class Record extends LitElement {
       profileUrl: {type: String, attribute: 'profile-url'},
       actionTarget: {type: String, attribute: 'action-target'},
       isReplyOpen: {type: Boolean},
-      viewContentOnClick: {type: Boolean, attribute: 'view-content-on-click'}
+      viewContentOnClick: {type: Boolean, attribute: 'view-content-on-click'},
+      showReadMore: {type: Boolean}
     }
   }
 
@@ -48,14 +49,24 @@ export class Record extends LitElement {
     this.actionTarget = undefined
     this.isReplyOpen = false
     this.viewContentOnClick = false
+    this.showReadMore = false
 
     // helper state
     this.hasLoadedSignals = false
+    this.hasCheckedOverflow = false
     this.isMouseDown = false
     this.isMouseDragging = false
   }
 
   updated (changedProperties) {
+    if (this.record && this.constrainHeight && !this.hasCheckedOverflow) {
+      this.hasCheckedOverflow = true
+      this.whenContentLoaded().then(r => {
+        if (this.isContentOverflowing) {
+          this.showReadMore = true
+        }
+      })
+    }
     if ((!this.record && this.loadRecordUrl) || changedProperties.has('loadRecordUrl') && changedProperties.get('loadRecordUrl') != this.recordUrl) {
       this.load()
     } else if (this.record && !this.hasLoadedSignals) {
@@ -88,6 +99,28 @@ export class Record extends LitElement {
     this.upvoteCount = (new Set(votes.filter(v => v.metadata['vote/value'] == 1).map(v => v.site.url))).size
     this.downvoteCount = (new Set(votes.filter(v => v.metadata['vote/value'] == -1).map(v => v.site.url))).size
     this.commentCount = commentCount
+  }
+
+  async whenContentLoaded () {
+    let images = Array.from(this.shadowRoot.querySelectorAll('.content img'))
+    images = images.filter(el => !el.complete)
+    while (images.length) {
+      await new Promise(r => setTimeout(r, 10))
+      images = images.filter(el => !el.complete)
+    }
+  }
+
+  get isContentOverflowing () {
+    try {
+      let content = this.shadowRoot.querySelector('.content')
+      if (this.renderMode === 'card') {
+        return content.clientHeight >= 120 || content.scrollHeight >= 120
+      }
+      if (this.renderMode === 'comment') {
+        return content.clientHeight >= 400 || content.scrollHeight >= 400
+      }
+    } catch {}
+    return false
   }
 
   // rendering
@@ -174,9 +207,14 @@ export class Record extends LitElement {
               </a>
             </div>
           </div>
-          <div class="content markdown ${this.constrainHeight ? 'scroll-shadows' : ''}">
+          <div class="content markdown">
             ${res.content ? (renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))) : ''}
           </div>
+          ${this.showReadMore ? html`
+            <div class="read-more">
+              <a @click=${this.onClickReadMore}>Read more <span class="fas fa-angle-down"></span></a>
+            </div>
+          ` : ''}
           <div class="ctrls">
             ${this.renderVoteCtrl()}
             ${this.renderCommentsCtrl()}
@@ -250,9 +288,14 @@ export class Record extends LitElement {
             </div>
           ` : ''}
         </div>
-        <div class="content markdown ${this.constrainHeight ? 'scroll-shadows' : ''}">
+        <div class="content markdown">
           ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
         </div>
+        ${this.showReadMore ? html`
+          <div class="read-more">
+            <a @click=${this.onClickReadMore}>Read more <span class="fas fa-angle-down"></span></a>
+          </div>
+        ` : ''}
         <div class="ctrls">
           ${this.renderVoteCtrl()}
           <a @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
@@ -587,6 +630,11 @@ export class Record extends LitElement {
       e.stopPropagation()
       emit(this, 'view-thread', {detail: {record: this.record}})
     }
+  }
+
+  onClickReadMore () {
+    this.constrainHeight = false
+    this.showReadMore = false
   }
 
   onMousedownCard (e) {

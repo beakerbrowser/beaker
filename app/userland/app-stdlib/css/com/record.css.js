@@ -125,55 +125,6 @@ a:hover {
   padding: 0 12px 5px;
 }
 
-.scroll-shadows {
-  /* https://stackoverflow.com/a/34299947 */
-  background:
-    /* Shadow covers */
-    linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-    
-    /* Shadows */
-    radial-gradient(50% 0, farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(50% 100%,farthest-side, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-  background:
-    /* Shadow covers */
-    linear-gradient(white 30%, rgba(255,255,255,0)),
-    linear-gradient(rgba(255,255,255,0), white 70%) 0 100%,
-    
-    /* Shadows */
-    radial-gradient(farthest-side at 50% 0, rgba(0,0,0,.2), rgba(0,0,0,0)),
-    radial-gradient(farthest-side at 50% 100%, rgba(0,0,0,.2), rgba(0,0,0,0)) 0 100%;
-  background-repeat: no-repeat;
-  background-color: white;
-  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
-  background-attachment: local, local, scroll, scroll;
-}
-
-/* https://gist.github.com/devinrhode2/2573411 */
-/* Turn on custom 8px wide scrollbar */
-.scroll-shadows::-webkit-scrollbar {
-  width: 8px; /* 1px wider than Lion. */
-  /* This is more usable for users trying to click it. */
-  background-color: rgba(0,0,0,0);
-  -webkit-border-radius: 100px;
-}
-/* hover effect for both scrollbar area, and scrollbar 'thumb' */
-.scroll-shadows::-webkit-scrollbar:hover {
-  background-color: rgba(0, 0, 0, 0.09);
-}
-
-/* The scrollbar 'thumb' ...that marque oval shape in a scrollbar */
-.scroll-shadows::-webkit-scrollbar-thumb:vertical {
-  /* This is the EXACT color of Mac OS scrollbars. 
-     Yes, I pulled out digital color meter */
-  background: rgba(0,0,0,0.2);
-  -webkit-border-radius: 100px;
-}
-.scroll-shadows::-webkit-scrollbar-thumb:vertical:active {
-  background: rgba(0,0,0,0.61); /* Some darker color when you click it */
-  -webkit-border-radius: 100px;
-}
-
 /** EXPANDED LINK STYLES **/
 
 .record.expanded-link {
@@ -672,6 +623,14 @@ a:hover {
 .record.card .content > :first-child { margin-top: 0; }
 .record.card .content > :last-child { margin-bottom: 0; }
 
+.record.card .read-more {
+  padding: 2px 12px;
+}
+
+.record.card .read-more a {
+  color: var(--text-color--link);
+}
+
 .record.card .ctrls {
   padding: 8px 12px;
   font-size: 12px;
@@ -810,11 +769,19 @@ a:hover {
 
 .record.comment.constrain-height .content {
   max-height: 400px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .record.comment .content > :first-child { margin-top: 0; }
 .record.comment .content > :last-child { margin-bottom: 0; }
+
+.record.comment .read-more {
+  padding: 4px 18px 0;
+}
+
+.record.comment .read-more a {
+  color: var(--text-color--link);
+}
 
 .record.comment .ctrls {
   padding: 6px 0 0 18px;
