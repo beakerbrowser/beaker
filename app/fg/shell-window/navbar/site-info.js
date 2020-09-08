@@ -140,6 +140,7 @@ class NavbarSiteInfo extends LitElement {
     e.stopPropagation()
     if (this.isSubscribed) {
       await bg.subscriptions.remove(`hyper://${this.hostname}`)
+      this.isSubscribed = false
     } else {
       let profile = await bg.beakerBrowser.getProfile()
       await bg.subscriptions.add({
@@ -147,7 +148,9 @@ class NavbarSiteInfo extends LitElement {
         title: this.siteTitle,
         site: `hyper://${profile.key}`
       })
+      this.isSubscribed = true
     }
+    this.requestUpdate()
     bg.views.refreshState('active')
   }
 }
