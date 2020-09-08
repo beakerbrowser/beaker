@@ -20,11 +20,22 @@ export class NewPagePopup extends BasePopup {
 
   constructor (opts) {
     super()
-    this.profile = opts.profile
+    this.driveUrl = opts.driveUrl
+    this.profile = undefined
 
     this.type = 'page'
     this.title = ''
     this.visibility = 'private'
+  }
+
+  async connectedCallback () {
+    super.connectedCallback()
+    if (this.driveUrl) {
+      this.profile = await beaker.hyperdrive.getInfo(this.driveUrl)
+    } else {
+      this.profile = await beaker.browser.getProfile()
+    }
+    this.requestUpdate()
   }
 
   get shouldShowHead () {
@@ -32,6 +43,9 @@ export class NewPagePopup extends BasePopup {
   }
 
   get drive () {
+    if (this.driveUrl) {
+      return beaker.hyperdrive.drive(this.driveUrl)
+    }
     if (this.visibility === 'public') {
       return beaker.hyperdrive.drive(this.profile.url)
     }
@@ -167,10 +181,8 @@ export class NewPagePopup extends BasePopup {
   // management
   //
 
-  static async create () {
-    var profile = await beaker.browser.getProfile()
-    profile.url = `hyper://${profile.key}`
-    return BasePopup.create(NewPagePopup, {profile})
+  static async create (opts) {
+    return BasePopup.create(NewPagePopup, opts)
   }
 
   static destroy () {
@@ -196,18 +208,24 @@ export class NewPagePopup extends BasePopup {
       </nav>
       <form @submit=${this.onSubmit}>
         <div class="where">
-          <img src="asset:thumb:${this.profile.url}">
+          <img src="asset:thumb:${this.profile?.url}">
           <div>
-            <div class="title">${this.profile.title}</div>
+            <div class="title">${this.profile?.title}</div>
             <div>
-              <a class="visibility" @click=${this.onClickVisibility}>
-                ${this.visibility === 'private' ? html`
-                  <span class="fas fa-fw fa-lock"></span> Only Me
-                ` : html`
-                  <span class="fas fa-fw fa-globe-africa"></span> Everybody
-                `}
-                <span class="fas fa-fw fa-caret-down"></span>
-              </a>
+              ${this.driveUrl ? html`
+                <a class="visibility">
+                  <span class="fas fa-fw fa-globe-africa"></span> Posting to ${this.profile?.title}
+                </a>
+              ` : html`
+                <a class="visibility" @click=${this.onClickVisibility}>
+                  ${this.visibility === 'private' ? html`
+                    <span class="fas fa-fw fa-lock"></span> Only Me
+                  ` : html`
+                    <span class="fas fa-fw fa-globe-africa"></span> Everybody
+                  `}
+                  <span class="fas fa-fw fa-caret-down"></span>
+                </a>
+              `}
             </div>
           </div>
         </div>
@@ -240,12 +258,12 @@ export class NewPagePopup extends BasePopup {
         <div class="actions">
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
           <button type="submit" class="btn primary" tabindex="1" ?disabled=${!this.title}>
-            ${this.visibility === 'private' ? html`
+            ${!this.driveUrl && this.visibility === 'private' ? html`
               <span class="fas fa-fw fa-lock"></span>
             ` : html`
               <span class="fas fa-fw fa-globe-africa"></span>
             `}
-            Create ${this.visibility} ${this.type}
+            Create ${this.driveUrl ? '' : this.visibility} ${this.type}
           </button>
         </div>
       </form>

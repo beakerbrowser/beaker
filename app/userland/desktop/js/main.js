@@ -800,7 +800,7 @@ class DesktopApp extends LitElement {
 
   async onClickNewPost (e) {
     try {
-      await NewPostPopup.create({driveUrl: this.profile.url})
+      await NewPostPopup.create()
       toast.create('Post created', '', 10e3)
     } catch (e) {
       // ignore, user probably cancelled

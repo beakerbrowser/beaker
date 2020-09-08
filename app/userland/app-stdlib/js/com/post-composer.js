@@ -13,6 +13,7 @@ window.addEventListener('paste', onGlobalPaste)
 class PostComposer extends LitElement {
   static get properties () {
     return {
+      driveUrl: {type: String, attribute: 'drive-url'},
       placeholder: {type: String},
       currentView: {type: String},
       draftText: {type: String, attribute: 'draft-text'},
@@ -25,6 +26,7 @@ class PostComposer extends LitElement {
   constructor () {
     super()
     _currentComposer = this
+    this.driveUrl = undefined
     this.placeholder = 'What\'s new?'
     this.currentView = 'edit'
     this.draftText = ''
@@ -33,11 +35,19 @@ class PostComposer extends LitElement {
     this.parent = undefined
     this.editor = undefined
     this.blobs = []
-    beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').then(async (addr) => {
-      this.profile = await beaker.hyperdrive.getInfo(addr?.profiles?.[0]?.key)
-    })
+    this.profile = undefined
     this.searchQueryId = 0
     this.searchDebouncer = debouncer(100)
+  }
+
+  async connectedCallback () {
+    super.connectedCallback()
+    if (this.driveUrl) {
+      this.profile = await beaker.hyperdrive.getInfo(this.driveUrl)
+    } else {
+      this.profile = await beaker.browser.getProfile()
+    }
+    this.requestUpdate()
   }
 
   static get styles () {
@@ -137,19 +147,28 @@ class PostComposer extends LitElement {
               <span class="far fa-fw fa-image"></span>
             </button>
           </div>
-          <div>      
-            <a
-              class="visibility ${mustBePrivate ? 'disabled' : ''} tooltip-top"
-              data-tooltip=${mustBePrivate ? 'Must be private as you are commenting on private content' : 'Choose who can see this content'}
-              @click=${this.onClickVisibility}
-            >
-              ${this.visibility === 'private' ? html`
-                <span class="fas fa-fw fa-lock"></span> Only Me
-              ` : html`
-                <span class="fas fa-fw fa-globe-africa"></span> Everybody
-              `}
-              ${mustBePrivate ? '' : html`<span class="fas fa-fw fa-caret-down"></span>`}
-            </a>      
+          <div>
+            ${this.driveUrl ? html`
+              <a
+                class="visibility disabled tooltip-top"
+                data-tooltip="Posting to ${this.profile?.title}"
+              >
+                <span class="fas fa-fw fa-globe-africa"></span> Posting to ${this.profile?.title}
+              </a>
+            ` : html`
+              <a
+                class="visibility ${mustBePrivate ? 'disabled' : ''} tooltip-top"
+                data-tooltip=${mustBePrivate ? 'Must be private as you are commenting on private content' : 'Choose who can see this content'}
+                @click=${this.onClickVisibility}
+              >
+                ${this.visibility === 'private' ? html`
+                  <span class="fas fa-fw fa-lock"></span> Only Me
+                ` : html`
+                  <span class="fas fa-fw fa-globe-africa"></span> Everybody
+                `}
+                ${mustBePrivate ? '' : html`<span class="fas fa-fw fa-caret-down"></span>`}
+              </a>
+            `}
             <button @click=${this.onCancel} tabindex="4">Cancel</button>
             <button type="submit" class="primary" tabindex="3" ?disabled=${this.isEmpty}>
               ${this.visibility === 'private' ? 'Save privately' : 'Publish publicly'}
@@ -273,7 +292,10 @@ class PostComposer extends LitElement {
       throw new Error('.profile is missing')
     }
 
-    var driveUrl = this.visibility === 'private' ? 'hyper://private' : this.profile.url
+    var driveUrl = this.driveUrl
+    if (!driveUrl) {
+      driveUrl = this.visibility === 'private' ? 'hyper://private' : this.profile.url
+    }
     var drive = beaker.hyperdrive.drive(driveUrl)
     var filename = '' + Date.now()
     var folder = ''

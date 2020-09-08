@@ -1,6 +1,9 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import { SitesListPopup } from 'beaker://app-stdlib/js/com/popups/sites-list.js'
+import { NewPagePopup } from 'beaker://app-stdlib/js/com/popups/new-page.js'
+import { NewPostPopup } from 'beaker://app-stdlib/js/com/popups/new-post.js'
+import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { shorten, pluralize, isSameOrigin } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import css from '../css/main.css.js'
@@ -154,19 +157,24 @@ class DriveViewApp extends LitElement {
 
   renderHeaderButtons () {
     return html`
-      ${isSameOrigin(this.info.origin, 'hyper://private') ? '' : this.info.writable ? html`
-        <button class="transparent" @click=${this.onEditProperties}>
-          Edit Profile
-        </button>
-      ` : html`
-        <button class="transparent" @click=${this.onToggleSubscribe}>
-          ${this.isSubscribed ? html`
-            <span class="fas fa-fw fa-check"></span> Subscribed
-          ` : html`
-            <span class="fas fa-fw fa-rss"></span> Subscribe
-          `}
-        </button>
-      `}
+      <div class="btns">
+        ${isSameOrigin(this.info.origin, 'hyper://private') ? '' : this.info.writable ? html`
+          <button class="transparent" @click=${this.onEditProperties}>
+            Edit Profile
+          </button>
+          <button class="transparent" @click=${this.onClickMoreTools}>
+            <span class="fas fa-caret-down"></span>
+          </button>
+        ` : html`
+          <button class="transparent" @click=${this.onToggleSubscribe}>
+            ${this.isSubscribed ? html`
+              <span class="fas fa-fw fa-check"></span> Subscribed
+            ` : html`
+              <span class="fas fa-fw fa-rss"></span> Subscribe
+            `}
+          </button>
+        `}
+      </div>
     `
   }
 
@@ -302,7 +310,7 @@ class DriveViewApp extends LitElement {
     })
   }
 
-  async onToggleSubscribe (e) {
+  async onToggleSubscribe () {
     if (this.isSubscribed) {
       this.subscribers = this.subscribers.filter(s => s.site.url !== this.profile.url)
       this.requestUpdate()
@@ -322,6 +330,49 @@ class DriveViewApp extends LitElement {
   async onEditProperties () {
     await beaker.shell.drivePropertiesDialog(this.info.origin)
     location.reload()
+  }
+
+  async onClickMoreTools (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    const items = [
+      this.isSubscribed
+        ? {icon: 'fas fa-times', label: 'Unsubscribe', click: this.onToggleSubscribe}
+        : {icon: 'fas fa-rss', label: 'Subscribe', click: this.onToggleSubscribe},
+      '-',
+      {icon: 'far fa-comment', label: 'New Post', click: this.onClickNewPost},
+      {icon: 'far fa-file', label: 'New Page', click: this.onClickNewPage}
+    ]
+    contextMenu.create({
+      x: rect.right,
+      y: rect.bottom,
+      noBorders: true,
+      right: true,
+      style: `padding: 6px 0`,
+      items
+    })
+  }
+
+  async onClickNewPage () {
+    try {
+      var res = await NewPagePopup.create({driveUrl: location.origin})
+      window.location = res.url
+    } catch (e) {
+      // ignore
+      console.log(e)
+    }
+  }
+
+  async onClickNewPost () {
+    try {
+      await NewPostPopup.create({driveUrl: location.origin})
+    } catch (e) {
+      // ignore, user probably cancelled
+      console.log(e)
+      return
+    }
+    window.location.reload()
   }
 
   onClickShowSubscribers (e) {

@@ -11,7 +11,7 @@ import '../post-composer.js'
 export class NewPostPopup extends BasePopup {
   constructor (opts) {
     super()
-    this.driveUrl = opts.driveUrl
+    this.driveUrl = opts?.driveUrl
   }
 
   static get properties () {
@@ -64,6 +64,7 @@ export class NewPostPopup extends BasePopup {
   renderBody () {
     return html`
       <beaker-post-composer
+        drive-url=${this.driveUrl || ''}
         @publish=${this.onPublish}
         @cancel=${this.onCancel}
       ></beaker-post-composer>

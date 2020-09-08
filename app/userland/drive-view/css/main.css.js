@@ -38,12 +38,17 @@ a:hover {
   margin: 20px 0px 10px;
 }
 
+.header .btns {
+  display: flex;
+}
+
 .header button {
   display: block;
   font-size: 14px;
   border-radius: 4px;
   border: 1px solid var(--text-color--markdown-link);
   color: var(--text-color--markdown-link);
+  margin-right: 5px;
 }
 
 .header .thumb {
@@ -202,13 +207,15 @@ beaker-record-thread {
     line-height: 73px;
   }
 
-  .header button {
+  .header .btns {
     position: fixed;
     top: 10px;
     right: 10px;
+  }
+
+  .header button {
     width: auto;
     padding: 5px 15px;
-    padding-right: 20px; /* offsets the icon a little */
   }
 
   .header .info {
