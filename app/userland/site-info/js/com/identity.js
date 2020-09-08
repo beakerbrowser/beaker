@@ -63,7 +63,7 @@ class Identity extends LitElement {
       `}
       ${this.cert?.subscribers && !this.cert.ident.system ? html`
         <div class="subscribers">
-          <h4>Subscribers You Know (${this.cert.subscribers.length})</h4>
+          <h4>Subscribers (${this.cert.subscribers.length})</h4>
           ${this.cert?.subscribers?.length > 0 ? html`<div>${repeat(this.cert.subscribers, this.renderSubscriber)}</div>` : ''}
         </div>
       ` : ''}

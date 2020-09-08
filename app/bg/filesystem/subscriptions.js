@@ -45,7 +45,8 @@ export async function listNetworkFor (href) {
   href = normalizeUrl(href)
   var results = await indexer.listRecords({
     file: {extension: '.goto', prefix: '/subscriptions'},
-    links: href
+    links: href,
+    index: ['local', 'network']
   })
   return results.map(massageSubscription)
 }

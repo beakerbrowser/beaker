@@ -78,7 +78,7 @@ export class SiteInfo extends LitElement {
                 data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
               >
                 <strong>${this.subscribers?.length}</strong>
-                ${pluralize(this.subscribers?.length || 0, 'subscriber')} you know
+                ${pluralize(this.subscribers?.length || 0, 'subscriber')}
               </a>
             </div>
           ` : ''}

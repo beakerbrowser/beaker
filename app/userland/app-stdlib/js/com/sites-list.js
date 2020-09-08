@@ -231,7 +231,7 @@ export class SitesList extends LitElement {
                 }
               >
                 <strong>${site.subscriptions?.length || 0}</strong>
-                ${pluralize(site.subscriptions?.length || 0, 'subscriber')} you know
+                ${pluralize(site.subscriptions?.length || 0, 'subscriber')}
               </a>
             </div>
           ` : ''}
