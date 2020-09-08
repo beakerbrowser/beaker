@@ -79,7 +79,7 @@ a:hover {
 
 .header .title {
   font-family: arial;
-  font-size: 32px;
+  font-size: 22px;
   font-weight: bold;
   margin-bottom: 4px;
 }
@@ -89,7 +89,7 @@ a:hover {
 }
 
 .header .description {
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   word-break: break-word;
 }
 
@@ -209,8 +209,12 @@ beaker-record-thread {
 
   .header .btns {
     position: fixed;
-    top: 10px;
-    right: 10px;
+    top: 6px;
+    right: 6px;
+  }
+
+  .header .description {
+    margin-bottom: 4px;
   }
 
   .header button {
