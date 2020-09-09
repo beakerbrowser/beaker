@@ -59,7 +59,7 @@ export class Record extends LitElement {
   }
 
   updated (changedProperties) {
-    if (this.record && this.constrainHeight && !this.hasCheckedOverflow) {
+    if (this.record && this.constrainHeight && !this.hasCheckedOverflow && document.visibilityState === 'visible') {
       this.hasCheckedOverflow = true
       this.whenContentLoaded().then(r => {
         if (this.isContentOverflowing) {
