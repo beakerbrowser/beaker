@@ -85,6 +85,7 @@ export async function add ({href, title, site}) {
     [METADATA_KEYS.title]: title
   }})
   await indexer.triggerSiteIndex(site)
+  /* dont await */ indexer.triggerSiteIndex(href)
   return path
 }
 
@@ -99,6 +100,7 @@ export async function remove (href) {
   let drive = await drives.getOrLoadDrive(urlp.hostname)
   await drive.pda.unlink(urlp.pathname)
   await indexer.triggerSiteIndex(urlp.hostname)
+  /* dont await */ indexer.triggerSiteDeindex(href)
 }
 
 /**

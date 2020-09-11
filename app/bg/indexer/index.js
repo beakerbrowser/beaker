@@ -645,6 +645,11 @@ export async function triggerSiteIndex (origin, {ifIndexingSite} = {ifIndexingSi
   await indexSite(origin, myOrigins)
 }
 
+export async function triggerSiteDeindex (origin) {
+  origin = normalizeOrigin(origin)
+  await deindexSite(origin)
+}
+
 export function getState () {
   return state
 }
