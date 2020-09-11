@@ -40,7 +40,7 @@ export class SiteInfo extends LitElement {
   }
 
   get isSubscribed () {
-    return this.subscribers.find(s => s.site.url === this.profileUrl && s.index === 'local')
+    return this.subscribers.find(s => s.site.url === this.profileUrl)
   }
 
   // rendering

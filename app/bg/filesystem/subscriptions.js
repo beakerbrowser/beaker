@@ -1,5 +1,5 @@
 import { joinPath } from '../../lib/strings.js'
-import { createResourceSlug, normalizeUrl } from '../../lib/urls'
+import { createResourceSlug, normalizeUrl, isSameOrigin } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
 import { METADATA_KEYS } from '../indexer/const'
@@ -48,6 +48,9 @@ export async function listNetworkFor (href) {
     links: href,
     index: ['local', 'network']
   })
+  var profileUrl = filesystem.getProfileUrl()
+  // only trust the users' subs from the local index, which will be more up-to-date
+  results = results.filter(r => !(isSameOrigin(r.site.url, profileUrl) && r.index === 'network'))
   return results.map(massageSubscription)
 }
 
