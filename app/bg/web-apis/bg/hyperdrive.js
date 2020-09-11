@@ -816,7 +816,7 @@ async function assertReadPermission (drive, sender, filepath = undefined) {
         return true
       }
     }
-    throw new PermissionsError('Cannot read the hyper://private/ drive')
+    throw new PermissionsError('Cannot read the hyper://private/ drive without a session (see beaker.session API)')
   }
 
   return true
@@ -850,7 +850,9 @@ async function assertWritePermission (drive, sender, filepath = undefined) {
 
   // cant even ask to write the private drive 
   if (ident.system) {
-    throw new PermissionsError('Cannot write the hyper://private/ drive')
+    throw new PermissionsError('Cannot write the hyper://private/ drive without a session (see beaker.session API)')
+  } else if (ident.profile) {
+    throw new PermissionsError('Cannot write a profile drive without a session (see beaker.session API)')
   }
 
   // ensure the sender is allowed to write
