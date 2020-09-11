@@ -1,15 +1,15 @@
 async function main () {
-  var sess = await beaker.sessions.get()
+  var sess = await beaker.session.get()
   console.log(sess)
 
   var btn = document.createElement('button')
   if (sess) {
     btn.textContent = 'Log out'
-    btn.onclick = async () => console.log(await beaker.sessions.destroy())
+    btn.onclick = async () => console.log(await beaker.session.destroy())
   } else {
     btn.textContent = 'Log in'
     btn.onclick = async () => {
-      var sess = await beaker.sessions.request({
+      var sess = await beaker.session.request({
         permissions: {
           publicFiles: [
             {prefix: '/pages', extension: '.md', access: 'read'},
