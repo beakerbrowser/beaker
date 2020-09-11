@@ -165,7 +165,7 @@ async function getDrive (url) {
 async function sync (url) {
   var drive = await getDrive(url)
   var current = await folderSyncDb.get(drive.key.toString('hex'))
-  if (!current || !current.localPath) return []
+  if (!current || !current.localPath) return
   var diff = await dft.diff(
     current.localPath,
     {fs: drive.session.drive, path: '/'},
@@ -175,7 +175,7 @@ async function sync (url) {
       filter: createIgnoreFilter(current.ignoredFiles)
     }
   )
-  return dft.applyRight(current.localPath, {fs: drive.session.drive, path: '/'}, diff)
+  return dft.applyRightStream(current.localPath, {fs: drive.session.drive, path: '/'}, diff)
 }
 
 function startAutosync (key, current) {
