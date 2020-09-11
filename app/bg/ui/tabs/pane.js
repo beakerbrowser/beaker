@@ -428,7 +428,7 @@ export class Pane extends EventEmitter {
   async updateHistory () {
     var url = this.url
     var title = this.title
-    if (url !== 'beaker://desktop/' && url !== 'beaker://history/') {
+    if (url && url !== 'beaker://desktop/' && url !== 'beaker://history/') {
       historyDb.addVisit(0, {url, title})
     }
   }
@@ -774,6 +774,11 @@ export class Pane extends EventEmitter {
     this.isLoading = false
     this.loadingURL = null
     this.isReceivingAssets = false
+
+    if (!this.url) {
+      // aborted load on a new tab
+      this.loadURL('about:blank')
+    }
 
     // run custom renderer apps
     this.injectCustomRenderers()
