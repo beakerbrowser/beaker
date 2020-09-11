@@ -739,6 +739,7 @@ async function indexSite (origin, myOrigins) {
   DEBUGGING.moveToTargets(origin)
   var release = await lock(`beaker-indexer:${origin}`)
   var current_version
+  var isFirstIndex
   try {
     current_version = undefined
     let site = await loadSite(db, origin)
@@ -751,6 +752,7 @@ async function indexSite (origin, myOrigins) {
     let updates = await site.listUpdates()
     logger.silly(`${updates.length} updates found for ${origin}`)
     if (updates.length === 0) return
+    isFirstIndex = site.last_indexed_version == 0
 
     for (let update of updates) {
       if (update.remove) {
@@ -789,6 +791,13 @@ async function indexSite (origin, myOrigins) {
         let rowid
         let isNew = true
         try {
+          // NOTE
+          // on the first indexing of a site, we're going to be syncing a backlog of content
+          // this can create a bunch of needless notifications
+          // so we allow the rtime to get 'backdated' to avoid that
+          // -prf
+          let rtime = isFirstIndex ? Math.min(+update.ctime, Date.now()) : Date.now()
+
           let res = await db('records').insert({
             site_rowid: site.rowid,
             path: update.path,
@@ -796,7 +805,7 @@ async function indexSite (origin, myOrigins) {
             extension,
             mtime: update.mtime,
             ctime: update.ctime,
-            rtime: Date.now()
+            rtime
           })
           rowid = res[0]
         } catch (e) {
