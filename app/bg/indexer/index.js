@@ -869,7 +869,7 @@ async function indexSite (origin, myOrigins) {
       last_indexed_ts: Date.now(),
       error: e.toString()
     })
-    logger.error(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.debug(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   } finally {
     DEBUGGING.removeTarget(origin)
     release()
@@ -892,7 +892,7 @@ async function deindexSite (origin) {
     await db('sites').update({last_indexed_version: 0, last_indexed_ts: 0}).where({origin})
     logger.debug(`Deindexed ${site.origin}/*`, {site: site.origin})
   } catch (e) {
-    logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.debug(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   } finally {
     DEBUGGING.removeTarget(origin)
     release()
@@ -945,7 +945,7 @@ async function getLiveRecord (url) {
     }
     return record
   } catch (e) {
-    logger.error(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: urlp.origin, error: e.toString()})
+    logger.debug(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: urlp.origin, error: e.toString()})
   }  
   return undefined
 }
@@ -988,7 +988,7 @@ async function listLiveRecords (origin, opts) {
       }
     }))
   } catch (e) {
-    logger.error(`Failed to live-query site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.debug(`Failed to live-query site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
   }  
   return records
 }
