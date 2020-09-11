@@ -59,6 +59,7 @@ export const METADATA_KEYS = {
  * @prop {Object} site
  * @prop {String} site.url
  * @prop {String} site.title
+ * @prop {String} index
  * @prop {Object} metadata
  * @prop {String[]} links
  * @prop {String} [content]

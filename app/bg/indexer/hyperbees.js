@@ -278,6 +278,7 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     ctime: backlink.value.crtime,
     mtime: backlink.value.mrtime,
     rtime: backlink.value.rtime,
+    index: 'network',
     site: {
       url: backlink.value.drive,
       title: site.title

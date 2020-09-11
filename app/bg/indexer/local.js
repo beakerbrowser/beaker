@@ -150,6 +150,7 @@ export async function listRecords (db, opts, {permissions, notificationRtime} = 
       ctime: row.ctime,
       mtime: row.mtime,
       rtime: row.rtime,
+      index: 'local',
       site: {
         url: row.origin,
         title: row.siteTitle

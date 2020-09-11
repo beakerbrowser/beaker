@@ -926,6 +926,7 @@ async function getLiveRecord (url) {
       ctime: +stat.ctime,
       mtime: +stat.mtime,
       rtime: Date.now(),
+      index: 'local',
       site: {
         url: site.origin,
         title: site.title
