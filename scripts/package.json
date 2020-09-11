@@ -2,7 +2,7 @@
   "name": "beakerbrowser",
   "devDependencies": {
     "browserify": "^16.0.0",
-    "electron": "11.0.0-beta.1",
+    "electron": "11.0.0-beta.6",
     "electron-builder": "^22.6.0",
     "electron-notarize": "^0.3.0",
     "eslint": "^4.5.0",
