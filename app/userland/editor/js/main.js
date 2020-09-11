@@ -61,6 +61,10 @@ class EditorApp extends LitElement {
     return this.origin + this.resolvedPath
   }
 
+  get resolvedDirname () {
+    return '/' + (this.resolvedPath || '').split('/').filter(Boolean).slice(0, -1).join('/')
+  }
+
   get hasFileExt () {
     var path = this.pathname
     return path.split('/').pop().includes('.')
@@ -606,7 +610,7 @@ class EditorApp extends LitElement {
       ` : this.dne ? html`
         <div class="empty">
           <a @click=${e => { this.isFilesOpen = true }}>Select a file</a>
-          ${!this.readOnly ? html` or <a @click=${e => { this.onClickNewFile(this.resolvedPath) }}>Create a file</a>` : ''}
+          ${!this.readOnly ? html` or <a @click=${e => { this.onClickNewFile(this.resolvedDirname, this.resolvedFilename) }}>Create a file</a>` : ''}
         </div>
       ` : ''}
       ${this.showLoadingNotice ? html`<div id="loading-notice">Loading...</div>` : ''}
@@ -953,9 +957,9 @@ class EditorApp extends LitElement {
     }
   }
 
-  async onClickNewFile (folderPath) {
+  async onClickNewFile (folderPath, defaultName = '') {
     if (this.readOnly) return
-    var name = prompt('Enter the new file name')
+    var name = prompt('Enter the new file name', defaultName)
     if (name) {
       let path = joinPath(folderPath, name)
       await this.drive.writeFile(path, '')
