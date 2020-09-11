@@ -319,7 +319,7 @@ export class Record extends LitElement {
    
     var subject
     if (['subscription', 'vote'].includes(rtype)) {
-      subject = (isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : res.metadata.title) || fancyUrlAsync(res.metadata.href)
+      subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : fancyUrlAsync(res.metadata.href)
     } else {
       if (res.extension !== '.goto' && res.metadata.title) subject = res.metadata.title
       else if (res.content) subject = shorten(removeMarkdown(res.content), 150)
