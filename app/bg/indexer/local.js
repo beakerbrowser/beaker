@@ -39,7 +39,7 @@ import { METADATA_KEYS } from './const'
  * @param {Object} [internal]
  * @param {Object} [internal.permissions]
  * @param {Number} [internal.notificationRtime]
- * @param {EnumeratedSessionPerm[]} [permissions.query]
+ * @param {EnumeratedSessionPerm[]} [internal.permissions.query]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
 export async function listRecords (db, opts, {permissions, notificationRtime} = {}) {

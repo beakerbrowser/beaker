@@ -882,12 +882,14 @@ async function deindexSite (origin) {
   var release = await lock(`beaker-indexer:${origin}`)
   try {
     let site = (await db('sites').select('rowid', 'origin').where({origin}))[0]
+    if (!site) throw new Error(`Site not found in index`)
     let records = await db('records').select('rowid').where({site_rowid: site.rowid})
     for (let record of records) {
       await db('records_notification').del().where({record_rowid: record.rowid})
       await db('records_data').del().where({record_rowid: record.rowid})
     }
     await db('records').del().where({site_rowid: site.rowid})
+    await db('sites').update({last_indexed_version: 0, last_indexed_ts: 0}).where({origin})
     logger.debug(`Deindexed ${site.origin}/*`, {site: site.origin})
   } catch (e) {
     logger.error(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
