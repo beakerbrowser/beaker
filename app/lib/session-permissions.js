@@ -25,6 +25,11 @@ export function validateAndNormalizePermissions (permissions) {
         if (!v.prefix.startsWith('/')) v.prefix = `/${v.prefix}`
         while (v.prefix.endsWith('/')) v.prefix = v.prefix.slice(0, -1)
         if (!v.prefix || v.prefix === '/') throw new Error(`'${key}' permissions .prefix can not be '/'`)
+        if (getRecordType(v) === 'unknown') {
+          let numSlashes = v.prefix.match(/\//g)?.length || 0
+          if (numSlashes <= 1) throw new Error(`'${key}' permissions .prefix must be 2 folders deep if a custom type (eg "/my-app/pics")`)
+          if (!v.prefix.split('/')[1].includes('-')) throw new Error(`'${key}' permissions .prefix must include a dash in the first folder if a custom type (eg "/my-app/pics")`)
+        }
         if (!v.extension.startsWith('.')) v.extension = `.${v.extension}`
       }
     } else {
@@ -48,6 +53,9 @@ export function enumeratePerms (permissions) {
         }
         let location = k === 'publicFiles' ? 'public' : 'private'
         let recordType = getRecordType(v)
+        if (recordType === 'unknown') {
+          recordType = `${v.extension} files in ${v.prefix}`
+        }
         perms.push({access: v.access, location, recordType, prefix: v.prefix, extension: v.extension})
       }
     }
@@ -107,5 +115,5 @@ export function getRecordType ({prefix, extension}) {
     if (prefix === '/microblog') return 'microblogposts'
     if (prefix === '/pages') return 'pages'
   }
-  return `${extension} files in ${prefix}`
+  return 'unknown'
 }

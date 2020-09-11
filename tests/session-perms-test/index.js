@@ -9,7 +9,7 @@ async function main () {
   } else {
     btn.textContent = 'Log in'
     btn.onclick = async () => {
-      var sess = await beaker.session.request({
+      await doLog(false, 'bad session request', beaker.session.request({
         permissions: {
           publicFiles: [
             {prefix: '/pages', extension: '.md', access: 'read'},
@@ -21,8 +21,33 @@ async function main () {
             {prefix: '/test', extension: '.txt', access: 'write'}
           ]
         }
-      })
-      console.log(sess)
+      }))
+      await doLog(false, 'bad session request', beaker.session.request({
+        permissions: {
+          publicFiles: [
+            {prefix: '/pages', extension: '.md', access: 'read'},
+            {prefix: '/comments', extension: '.md', access: 'read'},
+            {prefix: '/test/test', extension: '.txt', access: 'write'}
+          ],
+          privateFiles: [
+            {prefix: '/pages', extension: '.md', access: 'read'},
+            {prefix: '/test/test', extension: '.txt', access: 'write'}
+          ]
+        }
+      }))
+      await doLog(true, 'good session request', beaker.session.request({
+        permissions: {
+          publicFiles: [
+            {prefix: '/pages', extension: '.md', access: 'read'},
+            {prefix: '/comments', extension: '.md', access: 'read'},
+            {prefix: '/beaker-tests/test', extension: '.txt', access: 'write'}
+          ],
+          privateFiles: [
+            {prefix: '/pages', extension: '.md', access: 'read'},
+            {prefix: '/beaker-tests/test', extension: '.txt', access: 'write'}
+          ]
+        }
+      }))
     }
   }
   document.body.append(btn)
@@ -87,42 +112,42 @@ async function main () {
   doLog(true, 'readFile(/pages/test-page.md) public', pub.readFile('/pages/test-page.md'))
   doLog(false, 'query(/pages) private', priv.query({path: '/pages/*'}))
 
-  await doLog(true, 'writeFile(/test/hello.txt) private', priv.writeFile('/test/hello.txt', 'world'))
-  await doLog(true, 'writeFile(/test/hello.txt) public', pub.writeFile('/test/hello.txt', 'world'))
-  await doLog(false, 'writeFile(/test/hello.json) private', priv.writeFile('/test/hello.json', 'world'))
-  await doLog(false, 'writeFile(/test/hello.json) public', pub.writeFile('/test/hello.json', 'world'))
+  await doLog(true, 'writeFile(/beaker-tests/test/hello.txt) private', priv.writeFile('/beaker-tests/test/hello.txt', 'world'))
+  await doLog(true, 'writeFile(/beaker-tests/test/hello.txt) public', pub.writeFile('/beaker-tests/test/hello.txt', 'world'))
+  await doLog(false, 'writeFile(/beaker-tests/test/hello.json) private', priv.writeFile('/beaker-tests/test/hello.json', 'world'))
+  await doLog(false, 'writeFile(/beaker-tests/test/hello.json) public', pub.writeFile('/beaker-tests/test/hello.json', 'world'))
   await doLog(false, 'writeFile(/pages/hello.md) private', priv.writeFile('/pages/hello.md', 'world'))
   await doLog(false, 'writeFile(/pages/hello.md) public', pub.writeFile('/pages/hello.md', 'world'))
 
-  await doLog(true, 'copy(/test/hello.txt, /test/hello2.txt) private', priv.copy('/test/hello.txt', '/test/hello2.txt'))
-  await doLog(true, 'copy(/test/hello.txt, /test/hello2.txt) public', pub.copy('/test/hello.txt', '/test/hello2.txt'))
-  await doLog(true, 'rename(/test/hello2.txt, /test/hello3.txt) private', priv.rename('/test/hello2.txt', '/test/hello3.txt'))
-  await doLog(true, 'rename(/test/hello2.txt, /test/hello3.txt) public', pub.rename('/test/hello2.txt', '/test/hello3.txt'))
-  await doLog(true, 'unlink(/test/hello3.txt) private', priv.unlink('/test/hello3.txt'))
-  await doLog(true, 'unlink(/test/hello3.txt) public', pub.unlink('/test/hello3.txt'))
+  await doLog(true, 'copy(/beaker-tests/test/hello.txt, /beaker-tests/test/hello2.txt) private', priv.copy('/beaker-tests/test/hello.txt', '/beaker-tests/test/hello2.txt'))
+  await doLog(true, 'copy(/beaker-tests/test/hello.txt, /beaker-tests/test/hello2.txt) public', pub.copy('/beaker-tests/test/hello.txt', '/beaker-tests/test/hello2.txt'))
+  await doLog(true, 'rename(/beaker-tests/test/hello2.txt, /beaker-tests/test/hello3.txt) private', priv.rename('/beaker-tests/test/hello2.txt', '/beaker-tests/test/hello3.txt'))
+  await doLog(true, 'rename(/beaker-tests/test/hello2.txt, /beaker-tests/test/hello3.txt) public', pub.rename('/beaker-tests/test/hello2.txt', '/beaker-tests/test/hello3.txt'))
+  await doLog(true, 'unlink(/beaker-tests/test/hello3.txt) private', priv.unlink('/beaker-tests/test/hello3.txt'))
+  await doLog(true, 'unlink(/beaker-tests/test/hello3.txt) public', pub.unlink('/beaker-tests/test/hello3.txt'))
 
-  await doLog(false, 'copy(/test/hello.txt, /pages/hello.md) private', priv.copy('/test/hello.txt', '/pages/hello.md'))
-  await doLog(false, 'copy(/test/hello.txt, /pages/hello.md) public', pub.copy('/test/hello.txt', '/pages/hello.md'))
+  await doLog(false, 'copy(/beaker-tests/test/hello.txt, /pages/hello.md) private', priv.copy('/beaker-tests/test/hello.txt', '/pages/hello.md'))
+  await doLog(false, 'copy(/beaker-tests/test/hello.txt, /pages/hello.md) public', pub.copy('/beaker-tests/test/hello.txt', '/pages/hello.md'))
 
-  await doLog(false, 'symlink(/index.json, /test/index.txt) private', priv.symlink('/index.json', '/test/index.txt'))
-  await doLog(true, 'symlink(/index.json, /test/index.txt) public', pub.symlink('/index.json', '/test/index.txt'))
-  await doLog(true, 'unlink(/test/index.txt) public', pub.unlink('/test/index.txt'))
+  await doLog(false, 'symlink(/index.json, /beaker-tests/test/index.txt) private', priv.symlink('/index.json', '/beaker-tests/test/index.txt'))
+  await doLog(true, 'symlink(/index.json, /beaker-tests/test/index.txt) public', pub.symlink('/index.json', '/beaker-tests/test/index.txt'))
+  await doLog(true, 'unlink(/beaker-tests/test/index.txt) public', pub.unlink('/beaker-tests/test/index.txt'))
 
-  await doLog(false, 'symlink(/test/hello.txt, /pages/hello.md) private', priv.symlink('/test/hello.txt', '/pages/hello.md'))
-  await doLog(false, 'symlink(/test/hello.txt, /pages/hello.md) public', pub.symlink('/test/hello.txt', '/pages/hello.md'))
+  await doLog(false, 'symlink(/beaker-tests/test/hello.txt, /pages/hello.md) private', priv.symlink('/beaker-tests/test/hello.txt', '/pages/hello.md'))
+  await doLog(false, 'symlink(/beaker-tests/test/hello.txt, /pages/hello.md) public', pub.symlink('/beaker-tests/test/hello.txt', '/pages/hello.md'))
 
-  await doLog(true, 'copy(/pages/decribing-beaker.md, /test/describing-beaker.txt) private', priv.copy('/pages/decribing-beaker.md', '/test/describing-beaker.txt'))
-  await doLog(true, 'copy(/pages/test-page.md, /test/test-page.txt) public', pub.copy('/pages/test-page.md', '/test/test-page.txt'))
+  await doLog(true, 'copy(/pages/decribing-beaker.md, /beaker-tests/test/describing-beaker.txt) private', priv.copy('/pages/decribing-beaker.md', '/beaker-tests/test/describing-beaker.txt'))
+  await doLog(true, 'copy(/pages/test-page.md, /beaker-tests/test/test-page.txt) public', pub.copy('/pages/test-page.md', '/beaker-tests/test/test-page.txt'))
 
-  await doLog(true, 'unlink(/test/hello.txt) private', priv.unlink('/test/hello.txt'))
-  await doLog(true, 'unlink(/test/hello.txt) public', pub.unlink('/test/hello.txt'))
-  await doLog(false, 'unlink(/test/hello.json) private', priv.unlink('/test/hello.json'))
-  await doLog(false, 'unlink(/test/hello.json) public', pub.unlink('/test/hello.json'))
+  await doLog(true, 'unlink(/beaker-tests/test/hello.txt) private', priv.unlink('/beaker-tests/test/hello.txt'))
+  await doLog(true, 'unlink(/beaker-tests/test/hello.txt) public', pub.unlink('/beaker-tests/test/hello.txt'))
+  await doLog(false, 'unlink(/beaker-tests/test/hello.json) private', priv.unlink('/beaker-tests/test/hello.json'))
+  await doLog(false, 'unlink(/beaker-tests/test/hello.json) public', pub.unlink('/beaker-tests/test/hello.json'))
   await doLog(false, 'unlink(/pages/hello.md) private', priv.unlink('/pages/hello.md'))
   await doLog(false, 'unlink(/pages/hello.md) public', pub.unlink('/pages/hello.md'))
 
-  await doLog(false, 'mkdir(/test/sub)', priv.mkdir('/test/sub'))
-  await doLog(false, 'mkdir(/test/sub)', pub.mkdir('/test/sub'))
+  await doLog(false, 'mkdir(/beaker-tests/test/sub)', priv.mkdir('/beaker-tests/test/sub'))
+  await doLog(false, 'mkdir(/beaker-tests/test/sub)', pub.mkdir('/beaker-tests/test/sub'))
   await doLog(false, 'rmdir(/test)', priv.rmdir('/test'))
   await doLog(false, 'rmdir(/test)', pub.rmdir('/test'))
 }
