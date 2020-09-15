@@ -16,7 +16,6 @@ class BrowserMenu extends LitElement {
     this.submenu = ''
     this.isDarwin = false
     this.windowMenuItems = undefined
-    this.bookmarks = []
   }
 
   reset () {
@@ -26,25 +25,20 @@ class BrowserMenu extends LitElement {
 
   async init () {
     await this.requestUpdate()
-    let [browserInfo, menuItems, bookmarks] = await Promise.all([
+    let [browserInfo, menuItems] = await Promise.all([
       bg.beakerBrowser.getInfo(),
-      bg.shellMenus.getWindowMenu(),
-      bg.bookmarks.list({sortBy: 'title'})
+      bg.shellMenus.getWindowMenu()
     ])
-    bookmarks.sort((a, b) => (a.title || '').toLowerCase().localeCompare((b.title || '').toLowerCase()))
     this.browserInfo = browserInfo
     this.isDarwin = browserInfo.platform === 'darwin'
     this.windowMenuItems = menuItems
-    this.bookmarks = bookmarks 
     await this.requestUpdate()
     this.daemonStatus = await bg.beakerBrowser.getDaemonStatus()
     this.requestUpdate()
   }
 
   render () {
-    if (this.submenu === 'bookmarks') {
-      return this.renderBookmarks()
-    } else if (this.submenu === 'library') {
+    if (this.submenu === 'library') {
       return this.renderLibrary()
     } else if (this.submenu) {
       return this.renderWindowMenu(this.submenu)
@@ -68,17 +62,15 @@ class BrowserMenu extends LitElement {
       <div class="wrapper">
         ${autoUpdaterEl}
 
-        <div class="section gray">
-          <div class="menu-item-group">
-            <div class="menu-item" @click=${e => this.onNewHyperdrive()}>
-              <i class="fas fa-sitemap"></i>
-              <span class="label">New Site...</span>
-            </div>
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onNewHyperdrive()}>
+            <i class="fas fa-plus"></i>
+            <span class="label">New Site...</span>
+          </div>
 
-            <div class="menu-item" @click=${e => this.onNewHyperdriveFromFolder(e)}>
-              <i class="fas fa-file-upload"></i>
-              <span class="label">New Site From Folder...</span>
-            </div>
+          <div class="menu-item" @click=${e => this.onNewHyperdriveFromFolder(e)}>
+            <i class="fas fa-file-upload"></i>
+            <span class="label">New Site From Folder...</span>
           </div>
         </div>
 
@@ -95,23 +87,13 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
-          <div class="menu-item" @click=${e => this.onShowSubmenu('File')}>
-            <span class="label">File</span>
-            <span class="more"><span class="fas fa-caret-right"></span></span>
+          <div class="menu-item" @click=${e => this.onPrint()}>
+            <i class="fas fa-print"></i>
+            <span class="label">Print</span>
           </div>
-          <div class="menu-item" @click=${e => this.onShowSubmenu('bookmarks')}>
-            <span class="label">Bookmarks</span>
-            <span class="more"><span class="fas fa-caret-right"></span></span>
-          </div>
-          <div class="menu-item" @click=${e => this.onShowSubmenu('Developer')}>
-            <span class="label">Developer</span>
-            <span class="more"><span class="fas fa-caret-right"></span></span>
-          </div>
-          <div class="menu-item" @click=${e => this.onShowSubmenu('Window')}>
-            <span class="label">Window</span>
-            <span class="more"><span class="fas fa-caret-right"></span></span>
-          </div>
+
           <div class="menu-item" @click=${e => this.onShowSubmenu('Help')}>
+            <i class="far fa-life-ring"></i>
             <span class="label">Help</span>
             <span class="more"><span class="fas fa-caret-right"></span></span>
           </div>
@@ -120,18 +102,16 @@ class BrowserMenu extends LitElement {
         ${this.daemonStatus ? html`
           <div class="network-status">
             <div class="network-status-title">Network Status</div>
-            <table>
-              <tr>
-                <td>Hole-punchable:</td>
-                <td>
-                  ${this.daemonStatus.holepunchable
-                    ? html`<span class="fa-fw fas fa-check"></span> Yes`
-                    : html`<span class="fa-fw fas fa-exclamation-triangle"></span> No`
-                  }
-                </td>
-              </tr>
-              <tr><td>Remote Address:</td> <td>${this.daemonStatus.remoteAddress || 'Unknown'}</td></tr>
-            </table>
+            <div class="network-status-line">
+              <span class="fa-fw fas fa-network-wired"></span>
+              ${this.daemonStatus.remoteAddress || 'Unknown'}
+            </div>
+            <div class="network-status-line">
+              ${this.daemonStatus.holepunchable
+                ? html`<span class="fa-fw fas fa-check"></span> Hole-punchable`
+                : html`<span class="fa-fw fas fa-exclamation-triangle"></span> Not hole-punchable`
+              }
+            </div>
             ${!this.daemonStatus.holepunchable ? html`
               <div class="help">
                 <a @click=${e => this.onOpenPage(e, 'https://docs.beakerbrowser.com/help/hole-punchability')}>
@@ -143,28 +123,6 @@ class BrowserMenu extends LitElement {
         ` : ''}
       </div>
     `
-  }
-
-  renderBookmarks () {
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>Bookmarks</h2>
-        </div>
-
-        <div class="section scrollable">
-          ${repeat(this.bookmarks, b => b.href, b => html`
-            <div class="menu-item" @click=${e => this.onOpenPage(e, b.href)}>
-              <img class="favicon" src="asset:favicon:${b.href}">
-              <span class="label">${b.title}</span>
-            </div>
-          `)}
-        </div>
-      </div>`
   }
 
   renderWindowMenu (menu) {
@@ -262,10 +220,8 @@ class BrowserMenu extends LitElement {
     bg.beakerBrowser.openUrl(url, {setActive: true})
   }
 
-  onClickDownloads (e) {
-    this.shouldPersistDownloadsIndicator = false
-    bg.shellMenus.createTab('beaker://library/downloads')
-    bg.shellMenus.close()
+  onPrint (e) {
+    bg.views.print('active')
   }
 
   onOpenPage (e, url) {
@@ -280,7 +236,7 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
-  width: 300px;
+  width: 220px;
 }
 
 .wrapper::-webkit-scrollbar {
@@ -361,6 +317,10 @@ BrowserMenu.styles = [commonCSS, css`
   text-align: right;
 }
 
+.menu-item i {
+  color: var(--text-color--menu-item-icon--light);
+}
+
 .menu-item .more,
 .menu-item .shortcut {
   color: var(--text-color--menu-item-icon--light);
@@ -383,20 +343,16 @@ BrowserMenu.styles = [commonCSS, css`
  padding: 0 3px 3px;
 }
 
-.network-status table {
+.network-status-line {
   font-size: 12px;
   white-space: nowrap;
   color: inherit;
+  margin: 5px 2px 0;
 }
 
-.network-status table tr td:first-child {
-  font-weight: 500;
-  padding-right: 5px;
-}
-
-.network-status table tr td:last-child {
-  font-family: monospace;
-  letter-spacing: 0.5px;
+.network-status-line .fa-fw,
+.network-status .help .fa-fw {
+  margin: 0 5px;
 }
 
 .network-status .fa-exclamation-triangle {
@@ -404,12 +360,12 @@ BrowserMenu.styles = [commonCSS, css`
 }
 
 .network-status .help {
-  padding: 2px 3px 0;
+  margin: 5px 2px 0;
 }
 
 .network-status .help a {
   text-decoration: none;
-  color: gray;
+  color: inherit;
 }
 
 .network-status .help a:hover {
