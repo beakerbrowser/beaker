@@ -26,14 +26,14 @@ export default {
     return indexer.listSites(opts)
   },
   
-  async getRecord (url) {
+  async get (url) {
     var query = await getQueryPerms(this.sender)
-    return indexer.getRecord(url, {query})
+    return indexer.get(url, {query})
   },
   
-  async listRecords (opts) {
+  async query (opts) {
     var query = await getQueryPerms(this.sender)
-    return indexer.listRecords(opts, {query})
+    return indexer.query(opts, {query})
   },
   
   async countRecords (opts) {

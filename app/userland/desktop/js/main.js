@@ -128,7 +128,7 @@ class DesktopApp extends LitElement {
   }
 
   async loadSuggestions () {
-    let allSubscriptions = await beaker.index.listRecords({
+    let allSubscriptions = await beaker.index.query({
       file: {extension: '.goto', prefix: '/subscriptions'},
       limit: 100,
       sort: 'crtime',

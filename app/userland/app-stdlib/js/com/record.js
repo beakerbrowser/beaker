@@ -75,7 +75,7 @@ export class Record extends LitElement {
   }
 
   async load () {
-    this.record = await beaker.index.getRecord(this.loadRecordUrl)
+    this.record = await beaker.index.get(this.loadRecordUrl)
     if (!this.renderMode) {
       this.renderMode = getPreferredRenderMode(this.record)
       this.setAttribute('render-mode', this.renderMode)
@@ -86,7 +86,7 @@ export class Record extends LitElement {
     if (this.hasLoadedSignals && !force) return
     this.hasLoadedSignals = true
     var [votes, commentCount] = await Promise.all([
-      beaker.index.listRecords({
+      beaker.index.query({
         file: {prefix: '/votes', extension: '.goto'},
         links: this.loadRecordUrl || this.record.url,
       }),
@@ -711,7 +711,7 @@ async function getNotificationSubject (url) {
     return _notificationSubjectCache[url]
   }
   try {
-    let item = await beaker.index.getRecord(url)
+    let item = await beaker.index.get(url)
     if (item.metadata.title) {
       return `"${item.metadata.title}"`
     }

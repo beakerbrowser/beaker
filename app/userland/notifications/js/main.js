@@ -61,7 +61,7 @@ class NotificationsApp extends LitElement {
     this.currentView = view
     this.results = undefined
     if (view === 'activity') {
-      this.results = await beaker.index.listRecords({
+      this.results = await beaker.index.query({
         notification: true,
         limit: 100,
         sort: 'crtime',
@@ -69,7 +69,7 @@ class NotificationsApp extends LitElement {
         index: ['local', 'network']
       })
     } else if (view === 'subscribers') {
-      this.results = await beaker.index.listRecords({
+      this.results = await beaker.index.query({
         notification: true,
         file: {prefix: '/subscriptions', extension: '.goto'},
         limit: 100,

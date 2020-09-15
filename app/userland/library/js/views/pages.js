@@ -33,7 +33,7 @@ export class PagesView extends LitElement {
 
   async load () {
     var profile = await beaker.browser.getProfile()
-    var pages = await beaker.index.listRecords({
+    var pages = await beaker.index.query({
       file: {extension: '.md', prefix: '/pages'},
       site: ['hyper://private', `hyper://${profile.key}`]
     })

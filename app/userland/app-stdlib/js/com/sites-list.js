@@ -89,7 +89,7 @@ export class SitesList extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
 
-    var subs = await beaker.index.listRecords({
+    var subs = await beaker.index.query({
       file: {extension: '.goto', prefix: '/subscriptions'},
       index: ['local', 'network']
     })
@@ -113,7 +113,7 @@ export class SitesList extends LitElement {
           .map(sub => beaker.index.getSite(sub.metadata.href))
       )
     } else if (this.listing === 'subscribers') {
-      let subs2 = await beaker.index.listRecords({
+      let subs2 = await beaker.index.query({
         links: this.profileUrl,
         file: {extension: '.goto', prefix: '/subscriptions'},
         index: ['local', 'network']

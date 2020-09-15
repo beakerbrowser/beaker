@@ -73,7 +73,7 @@ export async function getSite (url) {
  * @param {Number} [internal.notificationRtime]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
-export async function listRecords (opts, {existingResults, notificationRtime} = {}) {
+export async function query (opts, {existingResults, notificationRtime} = {}) {
   var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
   if (opts.site) {
     opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))

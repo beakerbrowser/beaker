@@ -210,7 +210,7 @@ export async function listSites (opts) {
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<RecordDescription>}
  */
-export async function getRecord (url, permissions) {
+export async function get (url, permissions) {
   let urlp = parseUrl(url)
   if (permissions?.query) {
     if (urlp.origin === 'hyper://private') {
@@ -240,6 +240,7 @@ export async function getRecord (url, permissions) {
     ctime: rows[0].ctime,
     mtime: rows[0].mtime,
     rtime: rows[0].rtime,
+    index: 'local',
     site: {
       url: urlp.origin,
       title: rows[0].title
@@ -278,7 +279,7 @@ export async function getRecord (url, permissions) {
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<RecordDescription[]>}
  */
-export async function listRecords (opts, permissions) {
+export async function query (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.reverse = (typeof opts.reverse === 'boolean') ? opts.reverse : true
   if (!opts.sort || !['ctime', 'mtime', 'rtime', 'crtime', 'mrtime', 'site'].includes(opts.sort)) {
@@ -294,13 +295,13 @@ export async function listRecords (opts, permissions) {
 
   var results = []
   if (opts.index.includes('local')) {
-    results.push(await local.listRecords(db, opts, {
+    results.push(await local.query(db, opts, {
       permissions,
       notificationRtime: notificationRtimes?.local_notifications_rtime
     }))
   }
   if (opts.index.includes('network')) {
-    results.push(await hyperbees.listRecords(opts, {
+    results.push(await hyperbees.query(opts, {
       existingResults: results[0]?.records,
       notificationRtime: notificationRtimes?.network_notifications_rtime
     }))
@@ -435,7 +436,7 @@ export async function countRecords (opts, permissions) {
   var count = results.reduce((acc, result) => acc + result.count, 0)
   if (opts?.notification?.unread && count > 0 && count < 6) {
     logger.debug(`Unread notifications: ${count}`)
-    listRecords({index: ['local', 'network'], notification: {unread: true}}).then(
+    query({index: ['local', 'network'], notification: {unread: true}}).then(
       res => logger.debug(`Full list of unread: ${JSON.stringify(res)}`),
       err => logger.debug(`Failed to get list of unread: ${err.toString()}`)
     )
@@ -625,7 +626,7 @@ export async function searchRecords (q = '', opts, permissions) {
  * @returns {Promise<void>}
  */
 export async function clearNotifications () {
-  var localRes = await local.listRecords(db, {
+  var localRes = await local.query(db, {
     notification: true,
     limit: 1,
     sort: 'rtime',
@@ -636,7 +637,7 @@ export async function clearNotifications () {
     .insert({key: 'local_notifications_rtime', value: lastLocalTs})
     .onConflictDoUpdate('key', {key: 'local_notifications_rtime', value: lastLocalTs})
 
-  var networkRes = await hyperbees.listRecords({
+  var networkRes = await hyperbees.query({
     notification: true,
     limit: 1,
     sort: 'rtime',

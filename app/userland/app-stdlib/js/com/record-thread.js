@@ -63,7 +63,7 @@ export class RecordThread extends LitElement {
         v = await beaker.index.getSite(url)
         v.isSite = true
       } else {
-        v = await beaker.index.getRecord(url)
+        v = await beaker.index.get(url)
       }
     } catch {}
     return v
@@ -96,7 +96,7 @@ export class RecordThread extends LitElement {
 
   async loadComments (record) {
     // local first
-    var replies = await beaker.index.listRecords({
+    var replies = await beaker.index.query({
       index: 'local',
       links: stripUrlHash(this.subjectUrl),
       sort: 'crtime',
@@ -110,7 +110,7 @@ export class RecordThread extends LitElement {
     emit(this, 'load')
 
     // then try network
-    var networkReplies = await beaker.index.listRecords({
+    var networkReplies = await beaker.index.query({
       index: 'network',
       links: stripUrlHash(this.subjectUrl),
       sort: 'crtime',

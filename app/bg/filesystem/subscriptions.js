@@ -13,7 +13,7 @@ import { URL } from 'url'
  * @returns {Promise<Object>}
  */
 export async function list () {
-  var results = await indexer.listRecords({
+  var results = await indexer.query({
     file: {extension: '.goto', prefix: '/subscriptions'},
     site: ['hyper://private', filesystem.getProfileUrl()]
   })
@@ -26,7 +26,7 @@ export async function list () {
  */
 export async function get (href) {
   href = normalizeUrl(href)
-  var results = await indexer.listRecords({
+  var results = await indexer.query({
     file: {extension: '.goto', prefix: '/subscriptions'},
     site: ['hyper://private', filesystem.getProfileUrl()],
     links: href,
@@ -43,7 +43,7 @@ export async function get (href) {
  */
 export async function listNetworkFor (href) {
   href = normalizeUrl(href)
-  var results = await indexer.listRecords({
+  var results = await indexer.query({
     file: {extension: '.goto', prefix: '/subscriptions'},
     links: href,
     index: ['local', 'network']

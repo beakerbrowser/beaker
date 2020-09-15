@@ -42,7 +42,7 @@ import { METADATA_KEYS } from './const'
  * @param {EnumeratedSessionPerm[]} [internal.permissions.query]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
-export async function listRecords (db, opts, {permissions, notificationRtime} = {}) {
+export async function query (db, opts, {permissions, notificationRtime} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
   var sep = `[>${Math.random()}<]`
