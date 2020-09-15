@@ -610,16 +610,18 @@ export default {
   },
 
   async query (opts) {
-    if (!opts.drive) return []
-    if (!Array.isArray(opts.drive)) opts.drive = [opts.drive]
+    opts.origin = opts.origin || opts.drive
+    if (!opts.origin) return []
+    if (!Array.isArray(opts.origin)) opts.origin = [opts.origin]
     return auditLog.record(this.sender.getURL(), 'query', opts, undefined, () => (
       timer(to(opts), async (checkin, pause, resume) => {
         checkin('looking up drives')
         var capUrls = {}
-        for (let i = 0; i < opts.drive.length; i++) {
-          let urlp = parseDriveUrl(opts.drive[i])
+        opts.drive = []
+        for (let i = 0; i < opts.origin.length; i++) {
+          let urlp = parseDriveUrl(opts.origin[i])
           opts.drive[i] = (await
-            auditLog.record('-query', 'lookupDrive', {url: opts.drive[i]}, undefined, () => (
+            auditLog.record('-query', 'lookupDrive', {url: opts.origin[i]}, undefined, () => (
               lookupDrive(this.sender, urlp.hostname, urlp.version)
             ), {ignoreFast: true})
           ).checkoutFS
