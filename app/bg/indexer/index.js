@@ -428,7 +428,20 @@ export async function countRecords (opts, permissions) {
     }
   }
 
-  return results.reduce((acc, result) => acc + result.count, 0)
+  // DEBUG
+  // we're getting inaccurate "unread notifications" counts, so we need to log some info to track that done
+  // remove me in the future, please
+  // -prf
+  var count = results.reduce((acc, result) => acc + result.count, 0)
+  if (opts?.notification?.unread && count > 0 && count < 6) {
+    logger.debug(`Unread notifications: ${count}`)
+    listRecords({index: ['local', 'network'], notification: {unread: true}}).then(
+      res => logger.debug(`Full list of unread: ${JSON.stringify(res)}`),
+      err => logger.debug(`Failed to get list of unread: ${err.toString()}`)
+    )
+  }
+
+  return count
 }
 
 /**
