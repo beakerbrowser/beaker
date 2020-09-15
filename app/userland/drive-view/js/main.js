@@ -42,9 +42,9 @@ class DriveViewApp extends LitElement {
     this.info = undefined
     this.profile = undefined
     this.contentCounts = undefined
-    this.hasContent = false
     this.showFilesOverride = false
     this.subscribers = []
+    this.hasThumb = true
     this.load()
   }
 
@@ -82,7 +82,6 @@ class DriveViewApp extends LitElement {
         ))
       )
     )
-    this.hasContent = !!Object.values(this.contentCounts).find(v => v > 0)
     this.requestUpdate()
   }
 
@@ -117,44 +116,41 @@ class DriveViewApp extends LitElement {
     const showSubs = !(isSameOrigin(this.info.origin, 'hyper://private') || this.info.writable && !this.subscribers?.length)
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      <div class="content ${this.hasContent ? 'full-nav' : ''}">
+      <div class="content">
         <beaker-index-md .info=${this.info}></beaker-index-md>
         ${this.isDirectory ? this.renderDirectory() : this.renderFile()}
       </div>
-      <div class="sidebar">
-          <div class="header">
-            <div class="thumb">
-              <a href="/">
-                ${location.origin.startsWith('hyper://private') ? html`
-                  <span class="sysicon"><span class="fas fa-lock"></span></span>
-                ` : html`
-                  <img src="/thumb" @error=${e => {e.currentTarget.style.display = 'none'}}>
-                `}
+      <div class="sidebar ${this.hasThumb ? '' : 'no-thumb'}">
+        <div class="sidebar-inner">
+          <div class="thumb">
+            <a href="/">
+              ${location.origin.startsWith('hyper://private') ? html`
+                <span class="sysicon"><span class="fas fa-lock"></span></span>
+              ` : html`
+                <img src="/thumb" @error=${this.onThumbFail}>
+              `}
+            </a>
+          </div>
+          <div class="title"><a href="/">${this.info.title || 'Untitled'}</a></div>
+          <div class="description">${this.info.description || ''}</div>
+          ${!showSubs ? '' : html`
+            <div class="known-subscribers">
+              <a
+                href="#"
+                class="tooltip-left"
+                @click=${this.onClickShowSubscribers}
+                data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
+              >
+                <strong>${this.subscribers?.length}</strong>
+                ${pluralize(this.subscribers?.length || 0, 'subscriber')}
               </a>
             </div>
-            <div class="info">
-              <div class="title"><a href="/">${this.info.title || 'Untitled'}</a></div>
-              <div class="description">${this.info.description || ''}</div>
-              ${!showSubs ? '' : html`
-                <div class="known-subscribers">
-                  <a
-                    href="#" 
-                    @click=${this.onClickShowSubscribers}
-                    data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
-                  >
-                    <strong>${this.subscribers?.length}</strong>
-                    ${pluralize(this.subscribers?.length || 0, 'subscriber')}
-                  </a>
-                </div>
-              `}
-            </div>
-            ${this.renderHeaderButtons()}
-          </div>
-          ${this.hasContent ? html`
-            <div class="nav">
-              ${NAV_ITEMS.map(navItem)}
-            </div>
-          ` : ''}
+          `}
+          ${this.renderHeaderButtons()}
+        </div>
+        <div class="nav">
+          ${NAV_ITEMS.map(navItem)}
+        </div>
       </div>
     `
   }
@@ -387,6 +383,11 @@ class DriveViewApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     SitesListPopup.create('Subscribers', this.subscribers.map(s => s.site))
+  }
+
+  onThumbFail (e) {
+    this.hasThumb = false
+    this.requestUpdate()
   }
 }
 

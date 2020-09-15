@@ -31,38 +31,26 @@ a:hover {
   text-decoration: underline;
 }
 
-.sidebar-inner {
-}
-
-.header {
+.sidebar {
   margin: 20px 0px 10px;
 }
 
-.header .btns {
-  display: flex;
-}
-
-.header button {
-  display: block;
-  font-size: 14px;
-  border-radius: 4px;
-  border: 1px solid var(--text-color--markdown-link);
-  color: var(--text-color--markdown-link);
-  margin-right: 5px;
-}
-
-.header .thumb {
+.sidebar .thumb {
   padding-bottom: 8px;
 }
 
-.header img {
+.sidebar.no-thumb .thumb {
+  display: none;
+}
+
+.sidebar img {
   object-fit: cover;
   border-radius: 4px;
   height: 220px;
   width: 220px;
 }
 
-.header .sysicon {
+.sidebar .sysicon {
   display: block;
   background: var(--bg-color--private-light);
   text-align: center;
@@ -73,32 +61,46 @@ a:hover {
   border-radius: 4px;
 }
 
-.header .info {
-  margin-bottom: 10px;
-}
-
-.header .title {
+.sidebar .title {
   font-family: arial;
   font-size: 22px;
   font-weight: bold;
   margin-bottom: 4px;
 }
 
-.header .title a {
+.sidebar .title a {
   color: var(--text-color--default);
 }
 
-.header .description {
+.sidebar .description {
   margin-bottom: 8px;
   word-break: break-word;
 }
 
-.header .known-subscribers a {
+.sidebar .known-subscribers {
+  margin-bottom: 10px;
+}
+
+.sidebar .known-subscribers a {
   color: var(--text-color--light);
 }
 
-.header .known-subscribers a strong {
+.sidebar .known-subscribers a strong {
   color: var(--text-color--default);
+}
+
+.sidebar .btns {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.sidebar button {
+  display: block;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--text-color--markdown-link);
+  color: var(--text-color--markdown-link);
+  margin-right: 5px;
 }
 
 .nav {
@@ -168,11 +170,7 @@ beaker-record-thread {
 
   .content {
     max-width: 800px;
-    margin: 106px auto 0;
-  }
-
-  .content.full-nav {
-    margin-top: 156px;
+    margin: 100px auto 0;
   }
 
   .sidebar {
@@ -185,59 +183,82 @@ beaker-record-thread {
     border-bottom: 1px solid var(--border-color--light);
   }
 
-  .header {
-    display: flex;
+  .sidebar {
     margin: 0;
-    border: 0;
   }
 
-  .header .thumb {
-    padding: 8px;
+  .sidebar-inner {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    grid-template-rows: 30px 30px;
+    margin: 8px 8px 5px;
   }
 
-  .header .thumb img {
-    width: 80px;
-    height: 80px;
+  .sidebar .thumb {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 4;
+    padding: 0;
+  }
+
+  .sidebar .thumb img {
+    width: 60px;
+    height: 60px;
   }
   
-  .header .sysicon {
-    font-size: 36px;
-    height: 80px;
-    width: 80px;
-    line-height: 73px;
+  .sidebar .sysicon {
+    font-size: 26px;
+    height: 60px;
+    width: 60px;
+    line-height: 58px;
   }
 
-  .header .btns {
+  .sidebar .btns {
     position: fixed;
     top: 6px;
     right: 6px;
   }
 
-  .header .description {
-    margin-bottom: 4px;
+  .sidebar .description {
+    display: none;
   }
 
-  .header button {
+  .sidebar button {
     width: auto;
     padding: 5px 15px;
   }
 
-  .header .info {
-    padding: 8px;
-    margin: 0;
+  .sidebar .title {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 1;
+    grid-row-end: 2;
+  }
+
+  .sidebar .description {
+    grid-column-start: 2;
+    grid-column-end: 3;
+    grid-row-start: 2;
+    grid-row-end: 3;
+  }
+
+  .sidebar .known-subscribers {
+    position: fixed;
+    right: 12px;
+    top: 45px;
   }
 
   .nav {
-    position: relative;
-    top: 0;
     display: flex;
-    padding-left: 8px;
-    padding-bottom: 11px;
+    position: fixed;
+    top: 38px;
+    left: 80px;
   }
   
   .nav .nav-item {
-    margin-right: 5px;
-    padding: 0 6px;
+    margin-right: 10px;
+    padding: 0;
   }
 
   .nav .nav-item .fa-fw {
@@ -249,6 +270,14 @@ beaker-record-thread {
 
   .nav .nav-item .label {
     display: none;
+  }
+
+  .sidebar.no-thumb .title {
+    grid-column-start: 1;
+  }
+
+  .sidebar.no-thumb .nav {
+    left: 10px;
   }
 }
 `
