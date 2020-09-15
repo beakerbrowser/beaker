@@ -289,6 +289,7 @@ class DriveViewApp extends LitElement {
       <beaker-record-thread
         record-url=${window.location.toString()}
         full-page
+        set-document-title
         profile-url=${this.profile?.url}
       ></beaker-record-thread>
     `

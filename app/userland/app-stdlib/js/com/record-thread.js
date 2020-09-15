@@ -16,6 +16,7 @@ export class RecordThread extends LitElement {
       recordUrl: {type: String, attribute: 'record-url'},
       profileUrl: {type: String, attribute: 'profile-url'},
       isFullPage: {type: Boolean, attribute: 'full-page'},
+      setDocumentTitle: {type: Boolean, attribute: 'set-document-title'},
       subject: {type: Object},
       replies: {type: Array},
       networkReplies: {type: Array},
@@ -31,6 +32,7 @@ export class RecordThread extends LitElement {
     super()
     this.recordUrl = ''
     this.isFullPage = false
+    this.setDocumentTitle = false
     this.subjectUrl = undefined
     this.subject = undefined
     this.commentCount = 0
@@ -85,6 +87,9 @@ export class RecordThread extends LitElement {
     }
     if (!subject) subject = {url: subjectUrl || this.recordUrl, notFound: true}
     this.subject = subject
+    if (this.setDocumentTitle && this.subject.metadata.title) {
+      document.title = this.subject.metadata.title
+    }
     await this.requestUpdate()
     emit(this, 'load')
   }
