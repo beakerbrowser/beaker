@@ -221,7 +221,7 @@ export class RecordThread extends LitElement {
         <div class="comments">
           <div class="extended-comments-header">
             <div class="label">
-              From your extended network
+              Community: Beaker Userlist
             </div>
           </div>
           ${this.renderReplies(this.networkReplies)}
