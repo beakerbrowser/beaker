@@ -36,9 +36,9 @@ export default {
     return indexer.query(opts, {query})
   },
   
-  async countRecords (opts) {
+  async count (opts) {
     var query = await getQueryPerms(this.sender)
-    return indexer.countRecords(opts, {query})
+    return indexer.count(opts, {query})
   },
   
   async search (q, opts) {

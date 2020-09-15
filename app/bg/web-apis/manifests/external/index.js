@@ -4,7 +4,7 @@ export default {
   listSites: 'promise',
   get: 'promise',
   query: 'promise',
-  countRecords: 'promise',
+  count: 'promise',
   search: 'promise',
   clearNotifications: 'promise',
 

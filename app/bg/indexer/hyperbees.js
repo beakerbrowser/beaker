@@ -182,7 +182,7 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
  * @param {Number} internal.notificationRtime
  * @returns {Promise<{count: Number, missedOrigins: String[]}>}
  */
-export async function countRecords (opts, {existingResultOrigins, notificationRtime} = {}) {
+export async function count (opts, {existingResultOrigins, notificationRtime} = {}) {
   var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
   if (opts.site) {
     opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))

@@ -122,7 +122,7 @@ class AboutApp extends LitElement {
       this.requestUpdate()
 
       let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
-      beaker.index.countRecords({
+      beaker.index.count({
         file: {prefix: '/subscriptions', extension: '.goto'},
         links: this.profile.url,
         site: this.siteInfo.url
@@ -140,7 +140,7 @@ class AboutApp extends LitElement {
             comment: FILE_QUERIES.comments,
             subscription: FILE_QUERIES.subscriptions
           }).map(([key, file]) => (
-            beaker.index.countRecords({
+            beaker.index.count({
               file,
               site: this.siteInfo.url
             }).then(count => ([key, count]))

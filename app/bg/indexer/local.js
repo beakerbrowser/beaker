@@ -211,7 +211,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<{count: Number, includedOrigins: String[], missedOrigins: String[]}>}
  */
-export async function countRecords (db, opts, {permissions, notificationRtime} = {}) {
+export async function count (db, opts, {permissions, notificationRtime} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
   var query = db('records')

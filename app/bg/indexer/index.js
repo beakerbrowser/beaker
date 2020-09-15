@@ -387,7 +387,7 @@ export async function query (opts, permissions) {
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<Number>}
  */
-export async function countRecords (opts, permissions) {
+export async function count (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.index = opts.index ? toArray(opts.index) : ['local']
 
@@ -398,13 +398,13 @@ export async function countRecords (opts, permissions) {
 
   var results = []
   if (opts.index.includes('local')) {
-    results.push(await local.countRecords(db, opts, {
+    results.push(await local.count(db, opts, {
       permissions,
       notificationRtime: notificationRtimes?.local_notifications_rtime
     }))
   }
   if (opts.index.includes('network')) {
-    results.push(await hyperbees.countRecords(opts, {
+    results.push(await hyperbees.count(opts, {
       existingResultOrigins: results[0]?.includedOrigins,
       notificationRtime: notificationRtimes?.network_notifications_rtime
     }))

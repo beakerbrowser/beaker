@@ -90,7 +90,7 @@ export class Record extends LitElement {
         file: {prefix: '/votes', extension: '.goto'},
         links: this.loadRecordUrl || this.record.url,
       }),
-      beaker.index.countRecords({
+      beaker.index.count({
         file: {prefix: '/comments', extension: '.md'},
         links: this.loadRecordUrl || this.record.url,
       })

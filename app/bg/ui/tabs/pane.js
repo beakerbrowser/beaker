@@ -645,7 +645,7 @@ export class Pane extends EventEmitter {
   }
 
   async fetchBacklinkCount (noEmit = false) {
-    this.backlinkCount = await indexer.countRecords({
+    this.backlinkCount = await indexer.count({
       links: stripUrlHash(this.url)
     })
     if (!noEmit) {
