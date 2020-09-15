@@ -27,7 +27,7 @@ import { METADATA_KEYS } from './const'
 /**
  * @param {Object} db
  * @param {Object} opts
- * @param {String|String[]} [opts.site]
+ * @param {String|String[]} [opts.origin]
  * @param {FileQuery|FileQuery[]} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
@@ -76,19 +76,19 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
   }
 
-  if (opts?.site) {
-    if (Array.isArray(opts.site)) {
-      let origins = opts.site.map(site => normalizeOrigin(site))
+  if (opts?.origin) {
+    if (Array.isArray(opts.origin)) {
+      let origins = opts.origin.map(origin => normalizeOrigin(origin))
       if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
         throw new PermissionsError()
       }
       query = query.whereIn('origin', origins)
     } else {
-      let origin = normalizeOrigin(opts.site)
+      let origin = normalizeOrigin(opts.origin)
       if (shouldExcludePrivate && origin === 'hyper://private') {
         throw new PermissionsError()
       }
-      query = query.where({origin: normalizeOrigin(opts.site)})
+      query = query.where({origin})
     }
   } else if (shouldExcludePrivate) {
     query = query.whereNot({origin: 'hyper://private'})
@@ -125,15 +125,15 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
   }
 
   var indexStatesQuery
-  if (opts?.site && !opts?.links && !opts?.notification) {
+  if (opts?.origin && !opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
     indexStatesQuery = db('sites')
       .select('origin')
       .where('last_indexed_version', '>', 0)
-    if (Array.isArray(opts.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
+    if (Array.isArray(opts.origin)) {
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.site)})
+      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.origin)})
     }
   }
 
@@ -186,8 +186,8 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
   var missedOrigins
   if (indexStates) {
     missedOrigins = []
-    for (let site of toArray(opts.site)) {
-      let origin = normalizeOrigin(site)
+    for (let origin of toArray(opts.origin)) {
+      origin = normalizeOrigin(origin)
       if (indexStates.find(state => state.origin === origin)) {
         continue
       }
@@ -201,7 +201,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
 /**
  * @param {Object} db
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.site]
+ * @param {String|Array<String>} [opts.origin]
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
@@ -222,19 +222,19 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
     )
     .groupBy('origin')
 
-  if (opts?.site) {
-    if (Array.isArray(opts.site)) {
-      let origins = opts.site.map(site => normalizeOrigin(site))
+  if (opts?.origin) {
+    if (Array.isArray(opts.origin)) {
+      let origins = opts.origin.map(origin => normalizeOrigin(origin))
       if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
         throw new PermissionsError()
       }
       query = query.whereIn('origin', origins)
     } else {
-      let origin = normalizeOrigin(opts.site)
+      let origin = normalizeOrigin(opts.origin)
       if (shouldExcludePrivate && origin === 'hyper://private') {
         throw new PermissionsError()
       }
-      query = query.where({origin: normalizeOrigin(opts.site)})
+      query = query.where({origin})
     }
   } else if (shouldExcludePrivate) {
     query = query.whereNot({origin: 'hyper://private'})
@@ -266,15 +266,15 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
   }
 
   var indexStatesQuery
-  if (opts?.site && !opts?.links && !opts?.notification) {
+  if (opts?.origin && !opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
     indexStatesQuery = db('sites')
       .select('origin')
       .where('last_indexed_version', '>', 0)
-    if (Array.isArray(opts.site)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.site.map(site => normalizeOrigin(site)))
+    if (Array.isArray(opts.origin)) {
+      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.site)})
+      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.origin)})
     }
   }
 
@@ -290,8 +290,8 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
   var missedOrigins
   if (indexStates) {
     missedOrigins = []
-    for (let site of toArray(opts.site)) {
-      let origin = normalizeOrigin(site)
+    for (let origin of toArray(opts.origin)) {
+      origin = normalizeOrigin(origin)
       if (indexStates.find(state => state.origin === origin)) {
         continue
       }

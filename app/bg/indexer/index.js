@@ -266,7 +266,7 @@ export async function get (url, permissions) {
 
 /**
  * @param {Object} [opts]
- * @param {String|String[]} [opts.site]
+ * @param {String|String[]} [opts.origin]
  * @param {FileQuery|FileQuery[]} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
@@ -282,7 +282,7 @@ export async function get (url, permissions) {
 export async function query (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.reverse = (typeof opts.reverse === 'boolean') ? opts.reverse : true
-  if (!opts.sort || !['ctime', 'mtime', 'rtime', 'crtime', 'mrtime', 'site'].includes(opts.sort)) {
+  if (!opts.sort || !['ctime', 'mtime', 'rtime', 'crtime', 'mrtime', 'origin'].includes(opts.sort)) {
     opts.sort = 'crtime'
   }
   opts.offset = opts.offset || 0
@@ -316,8 +316,8 @@ export async function query (opts, permissions) {
   if (missedOrigins.length) {
     // fetch the live records
     let records
-    for (let site of toArray(opts.site)) {
-      let origin = normalizeOrigin(site)
+    for (let origin of toArray(opts.origin)) {
+      origin = normalizeOrigin(origin)
       if (missedOrigins.includes(origin)) {
         records = (records || []).concat(
           await listLiveRecords(origin, opts)
@@ -346,7 +346,7 @@ export async function query (opts, permissions) {
         let mrtimeA = Math.min(a.mtime, a.rtime)
         let mrtimeB = Math.min(b.mtime, b.rtime)
         return opts.reverse ? (mrtimeB - mrtimeA) : (mrtimeA - mrtimeB)
-      } else if (opts.sort === 'site') {
+      } else if (opts.sort === 'origin') {
         return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
       }
     })
@@ -378,7 +378,7 @@ export async function query (opts, permissions) {
 
 /**
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.site]
+ * @param {String|Array<String>} [opts.origin]
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
@@ -418,8 +418,8 @@ export async function count (opts, permissions) {
 
   if (missedOrigins.length) {
     // fetch the live records
-    for (let site of toArray(opts.site)) {
-      let origin = normalizeOrigin(site)
+    for (let origin of toArray(opts.origin)) {
+      origin = normalizeOrigin(origin)
       let count = 0
       if (missedOrigins.includes(origin)) {
         let files = await listLiveRecords(origin, opts)
@@ -448,7 +448,7 @@ export async function count (opts, permissions) {
 /**
  * @param {String} [q]
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.site]
+ * @param {String|Array<String>} [opts.origin]
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String} [opts.sort]
@@ -499,19 +499,19 @@ export async function search (q = '', opts, permissions) {
     query = query.limit(opts.limit)
   }
 
-  if (opts?.site) {
-    if (Array.isArray(opts.site)) {
-      let origins = opts.site.map(site => normalizeOrigin(site))
+  if (opts?.origin) {
+    if (Array.isArray(opts.origin)) {
+      let origins = opts.origin.map(origin => normalizeOrigin(origin))
       if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
         throw new PermissionsError()
       }
       query = query.whereIn('origin', origins)
     } else {
-      let origin = normalizeOrigin(opts.site)
+      let origin = normalizeOrigin(opts.origin)
       if (shouldExcludePrivate && origin === 'hyper://private') {
         throw new PermissionsError()
       }
-      query = query.where({origin: normalizeOrigin(opts.site)})
+      query = query.where({origin})
     }
   } else if (shouldExcludePrivate) {
     query = query.whereNot({origin: 'hyper://private'})
@@ -783,7 +783,7 @@ async function indexSite (origin, myOrigins) {
         if (res[0]) await db('records_data').del().where({record_rowid: res[0].rowid})
         res = await db('records').del().where({site_rowid: site.rowid, path: update.path})
         if (+res > 0) {
-          logger.silly(`Deindexed ${site.origin}${update.path}`, {site: site.origin, path: update.path})
+          logger.silly(`Deindexed ${site.origin}${update.path}`, {origin: site.origin, path: update.path})
         }
       } else {
         // file write
@@ -897,7 +897,7 @@ async function indexSite (origin, myOrigins) {
       last_indexed_ts: Date.now(),
       error: e.toString()
     })
-    logger.debug(`Failed to index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.debug(`Failed to index site ${origin}. ${e.toString()}`, {origin, error: e.toString()})
   } finally {
     DEBUGGING.removeTarget(origin)
     release()
@@ -918,9 +918,9 @@ async function deindexSite (origin) {
     }
     await db('records').del().where({site_rowid: site.rowid})
     await db('sites').update({last_indexed_version: 0, last_indexed_ts: 0}).where({origin})
-    logger.debug(`Deindexed ${site.origin}/*`, {site: site.origin})
+    logger.debug(`Deindexed ${site.origin}/*`, {origin: site.origin})
   } catch (e) {
-    logger.debug(`Failed to de-index site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.debug(`Failed to de-index site ${origin}. ${e.toString()}`, {origin, error: e.toString()})
   } finally {
     DEBUGGING.removeTarget(origin)
     release()
@@ -973,7 +973,7 @@ async function getLiveRecord (url) {
     }
     return record
   } catch (e) {
-    logger.debug(`Failed to live-fetch file ${url}. ${e.toString()}`, {site: urlp.origin, error: e.toString()})
+    logger.debug(`Failed to live-fetch file ${url}. ${e.toString()}`, {origin: urlp.origin, error: e.toString()})
   }  
   return undefined
 }
@@ -1016,7 +1016,7 @@ async function listLiveRecords (origin, opts) {
       }
     }))
   } catch (e) {
-    logger.debug(`Failed to live-query site ${origin}. ${e.toString()}`, {site: origin, error: e.toString()})
+    logger.debug(`Failed to live-query site ${origin}. ${e.toString()}`, {origin, error: e.toString()})
   }  
   return records
 }

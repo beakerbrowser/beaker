@@ -15,7 +15,7 @@ import { URL } from 'url'
 export async function list () {
   var results = await indexer.query({
     file: {extension: '.goto', prefix: '/subscriptions'},
-    site: ['hyper://private', filesystem.getProfileUrl()]
+    origin: ['hyper://private', filesystem.getProfileUrl()]
   })
   return results.map(massageSubscription)
 }
@@ -28,7 +28,7 @@ export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.query({
     file: {extension: '.goto', prefix: '/subscriptions'},
-    site: ['hyper://private', filesystem.getProfileUrl()],
+    origin: ['hyper://private', filesystem.getProfileUrl()],
     links: href,
     limit: 1
   })

@@ -59,7 +59,7 @@ export async function getSite (url) {
 
 /**
  * @param {Object} opts
- * @param {String|String[]} [opts.site]
+ * @param {String|String[]} [opts.origin]
  * @param {FileQuery|FileQuery[]} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
@@ -75,8 +75,8 @@ export async function getSite (url) {
  */
 export async function query (opts, {existingResults, notificationRtime} = {}) {
   var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
-  if (opts.site) {
-    opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))
+  if (opts.origin) {
+    opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
   }
 
   var entries
@@ -101,7 +101,7 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
     }
     if (typeof opts.limit === 'number') {
       // custom sorts mean we have to apply the limit after
-      if (opts.sort !== 'rtime' && opts.sort !== 'site') {
+      if (opts.sort !== 'rtime' && opts.sort !== 'origin') {
         backlinksOpts.limit = opts.limit
       }
     }
@@ -138,8 +138,8 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
         return false
       }
     }
-    if (opts.site) {
-      if (!opts.site.includes(normalizeOrigin(url))) {
+    if (opts.origin) {
+      if (!opts.origin.includes(normalizeOrigin(url))) {
         return false
       }
     }
@@ -151,12 +151,12 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
     return true
   })
 
-  if (opts.sort === 'rtime' || opts.sort === 'site') {
+  if (opts.sort === 'rtime' || opts.sort === 'origin') {
     // custom sorts
     entries.sort((a, b) => {
       if (opts.sort === 'rtime') {
         return opts.reverse ? (b.value.rtime - a.value.rtime) : (a.value.rtime - b.value.rtime)
-      } else if (opts.sort === 'site') {
+      } else if (opts.sort === 'origin') {
         return b.value.drive.localeCompare(a.value.drive) * (opts.reverse ? -1 : 1)
       }
     })
@@ -173,7 +173,7 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
 
 /**
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.site]
+ * @param {String|Array<String>} [opts.origin]
  * @param {FileQuery|Array<FileQuery>} [opts.file]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
@@ -184,8 +184,8 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
  */
 export async function count (opts, {existingResultOrigins, notificationRtime} = {}) {
   var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
-  if (opts.site) {
-    opts.site = toArray(opts.site).map(origin => normalizeOrigin(origin))
+  if (opts.origin) {
+    opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
   }
 
   var entries
@@ -225,8 +225,8 @@ export async function count (opts, {existingResultOrigins, notificationRtime} = 
         return false
       }
     }
-    if (opts.site) {
-      if (!opts.site.includes(normalizeOrigin(url))) {
+    if (opts.origin) {
+      if (!opts.origin.includes(normalizeOrigin(url))) {
         return false
       }
     }

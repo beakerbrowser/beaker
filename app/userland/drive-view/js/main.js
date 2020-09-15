@@ -69,7 +69,7 @@ class DriveViewApp extends LitElement {
     beaker.index.count({
       file: {prefix: '/subscriptions', extension: '.goto'},
       links: this.profile.url,
-      site: window.location.origin
+      origin: window.location.origin
     }).then(count => {
       this.isSubscribedToUser = count !== 0
       this.requestUpdate()
@@ -86,7 +86,7 @@ class DriveViewApp extends LitElement {
         }).map(([key, file]) => (
           beaker.index.count({
             file,
-            site: window.location.origin
+            origin: window.location.origin
           }).then(count => ([key, count]))
         ))
       )

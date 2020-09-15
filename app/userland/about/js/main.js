@@ -125,7 +125,7 @@ class AboutApp extends LitElement {
       beaker.index.count({
         file: {prefix: '/subscriptions', extension: '.goto'},
         links: this.profile.url,
-        site: this.siteInfo.url
+        origin: this.siteInfo.url
       }).then(count => {
         this.isSubscribedToUser = count !== 0
         this.requestUpdate()
@@ -142,7 +142,7 @@ class AboutApp extends LitElement {
           }).map(([key, file]) => (
             beaker.index.count({
               file,
-              site: this.siteInfo.url
+              origin: this.siteInfo.url
             }).then(count => ([key, count]))
           ))
         )        

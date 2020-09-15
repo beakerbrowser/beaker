@@ -120,7 +120,7 @@ export class RecordFeed extends LitElement {
       if (this.filter) {
         results = await beaker.index.search(this.filter, {
           file: this.fileQuery || DEFAULT_SEARCH_FILE_QUERIES,
-          site: this.sources,
+          origin: this.sources,
           limit: this.limit,
           sort: 'crtime',
           reverse: true
@@ -131,7 +131,7 @@ export class RecordFeed extends LitElement {
         do {
           let subresults = await beaker.index.query({
             file: this.fileQuery,
-            site: this.sources,
+            origin: this.sources,
             limit: this.limit,
             offset,
             sort: 'crtime',

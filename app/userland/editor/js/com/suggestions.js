@@ -60,7 +60,7 @@ export class MarkdownSuggestions {
   async completePeopleSuggestions (term, match, value) {
     const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
       file: {prefix: '/subscriptions', extension: '.goto'},
-      site: `hyper://${this.profile?.key}`,
+      origin: `hyper://${this.profile?.key}`,
       limit: 10,
       sort: 'rank',
       reverse: true
