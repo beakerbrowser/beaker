@@ -44,6 +44,7 @@ class DriveViewApp extends LitElement {
     this.contentCounts = undefined
     this.showFilesOverride = false
     this.subscribers = []
+    this.isSubscribedToUser = false
     this.hasThumb = true
     this.load()
   }
@@ -63,6 +64,14 @@ class DriveViewApp extends LitElement {
     })
     beaker.subscriptions.listNetworkFor(window.location.origin).then(subs => {
       this.subscribers = subs
+      this.requestUpdate()
+    })
+    beaker.index.countRecords({
+      file: {prefix: '/subscriptions', extension: '.goto'},
+      links: this.profile.url,
+      site: window.location.origin
+    }).then(count => {
+      this.isSubscribedToUser = count !== 0
       this.requestUpdate()
     })
     this.contentCounts = Object.fromEntries(
@@ -135,6 +144,9 @@ class DriveViewApp extends LitElement {
           <div class="description">${this.info.description || ''}</div>
           ${!showSubs ? '' : html`
             <div class="known-subscribers">
+              ${this.isSubscribedToUser ? html`
+                <span class="subscribed-to-you"><span>Subscribed to you</span></span>
+              `: ''}
               <a
                 href="#"
                 class="tooltip-left"

@@ -11,6 +11,7 @@ export class SiteInfo extends LitElement {
       url: {type: String},
       siteInfo: {type: Object},
       subscribers: {type: Array},
+      isSubscribedToUser: {type: Boolean, attribute: 'is-subscribed-to-user'},
       profileUrl: {type: String, attribute: 'profile-url'}
     }
   }
@@ -24,6 +25,7 @@ export class SiteInfo extends LitElement {
     this.url = undefined
     this.siteInfo = undefined
     this.subscribers = undefined
+    this.isSubscribedToUser = false
     this.profileUrl = ''
   }
 
@@ -80,6 +82,9 @@ export class SiteInfo extends LitElement {
                 <strong>${this.subscribers?.length}</strong>
                 ${pluralize(this.subscribers?.length || 0, 'subscriber')}
               </a>
+              ${this.isSubscribedToUser ? html`
+                <span class="label">Subscribed to you</span>
+              ` : ''}
             </div>
           ` : ''}
         </div>

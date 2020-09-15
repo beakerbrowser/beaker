@@ -79,5 +79,17 @@ a:hover {
   font-weight: 500;
   line-height: 20px;
 }
+
+.label {
+  display: inline-block;
+  background: var(--bg-color--semi-light);
+  color: var(--text-color--light);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  margin-left: 2px;
+}
 `
 export default cssStr

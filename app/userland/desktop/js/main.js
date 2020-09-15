@@ -299,7 +299,7 @@ class DesktopApp extends LitElement {
               <i class="far fa-fw fa-star"></i> New Bookmark
             </button>
             <button class="transparent block" @click=${this.onClickNewPost}>
-              <i class="far fa-fw fa-comment"></i> New Post
+              <i class="far fa-fw fa-comment-alt"></i> New Post
             </button>
             <button class="transparent block" @click=${e => this.onClickNewPage()}>
               <i class="far fa-fw fa-file"></i> New Page

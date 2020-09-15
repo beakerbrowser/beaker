@@ -47,6 +47,7 @@ class AboutApp extends LitElement {
     this.siteInfo = undefined
     this.contentCounts = undefined
     this.subscribers = []
+    this.isSubscribedToUser = false
 
     var ignoreNextAttachEvent = false
     beaker.panes.addEventListener('pane-attached', e => {
@@ -121,6 +122,14 @@ class AboutApp extends LitElement {
       this.requestUpdate()
 
       let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
+      beaker.index.countRecords({
+        file: {prefix: '/subscriptions', extension: '.goto'},
+        links: this.profile.url,
+        site: this.siteInfo.url
+      }).then(count => {
+        this.isSubscribedToUser = count !== 0
+        this.requestUpdate()
+      })
       let counts = Object.fromEntries(
         await Promise.all(
           Object.entries({
@@ -184,6 +193,7 @@ class AboutApp extends LitElement {
           url=${this.url}
           .siteInfo=${this.siteInfo}
           .subscribers=${this.subscribers}
+          ?is-subscribed-to-user=${this.isSubscribedToUser}
           profile-url=${this.profile.url}
           @toggle-subscribe=${this.onToggleSubscribe}
           @edit-properties=${this.onEditProperties}

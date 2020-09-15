@@ -89,6 +89,22 @@ a:hover {
   color: var(--text-color--default);
 }
 
+.sidebar .known-subscribers .subscribed-to-you {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.sidebar .known-subscribers .subscribed-to-you span {
+  display: inline-block;
+  background: var(--bg-color--semi-light);
+  color: var(--text-color--light);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
 .sidebar .btns {
   display: flex;
   margin-bottom: 10px;
@@ -247,6 +263,11 @@ beaker-record-thread {
     position: fixed;
     right: 12px;
     top: 45px;
+  }
+
+  .sidebar .known-subscribers .subscribed-to-you {
+    display: inline;
+    margin: 0 4px 0 0;
   }
 
   .nav {
