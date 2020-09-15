@@ -285,45 +285,6 @@ export async function setupDefaultProfile ({title, description, thumbBase64, thu
   if (thumbBase64) {
     await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
   }
-  await drive.pda.writeFile('/index.html', `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <link rel="icon" type="image/png" sizes="32x32" href="/thumb">
-  </head>
-  <body>
-    <main>
-      <header>
-        <img src="/thumb">
-        <h1>${title}</h1>
-      </header>
-      <p>${description || 'Welcome to my profile!'}</p>
-    </main>
-  </body>
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-    }
-    main {
-      margin: 0 auto;
-      padding: 20px;
-      box-sizing: border-box;
-      max-width: 800px;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      height: 80px;
-    }
-    header img {
-      border-radius: 4px;
-      height: 80px;
-      margin-right: 20px;
-    }
-  </style>
-</html>`)
-
   await ensureAddressBook(drive.key.toString('hex'))
   profileDriveUrl = drive.url
 }
