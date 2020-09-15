@@ -232,19 +232,21 @@ export async function get (url, permissions) {
 
   var record_rowid = rows[0].record_rowid
   var result = {
+    type: 'file',
+    path: urlp.path,
     url: urlp.origin + urlp.path,
-    prefix: rows[0].prefix,
-    extension: rows[0].extension,
     ctime: rows[0].ctime,
     mtime: rows[0].mtime,
-    rtime: rows[0].rtime,
-    index: 'local',
+    metadata: {},
+    index: {
+      id: 'local',
+      rtime: rows[0].rtime,
+      links: []
+    },
     site: {
       url: urlp.origin,
       title: rows[0].title
     },
-    metadata: {},
-    links: [],
     content: undefined
   }
 
@@ -253,7 +255,7 @@ export async function get (url, permissions) {
     if (row.key === METADATA_KEYS.content) {
       result.content = row.value
     } else if (row.key === METADATA_KEYS.link) {
-      result.links.push(row.value)
+      result.index.links.push(row.value)
     } else {
       result.metadata[row.key] = row.value
     }
@@ -298,7 +300,7 @@ export async function query (opts, permissions) {
       notificationRtime: notificationRtimes?.local_notifications_rtime
     }))
   }
-  if (opts.index.includes('network')) {
+  if (opts.index.includes('network') || opts.index.includes('userlist.beakerbrowser.com')) {
     results.push(await hyperbees.query(opts, {
       existingResults: results[0]?.records,
       notificationRtime: notificationRtimes?.network_notifications_rtime
@@ -337,12 +339,12 @@ export async function query (opts, permissions) {
       } else if (opts.sort === 'mtime') {
         return opts.reverse ? (b.mtime - a.mtime) : (a.mtime - b.mtime)
       } else if (opts.sort === 'crtime') {
-        let crtimeA = Math.min(a.ctime, a.rtime)
-        let crtimeB = Math.min(b.ctime, b.rtime)
+        let crtimeA = Math.min(a.ctime, a.index.rtime)
+        let crtimeB = Math.min(b.ctime, b.index.rtime)
         return opts.reverse ? (crtimeB - crtimeA) : (crtimeA - crtimeB)
       } else if (opts.sort === 'mrtime') {
-        let mrtimeA = Math.min(a.mtime, a.rtime)
-        let mrtimeB = Math.min(b.mtime, b.rtime)
+        let mrtimeA = Math.min(a.mtime, a.index.rtime)
+        let mrtimeB = Math.min(b.mtime, b.index.rtime)
         return opts.reverse ? (mrtimeB - mrtimeA) : (mrtimeA - mrtimeB)
       } else if (opts.sort === 'origin') {
         return b.site.url.localeCompare(a.site.url) * (opts.reverse ? -1 : 1)
@@ -557,24 +559,27 @@ export async function search (q = '', opts, permissions) {
 
   var results = await Promise.all(Object.values(mergedHits).map(async mergedHits => {
     var record = {
+      type: 'file',
+      path: mergedHits[0].path,
       url: mergedHits[0].origin + mergedHits[0].path,
-      prefix: mergedHits[0].prefix,
-      extension: mergedHits[0].extension,
       ctime: mergedHits[0].ctime,
       mtime: mergedHits[0].mtime,
-      rtime: mergedHits[0].rtime,
+      metadata: {},
       site: {
         url: mergedHits[0].origin,
         title: mergedHits[0].siteTitle
       },
-      metadata: {},
-      links: [],
+      index: {
+        id: 'local',
+        rtime: mergedHits[0].rtime,
+        links: [],
+        matches: mergedHits.map(hit => ({
+          key: hit.key === '_content' ? 'content' : hit.key,
+          value: hit.matchingText
+        }))
+      },
       content: undefined,
       notification: undefined,
-      matches: mergedHits.map(hit => ({
-        key: hit.key === '_content' ? 'content' : hit.key,
-        value: hit.matchingText
-      })),
       // with multiple hits, we just take the best bm25() rank
       // this basically ignores multiple matching attrs as a signal
       // which is fine for now -prf
@@ -586,7 +591,7 @@ export async function search (q = '', opts, permissions) {
       if (row.key === METADATA_KEYS.content) {
         record.content = row.value
       } else if (row.key === METADATA_KEYS.link) {
-        record.links.push(row.value)
+        record.index.links.push(row.value)
       } else {
         record.metadata[row.key] = row.value
       }
@@ -609,7 +614,7 @@ export async function search (q = '', opts, permissions) {
   } else if (opts?.sort === 'mtime') {
     results.sort((a, b) => a.mtime - b.mtime)
   } else if (opts?.sort === 'rtime') {
-    results.sort((a, b) => a.rtime - b.rtime)
+    results.sort((a, b) => a.index.rtime - b.index.rtime)
   } else {
     results.sort((a, b) => a.rank > b.rank ? -1 : 1)
   }
@@ -617,6 +622,10 @@ export async function search (q = '', opts, permissions) {
     results.reverse()
   }
 
+  for (let result of results) {
+    delete result.rank
+  }
+  
   return results
 }
 
@@ -946,19 +955,21 @@ async function getLiveRecord (url) {
     }
     logger.silly(`Live-fetching ${url}`)
     var record = {
+      type: 'file',
+      path: urlp.pathname,
       url,
-      prefix: dirname(urlp.pathname),
-      extension: extname(urlp.pathname),
       ctime: +stat.ctime,
       mtime: +stat.mtime,
-      rtime: Date.now(),
-      index: 'local',
+      metadata: {},
+      index: {
+        id: 'live',
+        rtime: Date.now(),
+        links: []
+      },
       site: {
         url: site.origin,
         title: site.title
       },
-      metadata: {},
-      links: [],
       content: undefined,
       notification: undefined
     }
@@ -967,7 +978,7 @@ async function getLiveRecord (url) {
     }
     if (record.extension === '.md') {
       record.content = await site.fetch(update.path)
-      record.links = markdownLinkExtractor(record.content)
+      record.index.links = markdownLinkExtractor(record.content)
     }
     return record
   } catch (e) {
@@ -989,18 +1000,21 @@ async function listLiveRecords (origin, opts) {
     let files = await site.listMatchingFiles(opts.path)
     records = records.concat(files.map(file => {
       return {
+        type: 'file',
+        path: file.path,
         url: file.url,
-        prefix: dirname(file.path),
-        extension: extname(file.path),
         ctime: +file.stat.ctime,
         mtime: +file.stat.mtime,
-        rtime: Date.now(),
+        metadata: file.stat.metadata,
+        index: {
+          id: 'live',
+          rtime: Date.now(),
+          links: []
+        },
         site: {
           url: site.origin,
           title: site.title
         },
-        metadata: file.stat.metadata,
-        links: [],
         content: undefined,
         notification: undefined,
 
@@ -1008,7 +1022,7 @@ async function listLiveRecords (origin, opts) {
         fetchData: async function () {
           if (this.extension === '.md') {
             this.content = await site.fetch(file.path)
-            this.links = markdownLinkExtractor(this.content)
+            this.index.links = markdownLinkExtractor(this.content)
           }
         }
       }

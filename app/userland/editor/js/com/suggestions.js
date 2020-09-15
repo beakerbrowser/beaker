@@ -39,10 +39,8 @@ export class MarkdownSuggestions {
       reverse: true
     }))
     const suggestions = queryResults.map(s => {
-      const type = ({
-        '/blog': 'blogpost',
-        '/pages': 'page'
-      })[s.prefix]
+      var type = 'blogpost'
+      if (s.path.startsWith('/pages/')) type = 'page'
       const title = s.metadata.title || s.url.split('/').pop()
       const detail = s.site.title
       return {

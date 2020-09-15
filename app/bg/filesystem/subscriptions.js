@@ -50,7 +50,7 @@ export async function listNetworkFor (href) {
   })
   var profileUrl = filesystem.getProfileUrl()
   // only trust the users' subs from the local index, which will be more up-to-date
-  results = results.filter(r => !(isSameOrigin(r.site.url, profileUrl) && r.index === 'network'))
+  results = results.filter(r => !(isSameOrigin(r.site.url, profileUrl) && r.index.id !== 'local'))
   return results.map(massageSubscription)
 }
 

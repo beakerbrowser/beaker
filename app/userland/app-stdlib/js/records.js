@@ -12,16 +12,21 @@ export function typeToQuery (type) {
   return query
 }
 
+const RECORD_TYPE_RES = {
+  blogpost: /^\/blog\/([^\/])+\.md$/i,
+  bookmark: /^\/bookmarks\/([^\/])+\.goto$/i,
+  comment: /^\/comments\/([^\/])+\.md$/i,
+  microblogpost: /^\/microblog\/([^\/])+\.md$/i,
+  page: /^\/pages\/([^\/])+\.md$/i,
+  subscription: /^\/subscriptions\/([^\/])+\.goto$/i,
+  vote: /^\/votes\/([^\/])+\.goto$/i
+}
+
 export function getRecordType (record) {
-  if (record?.extension === '.goto') {
-    if (record.prefix === '/bookmarks') return 'bookmark'
-    if (record.prefix === '/subscriptions') return 'subscription'
-    if (record.prefix === '/votes') return 'vote'
-  } else if (record?.extension === '.md') {
-    if (record.prefix === '/blog') return 'blogpost'
-    if (record.prefix === '/comments') return 'comment'
-    if (record.prefix === '/microblog') return 'microblogpost'
-    if (record.prefix === '/pages') return 'page'
+  for (let type in RECORD_TYPE_RES) {
+    if (RECORD_TYPE_RES[type].test(record?.path)) {
+      return type
+    }
   }
   return 'unknown'
 }

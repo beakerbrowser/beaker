@@ -142,20 +142,22 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
 
   var records = rows.map(row => {
     var record = {
+      type: 'file',
+      path: row.path,
       url: row.origin + row.path,
-      prefix: row.prefix,
-      extension: row.extension,
       ctime: row.ctime,
       mtime: row.mtime,
-      rtime: row.rtime,
-      index: 'local',
+      metadata: {},
+      index: {
+        id: 'local',
+        rtime: row.rtime,
+        links: [],
+      },
+      content: undefined,
       site: {
         url: row.origin,
         title: row.siteTitle
       },
-      metadata: {},
-      links: [],
-      content: undefined,
       notification: undefined
     }
     var dataKeys = (row.data_keys || '').split(sep)
@@ -165,7 +167,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
       if (key === METADATA_KEYS.content) {
         record.content = dataValues[i]
       } else if (key === METADATA_KEYS.link) {
-        record.links.push(dataValues[i])
+        record.index.links.push(dataValues[i])
       } else {
         record.metadata[key] = dataValues[i]
       }

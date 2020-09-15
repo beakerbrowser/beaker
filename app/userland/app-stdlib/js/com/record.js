@@ -321,7 +321,7 @@ export class Record extends LitElement {
     if (['subscription', 'vote'].includes(rtype)) {
       subject = isSameOrigin(res.metadata.href, this.profileUrl) ? 'you' : fancyUrlAsync(res.metadata.href)
     } else {
-      if (res.extension !== '.goto' && res.metadata.title) subject = res.metadata.title
+      if (!res.path.endsWith('.goto') && res.metadata.title) subject = res.metadata.title
       else if (res.content) subject = shorten(removeMarkdown(res.content), 150)
       else if (rtype !== 'unknown') subject = `a ${rtype}`
       else subject = fancyUrlAsync(res.url)
@@ -695,8 +695,8 @@ export class Record extends LitElement {
 customElements.define('beaker-record', Record)
 
 function renderMatchText (result, key) {
-  if (!result.matches) return undefined
-  var match = result.matches.find(m => m.key === key)
+  if (!result.index.matches) return undefined
+  var match = result.index.matches.find(m => m.key === key)
   if (!match) return undefined
   return unsafeHTML(makeSafe(removeMarkdown(match.value, {keepHtml: true})).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>'))
 }

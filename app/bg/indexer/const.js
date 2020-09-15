@@ -50,18 +50,20 @@ export const METADATA_KEYS = {
  * @prop {Date} mtime
  * 
  * @typedef {Object} RecordDescription
+ * @prop {String} type
+ * @prop {String} path
  * @prop {String} url
- * @prop {String} prefix
- * @prop {String} extension
  * @prop {Number} ctime
  * @prop {Number} mtime
- * @prop {Number} rtime
+ * @prop {Object} metadata
  * @prop {Object} site
  * @prop {String} site.url
  * @prop {String} site.title
- * @prop {String} index
- * @prop {Object} metadata
- * @prop {String[]} links
+ * @prop {Object} index
+ * @prop {String} index.id
+ * @prop {Number} index.rtime
+ * @prop {String[]} index.links
+ * @prop {Object[]} [index.matches]
  * @prop {String} [content]
  * @prop {Object} [notification]
  * @prop {String} [notification.key]

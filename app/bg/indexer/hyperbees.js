@@ -271,19 +271,21 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     }
   }
   return {
+    type: 'file',
+    path: urlp.pathname,
     url: backlink.value.source,
-    prefix: dirname(urlp.pathname),
-    extension: extname(urlp.pathname),
     ctime: backlink.value.crtime,
     mtime: backlink.value.mrtime,
-    rtime: backlink.value.rtime,
-    index: 'network',
+    metadata: backlink.value.metadata,
+    index: {
+      id: 'userlist.beakerbrowser.com',
+      rtime: backlink.value.rtime,
+      links: []
+    },
     site: {
       url: backlink.value.drive,
       title: site.title
     },
-    metadata: backlink.value.metadata,
-    links: [],
     content: content ? content.value : undefined,
     notification
   }
