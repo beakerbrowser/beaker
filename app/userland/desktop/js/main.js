@@ -96,6 +96,10 @@ class DesktopApp extends LitElement {
     this.load().then(() => {
       this.loadSuggestions()
     })
+
+    if (!localStorage.lastDismissedReleaseNotice) {
+      localStorage.lastDismissedReleaseNotice = CURRENT_VERSION
+    }
     
     if (!('isIntroHidden' in localStorage)) {
       this.isIntroActive = true
