@@ -63,13 +63,12 @@ input:focus {
 .release-notice {
   position: relative;
   width: 100%;
-  max-width: 1000px;
-  margin: 0 auto 10px;
   padding: 12px 18px;
-  border: 1px solid var(--border-color--default);
   font-size: 14px;
   letter-spacing: 0.5px;
-  border-radius: 4px;
+  text-align: center;
+  background: var(--bg-color--light);
+  border-top: 1px solid var(--border-color--light);
 }
 
 .release-notice .view-release-notes:hover {
