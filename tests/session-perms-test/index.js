@@ -12,39 +12,39 @@ async function main () {
       await doLog(false, 'bad session request', beaker.session.request({
         permissions: {
           publicFiles: [
-            {prefix: '/pages', extension: '.md', access: 'read'},
-            {prefix: '/comments', extension: '.md', access: 'read'},
-            {prefix: '/test', extension: '.txt', access: 'write'}
+            {path: '/pages/*.md', access: 'read'},
+            {path: '/comments/*.md', access: 'read'},
+            {path: '/test/*.txt', access: 'write'}
           ],
           privateFiles: [
-            {prefix: '/pages', extension: '.md', access: 'read'},
-            {prefix: '/test', extension: '.txt', access: 'write'}
+            {path: '/pages/*.md', access: 'read'},
+            {path: '/test/*.txt', access: 'write'}
           ]
         }
       }))
       await doLog(false, 'bad session request', beaker.session.request({
         permissions: {
           publicFiles: [
-            {prefix: '/pages', extension: '.md', access: 'read'},
-            {prefix: '/comments', extension: '.md', access: 'read'},
-            {prefix: '/test/test', extension: '.txt', access: 'write'}
+            {path: '/pages/*.md', access: 'read'},
+            {path: '/comments/*.md', access: 'read'},
+            {path: '/test/test/*.txt', access: 'write'}
           ],
           privateFiles: [
-            {prefix: '/pages', extension: '.md', access: 'read'},
-            {prefix: '/test/test', extension: '.txt', access: 'write'}
+            {path: '/pages/*.md', access: 'read'},
+            {path: '/test/test/*.txt', access: 'write'}
           ]
         }
       }))
       await doLog(true, 'good session request', beaker.session.request({
         permissions: {
           publicFiles: [
-            {prefix: '/pages', extension: '.md', access: 'read'},
-            {prefix: '/comments', extension: '.md', access: 'read'},
-            {prefix: '/beaker-tests/test', extension: '.txt', access: 'write'}
+            {path: '/pages/*.md', access: 'read'},
+            {path: '/comments/*.md', access: 'read'},
+            {path: '/beaker-tests/test/*.txt', access: 'write'}
           ],
           privateFiles: [
-            {prefix: '/pages', extension: '.md', access: 'read'},
-            {prefix: '/beaker-tests/test', extension: '.txt', access: 'write'}
+            {path: '/pages/*.md', access: 'read'},
+            {path: '/beaker-tests/test/*.txt', access: 'write'}
           ]
         }
       }))
@@ -52,45 +52,45 @@ async function main () {
   }
   document.body.append(btn)
 
-  doLog(true, 'listRecords() /pages .md', beaker.index.listRecords({file: {prefix: '/pages', extension: '.md'}}))
-  doLog(true, 'listRecords() /microblog .md', beaker.index.listRecords({file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'listRecords() private /pages .md', beaker.index.listRecords({site: 'hyper://private', file: {prefix: '/pages', extension: '.md'}}))
-  doLog(false, 'listRecords() private /microblog .md', beaker.index.listRecords({site: 'hyper://private', file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'listRecords() private,public /pages .md', beaker.index.listRecords({site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/pages', extension: '.md'}}))
-  doLog(false, 'listRecords() private,public /microblog .md', beaker.index.listRecords({site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'listRecords() public /pages .md', beaker.index.listRecords({site: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/pages', extension: '.md'}}))
-  doLog(true, 'listRecords() public /microblog .md', beaker.index.listRecords({site: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'listRecords() /pages,/microblog .md', beaker.index.listRecords({file: [{prefix: '/pages', extension: '.md'}, {prefix: '/microblog', extension: '.md'}]}))
-  doLog(false, 'listRecords() public,private /pages,/microblog .md', beaker.index.listRecords({site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: [{prefix: '/pages', extension: '.md'}, {prefix: '/microblog', extension: '.md'}]}))
+  doLog(true, 'query() /pages .md', beaker.index.query({path: '/pages/*.md'}))
+  doLog(true, 'query() /microblog .md', beaker.index.query({path: '/microblog/*.md'}))
+  doLog(true, 'query() private /pages .md', beaker.index.query({origin: 'hyper://private', path: '/pages/*.md'}))
+  doLog(false, 'query() private /microblog .md', beaker.index.query({origin: 'hyper://private', path: '/microblog/*.md'}))
+  doLog(true, 'query() private,public /pages .md', beaker.index.query({origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/pages/*.md'}))
+  doLog(false, 'query() private,public /microblog .md', beaker.index.query({origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/microblog/*.md'}))
+  doLog(true, 'query() public /pages .md', beaker.index.query({origin: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/pages/*.md'}))
+  doLog(true, 'query() public /microblog .md', beaker.index.query({origin: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/microblog/*.md'}))
+  doLog(true, 'query() /pages,/microblog .md', beaker.index.query({path: ['/pages/*.md', '/microblog/*.md']}))
+  doLog(false, 'query() public,private /pages,/microblog .md', beaker.index.query({origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: ['/pages/*.md', '/microblog/*.md']}))
 
-  doLog(true, 'countRecords() /pages .md', beaker.index.countRecords({file: {prefix: '/pages', extension: '.md'}}))
-  doLog(true, 'countRecords() /microblog .md', beaker.index.countRecords({file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'countRecords() private /pages .md', beaker.index.countRecords({site: 'hyper://private', file: {prefix: '/pages', extension: '.md'}}))
-  doLog(false, 'countRecords() private /microblog .md', beaker.index.countRecords({site: 'hyper://private', file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'countRecords() private,public /pages .md', beaker.index.countRecords({site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/pages', extension: '.md'}}))
-  doLog(false, 'countRecords() private,public /microblog .md', beaker.index.countRecords({site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'countRecords() public /pages .md', beaker.index.countRecords({site: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/pages', extension: '.md'}}))
-  doLog(true, 'countRecords() public /microblog .md', beaker.index.countRecords({site: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'countRecords() /pages,/microblog .md', beaker.index.countRecords({file: [{prefix: '/pages', extension: '.md'}, {prefix: '/microblog', extension: '.md'}]}))
-  doLog(false, 'countRecords() public,private /pages,/microblog .md', beaker.index.countRecords({site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: [{prefix: '/pages', extension: '.md'}, {prefix: '/microblog', extension: '.md'}]}))
+  doLog(true, 'count() /pages .md', beaker.index.count({path: '/pages/*.md'}))
+  doLog(true, 'count() /microblog .md', beaker.index.count({path: '/microblog/*.md'}))
+  doLog(true, 'count() private /pages .md', beaker.index.count({origin: 'hyper://private', path: '/pages/*.md'}))
+  doLog(false, 'count() private /microblog .md', beaker.index.count({origin: 'hyper://private', path: '/microblog/*.md'}))
+  doLog(true, 'count() private,public /pages .md', beaker.index.count({origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/pages/*.md'}))
+  doLog(false, 'count() private,public /microblog .md', beaker.index.count({origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/microblog/*.md'}))
+  doLog(true, 'count() public /pages .md', beaker.index.count({origin: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/pages/*.md'}))
+  doLog(true, 'count() public /microblog .md', beaker.index.count({origin: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/microblog/*.md'}))
+  doLog(true, 'count() /pages,/microblog .md', beaker.index.count({path: ['/pages/*.md', '/microblog/*.md']}))
+  doLog(false, 'count() public,private /pages,/microblog .md', beaker.index.count({origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: ['/pages/*.md', '/microblog/*.md']}))
 
-  doLog(true, 'searchRecords() /pages .md', beaker.index.searchRecords('t', {file: {prefix: '/pages', extension: '.md'}}))
-  doLog(true, 'searchRecords() /microblog .md', beaker.index.searchRecords('t', {file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'searchRecords() private /pages .md', beaker.index.searchRecords('t', {site: 'hyper://private', file: {prefix: '/pages', extension: '.md'}}))
-  doLog(false, 'searchRecords() private /microblog .md', beaker.index.searchRecords('t', {site: 'hyper://private', file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'searchRecords() private,public /pages .md', beaker.index.searchRecords('t', {site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/pages', extension: '.md'}}))
-  doLog(false, 'searchRecords() private,public /microblog .md', beaker.index.searchRecords('t', {site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'searchRecords() public /pages .md', beaker.index.searchRecords('t', {site: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/pages', extension: '.md'}}))
-  doLog(true, 'searchRecords() public /microblog .md', beaker.index.searchRecords('t', {site: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: {prefix: '/microblog', extension: '.md'}}))
-  doLog(true, 'searchRecords() /pages,/microblog .md', beaker.index.searchRecords('t', {file: [{prefix: '/pages', extension: '.md'}, {prefix: '/microblog', extension: '.md'}]}))
-  doLog(false, 'searchRecords() public,private /pages,/microblog .md', beaker.index.searchRecords('t', {site: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], file: [{prefix: '/pages', extension: '.md'}, {prefix: '/microblog', extension: '.md'}]}))
+  doLog(true, 'search() /pages .md', beaker.index.search('t', {path: '/pages/*.md'}))
+  doLog(true, 'search() /microblog .md', beaker.index.search('t', {path: '/microblog/*.md'}))
+  doLog(true, 'search() private /pages .md', beaker.index.search('t', {origin: 'hyper://private', path: '/pages/*.md'}))
+  doLog(false, 'search() private /microblog .md', beaker.index.search('t', {origin: 'hyper://private', path: '/microblog/*.md'}))
+  doLog(true, 'search() private,public /pages .md', beaker.index.search('t', {origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/pages/*.md'}))
+  doLog(false, 'search() private,public /microblog .md', beaker.index.search('t', {origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/microblog/*.md'}))
+  doLog(true, 'search() public /pages .md', beaker.index.search('t', {origin: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/pages/*.md'}))
+  doLog(true, 'search() public /microblog .md', beaker.index.search('t', {origin: ['hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: '/microblog/*.md'}))
+  doLog(true, 'search() /pages,/microblog .md', beaker.index.search('t', {path: ['/pages/*.md', '/microblog/*.md']}))
+  doLog(false, 'search() public,private /pages,/microblog .md', beaker.index.search('t', {origin: ['hyper://private', 'hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39'], path: ['/pages/*.md', '/microblog/*.md']}))
 
-  doLog(true, 'getRecord() public /pages/test-page.md', beaker.index.getRecord('hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/pages/test-page.md'))
-  doLog(true, 'getRecord() private /pages/sessions-api.md', beaker.index.getRecord('hyper://private/pages/sessions-api.md'))
-  doLog(true, 'getRecord() public /microblog/*.md', beaker.index.getRecord('hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/microblog/1599085611199.md'))
-  doLog(false, 'getRecord() private /comments/*.md', beaker.index.getRecord('hyper://private/comments/1599076506408.md'))
-  doLog(false, 'getRecord() private /index.json', beaker.index.getRecord('hyper://private/index.json'))
-  doLog(false, 'getRecord() private /pages/foo.json', beaker.index.getRecord('hyper://private/pages/foo.json'))
+  doLog(true, 'get() public /pages/test-page.md', beaker.index.get('hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/pages/test-page.md'))
+  doLog(true, 'get() private /pages/sessions-api.md', beaker.index.get('hyper://private/pages/sessions-api.md'))
+  doLog(true, 'get() public /microblog/*.md', beaker.index.get('hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/microblog/1599085611199.md'))
+  doLog(false, 'get() private /comments/*.md', beaker.index.get('hyper://private/comments/1599076506408.md'))
+  doLog(false, 'get() private /index.json', beaker.index.get('hyper://private/index.json'))
+  doLog(false, 'get() private /pages/foo.json', beaker.index.get('hyper://private/pages/foo.json'))
 
   var priv = beaker.hyperdrive.drive('hyper://private')
   var pub = beaker.hyperdrive.drive('hyper://6900790c2dba488ca132a0ca6d7259180e993b285ede6b29b464b62453cd5c39/')

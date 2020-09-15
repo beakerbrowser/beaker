@@ -2,8 +2,8 @@ import BeakerIndexer from 'beaker-index'
 import { dirname, extname } from 'path'
 import { getHyperspaceClient } from '../hyper/daemon'
 import { normalizeOrigin, normalizeUrl, isSameOrigin } from '../../lib/urls'
+import { parseSimplePathSpec } from '../../lib/strings'
 import {
-  toFileQuery,
   toArray,
   parseUrl
 } from './util'
@@ -19,7 +19,6 @@ const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a2124
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
- * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('./const').NotificationQuery} NotificationQuery
  * @typedef {import('./const').HyperbeeBacklink} HyperbeeBacklink
  */
@@ -60,7 +59,7 @@ export async function getSite (url) {
 /**
  * @param {Object} opts
  * @param {String|String[]} [opts.origin]
- * @param {FileQuery|FileQuery[]} [opts.file]
+ * @param {String|String[]} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String|String[]} [opts.index] - 'local' or 'network'
@@ -74,7 +73,7 @@ export async function getSite (url) {
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
 export async function query (opts, {existingResults, notificationRtime} = {}) {
-  var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
+  var pathQuery = opts.path ? toArray(opts.path).map(parseSimplePathSpec) : undefined
   if (opts.origin) {
     opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
   }
@@ -128,13 +127,13 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
         }
       }
     }
-    if (fileQuery) {
+    if (pathQuery) {
       let {pathname} = parseUrl(url)
       let test = q => (
         (!q.extension || pathname.endsWith(q.extension))
         && (!q.prefix || pathname.startsWith(q.prefix + '/'))
       )
-      if (!fileQuery.find(test)) {
+      if (!pathQuery.find(test)) {
         return false
       }
     }
@@ -174,7 +173,7 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
 /**
  * @param {Object} [opts]
  * @param {String|Array<String>} [opts.origin]
- * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String|Array<String>} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {Object} internal
@@ -183,7 +182,7 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
  * @returns {Promise<{count: Number, missedOrigins: String[]}>}
  */
 export async function count (opts, {existingResultOrigins, notificationRtime} = {}) {
-  var fileQuery = opts.file ? toArray(opts.file).map(toFileQuery) : undefined
+  var pathQuery = opts.path ? toArray(opts.path).map(parseSimplePathSpec) : undefined
   if (opts.origin) {
     opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
   }
@@ -215,13 +214,13 @@ export async function count (opts, {existingResultOrigins, notificationRtime} = 
         }
       }
     }
-    if (fileQuery) {
+    if (pathQuery) {
       let {pathname} = parseUrl(url)
       let test = q => (
         (!q.extension || pathname.endsWith(q.extension))
         && (!q.prefix || pathname.startsWith(q.prefix + '/'))
       )
-      if (!fileQuery.find(test)) {
+      if (!pathQuery.find(test)) {
         return false
       }
     }

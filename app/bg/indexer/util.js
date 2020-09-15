@@ -1,11 +1,10 @@
 import promisePool from 'tiny-promise-pool'
 import { timer } from '../../lib/time'
-import { joinPath } from '../../lib/strings'
+import { joinPath, parseSimplePathSpec } from '../../lib/strings'
 import { normalizeOrigin } from '../../lib/urls'
 import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
 import { query } from '../filesystem/query'
-import * as mime from '../lib/mime'
 import { READ_TIMEOUT } from './const'
 
 // typedefs
@@ -18,7 +17,6 @@ import { READ_TIMEOUT } from './const'
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
- * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  */
 
@@ -201,9 +199,9 @@ export async function loadSite (db, origin) {
       })
     },
 
-    async listMatchingFiles (fileQuery) {
-      if (fileQuery) {
-        return query(drive, {path: toArray(fileQuery).map(({prefix}) => `${prefix}/*`)})
+    async listMatchingFiles (pathQuery) {
+      if (pathQuery) {
+        return query(drive, {path: toArray(pathQuery)})
       }
       let files = await drive.pda.readdir('/', {includeStats: true, recursive: true})
       return files.map(file => ({
@@ -218,7 +216,7 @@ export async function loadSite (db, origin) {
 
 /**
  * @param {Object} opts
- * @param {FileQuery|FileQuery[]} [opts.file]
+ * @param {String|String[]} [opts.path]
  * @param {Object} [permissions]
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  */
@@ -227,10 +225,14 @@ export function checkShouldExcludePrivate (opts, permissions) {
   if (permissions?.query) {
     shouldExcludePrivate = true
     // only include private if the query 100% matches permissions
-    if (opts?.file) {
+    if (opts?.path) {
       shouldExcludePrivate = false
-      for (let fileQuery of toArray(opts.file)) {
-        let match = permissions.query.find(perm => perm.prefix === fileQuery.prefix && perm.extension === fileQuery.extension)
+      for (let path of toArray(opts.path)) {
+        let pathSpec = parseSimplePathSpec(path)
+        let match = permissions.query.find(perm => (
+          perm.prefix === pathSpec.prefix && 
+          (!perm.extension || perm.extension === pathSpec.extension)
+        ))
         if (!match) {
           shouldExcludePrivate = true
           break
@@ -275,18 +277,3 @@ export function parallel (arr, fn, ...args) {
   })
 }
 
-export function toFileQuery (obj) {
-  if (!obj || typeof obj !== 'object') {
-    throw new Error('Invalid .file parameter')
-  }
-  if (obj.prefix && typeof obj.prefix !== 'string') {
-    throw new Error('Invalid .file parameter')
-  }
-  if (obj.extension && typeof obj.extension !== 'string') {
-    throw new Error('Invalid .file parameter')
-  }
-  if (obj.prefix && obj.extension) return {prefix: obj.prefix, extension: obj.extension}
-  if (obj.prefix) return {prefix: obj.prefix}
-  if (obj.extension) return {extension: obj.extension}
-  throw new Error('Invalid .file parameter')
-}

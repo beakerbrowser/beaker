@@ -32,7 +32,7 @@ const RELEASES = [
 const DOCS_URL = 'https://docs.beakerbrowser.com'
 const USERLIST_URL = 'https://userlist.beakerbrowser.com'
 const BLAHBITY_BLOG_URL = 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/'
-const FILE_QUERIES = {
+const PATH_QUERIES = {
   blogposts: [typeToQuery('blogpost')],
   bookmarks: [typeToQuery('bookmark')],
   comments: [typeToQuery('comment')],
@@ -129,7 +129,7 @@ class DesktopApp extends LitElement {
 
   async loadSuggestions () {
     let allSubscriptions = await beaker.index.query({
-      file: {extension: '.goto', prefix: '/subscriptions'},
+      path: '/subscriptions/*.goto',
       limit: 100,
       sort: 'crtime',
       reverse: true
@@ -155,8 +155,8 @@ class DesktopApp extends LitElement {
     this.suggestedSites = suggestedSites.slice(0, 3)
   }
 
-  get currentNavAsFileQuery () {
-    return FILE_QUERIES[this.currentNav]
+  get currentNavAsPathQuery () {
+    return PATH_QUERIES[this.currentNav]
   }
 
   get currentNavDateTitleRange () {
@@ -381,7 +381,7 @@ class DesktopApp extends LitElement {
                 ${this.renderSites()}
               ` : html`
                 <beaker-record-feed
-                  .fileQuery=${this.currentNavAsFileQuery}
+                  .pathQuery=${this.currentNavAsPathQuery}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
@@ -393,7 +393,7 @@ class DesktopApp extends LitElement {
               `}
               ${this.currentNav === 'all' ? html`
                 <beaker-record-feed
-                  .fileQuery=${FILE_QUERIES.search.links}
+                  .pathQuery=${PATH_QUERIES.search.links}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   title="Links"
@@ -404,7 +404,7 @@ class DesktopApp extends LitElement {
                   profile-url=${this.profile ? this.profile.url : ''}
                 ></beaker-record-feed>
                 <beaker-record-feed
-                  .fileQuery=${FILE_QUERIES.search.discussion}
+                  .pathQuery=${PATH_QUERIES.search.discussion}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   title="Discussion"
@@ -438,7 +438,7 @@ class DesktopApp extends LitElement {
                 <beaker-record-feed
                   show-date-titles
                   date-title-range=${this.currentNavDateTitleRange}
-                  .fileQuery=${this.currentNavAsFileQuery}
+                  .pathQuery=${this.currentNavAsPathQuery}
                   .sources=${this.sources}
                   limit="50"
                   @load-state-updated=${this.onFeedLoadStateUpdated}

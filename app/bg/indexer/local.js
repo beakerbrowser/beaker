@@ -1,9 +1,8 @@
 import { PermissionsError } from 'beaker-error-constants'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
-import { joinPath } from '../../lib/strings'
+import { joinPath, parseSimplePathSpec } from '../../lib/strings'
 import {
   toArray,
-  toFileQuery,
   checkShouldExcludePrivate
 } from './util'
 import { METADATA_KEYS } from './const'
@@ -15,7 +14,6 @@ import { METADATA_KEYS } from './const'
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
- * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('./const').NotificationQuery} NotificationQuery
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  */
@@ -28,7 +26,7 @@ import { METADATA_KEYS } from './const'
  * @param {Object} db
  * @param {Object} opts
  * @param {String|String[]} [opts.origin]
- * @param {FileQuery|FileQuery[]} [opts.file]
+ * @param {String|String[]} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String|String[]} [opts.index] - 'local' or 'network'
@@ -93,16 +91,16 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
   } else if (shouldExcludePrivate) {
     query = query.whereNot({origin: 'hyper://private'})
   }
-  if (opts?.file) {
-    if (Array.isArray(opts.file)) {
+  if (opts?.path) {
+    if (Array.isArray(opts.path)) {
       query = query.where(function () {
-        let chain = this.where(toFileQuery(opts.file[0]))
-        for (let i = 1; i < opts.file.length; i++) {
-          chain = chain.orWhere(toFileQuery(opts.file[i]))
+        let chain = this.where(parseSimplePathSpec(opts.path[0]))
+        for (let i = 1; i < opts.path.length; i++) {
+          chain = chain.orWhere(parseSimplePathSpec(opts.path[i]))
         }
       })
     } else {
-      query = query.where(toFileQuery(opts.file))
+      query = query.where(parseSimplePathSpec(opts.path))
     }
   }
   if (typeof opts?.links === 'string') {
@@ -202,7 +200,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
  * @param {Object} db
  * @param {Object} [opts]
  * @param {String|Array<String>} [opts.origin]
- * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String|Array<String>} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {Object} [internal]
@@ -239,16 +237,16 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
   } else if (shouldExcludePrivate) {
     query = query.whereNot({origin: 'hyper://private'})
   }
-  if (opts?.file) {
-    if (Array.isArray(opts.file)) {
+  if (opts?.path) {
+    if (Array.isArray(opts.path)) {
       query = query.where(function () {
-        let chain = this.where(toFileQuery(opts.file[0]))
-        for (let i = 1; i < opts.file.length; i++) {
-          chain = chain.orWhere(toFileQuery(opts.file[i]))
+        let chain = this.where(parseSimplePathSpec(opts.path[0]))
+        for (let i = 1; i < opts.path.length; i++) {
+          chain = chain.orWhere(parseSimplePathSpec(opts.path[i]))
         }
       })
     } else {
-      query = query.where(toFileQuery(opts.file))
+      query = query.where(parseSimplePathSpec(opts.path))
     }
   }
   if (typeof opts?.links === 'string') {

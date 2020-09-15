@@ -71,7 +71,7 @@ class NotificationsApp extends LitElement {
     } else if (view === 'subscribers') {
       this.results = await beaker.index.query({
         notification: true,
-        file: {prefix: '/subscriptions', extension: '.goto'},
+        path: '/subscriptions/*.goto',
         limit: 100,
         sort: 'crtime',
         reverse: true,

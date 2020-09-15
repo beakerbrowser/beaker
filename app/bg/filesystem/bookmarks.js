@@ -16,7 +16,7 @@ import * as profileDb from '../dbs/profile-data-db'
  */
 export async function list () {
   var results = await indexer.query({
-    file: {extension: '.goto', prefix: '/bookmarks'},
+    path: '/bookmarks/*.goto',
     origin: ['hyper://private', filesystem.getProfileUrl()]
   })
   var pins = await pinsAPI.getCurrent()
@@ -30,7 +30,7 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.query({
-    file: {extension: '.goto', prefix: '/bookmarks'},
+    path: '/bookmarks/*.goto',
     origin: ['hyper://private', filesystem.getProfileUrl()],
     links: href,
     limit: 1

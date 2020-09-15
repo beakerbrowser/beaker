@@ -30,9 +30,9 @@ export class MarkdownSuggestions {
       return null
     }
     const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
-      file: [
-        {prefix: '/blog', extension: '.md'},
-        {prefix: '/pages', extension: '.md'}
+      path: [
+        '/blog/*.md',
+        '/pages/*.md'
       ],
       limit: 10,
       sort: 'rank',
@@ -59,7 +59,7 @@ export class MarkdownSuggestions {
 
   async completePeopleSuggestions (term, match, value) {
     const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
-      file: {prefix: '/subscriptions', extension: '.goto'},
+      path: '/subscriptions/*.goto',
       origin: `hyper://${this.profile?.key}`,
       limit: 10,
       sort: 'rank',

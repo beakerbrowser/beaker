@@ -1,12 +1,12 @@
 export function typeToQuery (type) {
   let query = ({
-    'blogpost': {prefix: '/blog', extension: '.md'},
-    'bookmark': {prefix: '/bookmarks', extension: '.goto'},
-    'comment': {prefix: '/comments', extension: '.md'},
-    'microblogpost': {prefix: '/microblog', extension: '.md'},
-    'page': {prefix: '/pages', extension: '.md'},
-    'subscription': {prefix: '/subscriptions', extension: '.goto'},
-    'vote': {prefix: '/votes', extension: '.goto'},
+    'blogpost': '/blog/*.md',
+    'bookmark': '/bookmarks/*.goto',
+    'comment': '/comments/*.md',
+    'microblogpost': '/microblog/*.md',
+    'page': '/pages/*.md',
+    'subscription': '/subscriptions/*.goto',
+    'vote': '/votes/*.goto'
   })[type]
   if (!query) throw new Error('Invalid type: ' + type)
   return query

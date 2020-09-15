@@ -38,7 +38,7 @@ import { TICK_INTERVAL, METADATA_KEYS } from './const'
 import * as hyperbees from './hyperbees'
 import * as local from './local'
 import lock from '../../lib/lock'
-import { joinPath, toNiceUrl } from '../../lib/strings'
+import { joinPath, toNiceUrl, parseSimplePathSpec } from '../../lib/strings'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import {
   getIsFirstRun,
@@ -53,8 +53,7 @@ import {
   parseUrl,
   isUrl,
   toArray,
-  parallel,
-  toFileQuery
+  parallel
 } from './util'
 
 /**
@@ -65,7 +64,6 @@ import {
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
- * @typedef {import('./const').FileQuery} FileQuery
  * @typedef {import('./const').NotificationQuery} NotificationQuery
  */
 
@@ -267,7 +265,7 @@ export async function get (url, permissions) {
 /**
  * @param {Object} [opts]
  * @param {String|String[]} [opts.origin]
- * @param {FileQuery|FileQuery[]} [opts.file]
+ * @param {String|String[]} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String|String[]} [opts.index] - 'local' or 'network'
@@ -379,7 +377,7 @@ export async function query (opts, permissions) {
 /**
  * @param {Object} [opts]
  * @param {String|Array<String>} [opts.origin]
- * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String|Array<String>} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String|String[]} [opts.index] - 'local' or 'network'
@@ -449,7 +447,7 @@ export async function count (opts, permissions) {
  * @param {String} [q]
  * @param {Object} [opts]
  * @param {String|Array<String>} [opts.origin]
- * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String|Array<String>} [opts.path]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
@@ -516,16 +514,16 @@ export async function search (q = '', opts, permissions) {
   } else if (shouldExcludePrivate) {
     query = query.whereNot({origin: 'hyper://private'})
   }
-  if (opts?.file) {
-    if (Array.isArray(opts.file)) {
+  if (opts?.path) {
+    if (Array.isArray(opts.path)) {
       query = query.where(function () {
-        let chain = this.where(toFileQuery(opts.file[0]))
-        for (let i = 1; i < opts.file.length; i++) {
-          chain = chain.orWhere(toFileQuery(opts.file[i]))
+        let chain = this.where(parseSimplePathSpec(opts.path[0]))
+        for (let i = 1; i < opts.path.length; i++) {
+          chain = chain.orWhere(parseSimplePathSpec(opts.path[i]))
         }
       })
     } else {
-      query = query.where(toFileQuery(opts.file))
+      query = query.where(parseSimplePathSpec(opts.path))
     }
   }
 
@@ -980,7 +978,7 @@ async function getLiveRecord (url) {
 
 /**
  * @param {Object} [opts]
- * @param {FileQuery|Array<FileQuery>} [opts.file]
+ * @param {String|Array<String>} [opts.path]
  * @returns {Promise<RecordDescription[]>}
  */
 async function listLiveRecords (origin, opts) {
@@ -988,7 +986,7 @@ async function listLiveRecords (origin, opts) {
   try {
     let site = await loadSite(db, origin)
     logger.silly(`Live-querying ${origin}`)
-    let files = await site.listMatchingFiles(opts.file)
+    let files = await site.listMatchingFiles(opts.path)
     records = records.concat(files.map(file => {
       return {
         url: file.url,

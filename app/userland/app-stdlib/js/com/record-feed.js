@@ -6,7 +6,7 @@ import { emit } from '../dom.js'
 
 import './record.js'
 
-const DEFAULT_SEARCH_FILE_QUERIES = [
+const DEFAULT_SEARCH_PATH_QUERIES = [
   typeToQuery('blogpost'),
   typeToQuery('bookmark'),
   typeToQuery('microblogpost'),
@@ -17,7 +17,7 @@ const DEFAULT_SEARCH_FILE_QUERIES = [
 export class RecordFeed extends LitElement {
   static get properties () {
     return {
-      fileQuery: {type: Array},
+      pathQuery: {type: Array},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
       forceRenderMode: {type: String, attribute: 'force-render-mode'},
@@ -39,7 +39,7 @@ export class RecordFeed extends LitElement {
 
   constructor () {
     super()
-    this.fileQuery = undefined
+    this.pathQuery = undefined
     this.showDateTitles = false
     this.dateTitleRange = undefined
     this.forceRenderMode = undefined
@@ -74,7 +74,7 @@ export class RecordFeed extends LitElement {
       return
     } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
       this.queueQuery()
-    } else if (changedProperties.has('fileQuery') && changedProperties.get('fileQuery') != this.fileQuery) {
+    } else if (changedProperties.has('pathQuery') && changedProperties.get('pathQuery') != this.pathQuery) {
       // NOTE ^ to correctly track this, the query arrays must be reused
       this.results = undefined // clear results while loading
       this.queueQuery()
@@ -100,7 +100,7 @@ export class RecordFeed extends LitElement {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     var results = []
-    if (this.fileQuery?.[0] === 'notifications') {
+    if (this.pathQuery?.[0] === 'notifications') {
       if (this.filter) {
         results = await beaker.index.search(this.filter, {
           notification: true,
@@ -119,7 +119,7 @@ export class RecordFeed extends LitElement {
     } else {
       if (this.filter) {
         results = await beaker.index.search(this.filter, {
-          file: this.fileQuery || DEFAULT_SEARCH_FILE_QUERIES,
+          path: this.pathQuery || DEFAULT_SEARCH_PATH_QUERIES,
           origin: this.sources,
           limit: this.limit,
           sort: 'crtime',
@@ -130,7 +130,7 @@ export class RecordFeed extends LitElement {
         let offset = 0
         do {
           let subresults = await beaker.index.query({
-            file: this.fileQuery,
+            path: this.pathQuery,
             origin: this.sources,
             limit: this.limit,
             offset,

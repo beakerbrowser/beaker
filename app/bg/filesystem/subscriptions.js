@@ -14,7 +14,7 @@ import { URL } from 'url'
  */
 export async function list () {
   var results = await indexer.query({
-    file: {extension: '.goto', prefix: '/subscriptions'},
+    path: '/subscriptions/*.goto',
     origin: ['hyper://private', filesystem.getProfileUrl()]
   })
   return results.map(massageSubscription)
@@ -27,7 +27,7 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var results = await indexer.query({
-    file: {extension: '.goto', prefix: '/subscriptions'},
+    path: '/subscriptions/*.goto',
     origin: ['hyper://private', filesystem.getProfileUrl()],
     links: href,
     limit: 1
@@ -44,7 +44,7 @@ export async function get (href) {
 export async function listNetworkFor (href) {
   href = normalizeUrl(href)
   var results = await indexer.query({
-    file: {extension: '.goto', prefix: '/subscriptions'},
+    path: '/subscriptions/*.goto',
     links: href,
     index: ['local', 'network']
   })

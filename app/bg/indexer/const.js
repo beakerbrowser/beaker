@@ -28,7 +28,7 @@ export const METADATA_KEYS = {
  * @prop {function(String): Promise<Object>} stat
  * @prop {function(String): Promise<String>} fetch
  * @prop {function(): Promise<RecordUpdate[]>} listUpdates
- * @prop {function(FileQuery|FileQuery[]): Promise<Object>} listMatchingFiles
+ * @prop {function(String|String[]): Promise<Object>} listMatchingFiles
  * 
  * @typedef {Object} SiteDescription
  * @prop {String} origin
@@ -67,10 +67,6 @@ export const METADATA_KEYS = {
  * @prop {String} [notification.key]
  * @prop {String} [notification.subject]
  * @prop {Boolean} [notification.unread]
- * 
- * @typedef {Object} FileQuery
- * @prop {String} prefix
- * @prop {String} extension
  * 
  * @typedef {Object} NotificationQuery
  * @prop {String} subject

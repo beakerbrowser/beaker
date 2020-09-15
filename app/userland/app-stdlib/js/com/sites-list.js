@@ -90,7 +90,7 @@ export class SitesList extends LitElement {
     emit(this, 'load-state-updated')
 
     var subs = await beaker.index.query({
-      file: {extension: '.goto', prefix: '/subscriptions'},
+      path: '/subscriptions/*.goto',
       index: ['local', 'network']
     })
 
@@ -115,7 +115,7 @@ export class SitesList extends LitElement {
     } else if (this.listing === 'subscribers') {
       let subs2 = await beaker.index.query({
         links: this.profileUrl,
-        file: {extension: '.goto', prefix: '/subscriptions'},
+        path: '/subscriptions/*.goto',
         index: ['local', 'network']
       })
       sites = await Promise.all(subs2.map(sub => beaker.index.getSite(sub.site.url, {cacheOnly: true})))

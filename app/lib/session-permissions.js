@@ -1,5 +1,6 @@
 import { dirname, extname } from 'path'
 import { isSameOrigin } from './urls'
+import { parseSimplePathSpec } from './strings'
 
 const VALID_ACCESS = ['read', 'write']
 
@@ -18,19 +19,22 @@ export function validateAndNormalizePermissions (permissions) {
     if (key === 'publicFiles' || key === 'privateFiles') {
       if (!Array.isArray(permissions[key])) throw new Error(`Permission '${key}' should be an array`)
       for (let v of permissions[key]) {
-        if (!v.prefix || typeof v.prefix !== 'string') throw new Error(`'${key}' permissions must have a .prefix string`)
-        if (!v.extension || typeof v.extension !== 'string') throw new Error(`'${key}' permissions must have a .extension string`)
+        if (!v.path || typeof v.path !== 'string') throw new Error(`'${key}' permissions must have a .path string`)
+        Object.assign(v, parseSimplePathSpec(v.path))
+        delete v.path
+
         v.access = v.access || 'read'
         if (!VALID_ACCESS.includes(v.access)) throw new Error(`'${key}' permissions .access must be one of: ${VALID_ACCESS.join(', ')}`)
+
         if (!v.prefix.startsWith('/')) v.prefix = `/${v.prefix}`
         while (v.prefix.endsWith('/')) v.prefix = v.prefix.slice(0, -1)
-        if (!v.prefix || v.prefix === '/') throw new Error(`'${key}' permissions .prefix can not be '/'`)
+        if (!v.prefix || v.prefix === '/') throw new Error(`'${key}' permissions .path can not be '/'`)
+        if (!v.extension) throw new Error(`'${key}' permissions .path must include an extension`)
         if (getRecordType(v) === 'unknown') {
           let numSlashes = v.prefix.match(/\//g)?.length || 0
-          if (numSlashes <= 1) throw new Error(`'${key}' permissions .prefix must be 2 folders deep if a custom type (eg "/my-app/pics")`)
-          if (!v.prefix.split('/')[1].includes('-')) throw new Error(`'${key}' permissions .prefix must include a dash in the first folder if a custom type (eg "/my-app/pics")`)
+          if (numSlashes <= 1) throw new Error(`'${key}' permissions .path must be 2 folders deep if a custom type (eg "/my-app/pics/*.png")`)
+          if (!v.prefix.split('/')[1].includes('-')) throw new Error(`'${key}' permissions .path must include a dash in the first folder if a custom type (eg "/my-app/pics/*.png")`)
         }
-        if (!v.extension.startsWith('.')) v.extension = `.${v.extension}`
       }
     } else {
       throw new Error(`Invalid permission key: ${key}`)

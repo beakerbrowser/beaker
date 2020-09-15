@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   {type: 'comment', id: 'comments', icon: 'far fa-comments', label: 'Comments'},
   {type: 'subscription', id: 'subscriptions', icon: 'fas fa-rss', label: 'Subscriptions'}
 ]
-const FILE_QUERIES = {
+const PATH_QUERIES = {
   bookmarks: [typeToQuery('bookmark')],
   blogposts: [typeToQuery('blogpost')],
   pages: [typeToQuery('page')],
@@ -23,7 +23,7 @@ const FILE_QUERIES = {
   comments: [typeToQuery('comment')],
   subscriptions: [typeToQuery('subscription')]
 }
-FILE_QUERIES.home = Object.values(FILE_QUERIES).flat()
+PATH_QUERIES.home = Object.values(PATH_QUERIES).flat()
 
 class AboutApp extends LitElement {
   static get styles () {
@@ -123,7 +123,7 @@ class AboutApp extends LitElement {
 
       let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
       beaker.index.count({
-        file: {prefix: '/subscriptions', extension: '.goto'},
+        path: '/subscriptions/*.goto',
         links: this.profile.url,
         origin: this.siteInfo.url
       }).then(count => {
@@ -133,15 +133,15 @@ class AboutApp extends LitElement {
       let counts = Object.fromEntries(
         await Promise.all(
           Object.entries({
-            bookmark: FILE_QUERIES.bookmarks,
-            blogpost: FILE_QUERIES.blogposts,
-            page: FILE_QUERIES.pages,
-            microblogpost: FILE_QUERIES.microblogposts,
-            comment: FILE_QUERIES.comments,
-            subscription: FILE_QUERIES.subscriptions
-          }).map(([key, file]) => (
+            bookmark: PATH_QUERIES.bookmarks,
+            blogpost: PATH_QUERIES.blogposts,
+            page: PATH_QUERIES.pages,
+            microblogpost: PATH_QUERIES.microblogposts,
+            comment: PATH_QUERIES.comments,
+            subscription: PATH_QUERIES.subscriptions
+          }).map(([key, path]) => (
             beaker.index.count({
-              file,
+              path,
               origin: this.siteInfo.url
             }).then(count => ([key, count]))
           ))
@@ -208,7 +208,7 @@ class AboutApp extends LitElement {
         ${this.renderLoading()}
         ${this.siteInfo ? html`
           <beaker-record-feed
-            .fileQuery=${FILE_QUERIES[this.currentView]}
+            .pathQuery=${PATH_QUERIES[this.currentView]}
             .sources=${[this.siteInfo.url]}
             show-date-titles
             ?no-merge=${this.currentView === 'subscriptions'}
