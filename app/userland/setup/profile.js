@@ -132,18 +132,20 @@ customElements.define('profile-view', class extends HTMLElement {
     }
 
     // resize the thumb to 256x256
-    var img = this.shadowRoot.querySelector('img.thumb')
-    var canvas = document.createElement('canvas')
-    canvas.setAttribute('width', String(THUMB_SIZE))
-    canvas.setAttribute('height', String(THUMB_SIZE))
-    var ctx = canvas.getContext('2d')
-    ctx.globalCompositeOperation = 'source-over'
-    ctx.fillStyle = '#fff'
-    ctx.fillRect(0, 0, THUMB_SIZE, THUMB_SIZE)
-    var smallestDimension = (img.naturalWidth < img.naturalHeight) ? img.naturalWidth : img.naturalHeight
-    ctx.scale(THUMB_SIZE / smallestDimension, THUMB_SIZE / smallestDimension)
-    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight)
-    this.thumbDataURL = canvas.toDataURL('image/png')
+    if (this.thumbDataURL) {
+      var img = this.shadowRoot.querySelector('img.thumb')
+      var canvas = document.createElement('canvas')
+      canvas.setAttribute('width', String(THUMB_SIZE))
+      canvas.setAttribute('height', String(THUMB_SIZE))
+      var ctx = canvas.getContext('2d')
+      ctx.globalCompositeOperation = 'source-over'
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(0, 0, THUMB_SIZE, THUMB_SIZE)
+      var smallestDimension = (img.naturalWidth < img.naturalHeight) ? img.naturalWidth : img.naturalHeight
+      ctx.scale(THUMB_SIZE / smallestDimension, THUMB_SIZE / smallestDimension)
+      ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight)
+      this.thumbDataURL = canvas.toDataURL('image/png')
+    }
 
     try {
       var thumbBase64 = this.thumbDataURL ? this.thumbDataURL.split(',').pop() : undefined

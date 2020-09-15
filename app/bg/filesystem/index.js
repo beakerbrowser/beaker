@@ -91,29 +91,10 @@ export async function setup () {
   if (!browsingProfile.url.endsWith('/')) browsingProfile.url += '/'
 
   // load root drive
+  logger.info('Loading root drive', {url: browsingProfile.url})
   hyper.dns.setLocal('private', browsingProfile.url)
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url, {persistSession: true})
   
-  // enforce root files structure
-  logger.info('Loading root drive', {url: browsingProfile.url})
-  try {
-    // ensure common dirs & data
-    await ensureDir(PATHS.BOOKMARKS)
-
-    // default bookmarks
-    if (isInitialCreation) {
-      await bookmarks.add({href: 'beaker://explorer/', title: 'Explore Files', pinned: true})
-      await bookmarks.add({href: 'beaker://webterm/', title: 'Terminal', pinned: true})
-      await bookmarks.add({href: 'https://userlist.beakerbrowser.com/', title: 'User Directory', pinned: true})
-      await bookmarks.add({href: 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/', title: 'Blahbity Blog', pinned: true})
-      await bookmarks.add({href: 'https://docs.beakerbrowser.com/', title: 'Beaker Documentation', pinned: true})
-      await bookmarks.add({href: 'https://beaker.dev/', title: 'Beaker Developer Portal', pinned: true})
-    }
-  } catch (e) {
-    console.error('Error while constructing the root drive', e.toString())
-    logger.error('Error while constructing the root drive', {error: e.toString()})
-  }
-
   // load drive config
   let profileObj = await getProfile()
   let hostKeys = []

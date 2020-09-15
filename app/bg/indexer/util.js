@@ -71,7 +71,7 @@ export async function listMyOrigins () {
  */
 export async function listOriginsToIndex (db) {
   var fs = filesystem.get()
-  var addressBookJson = await fs.pda.readFile('/address-book.json', 'json')
+  var addressBook = await filesystem.getAddressBook()
   var subscriptions = await db('records')
     .select('records_data.value as href')
     .innerJoin('sites', 'records.site_rowid', 'sites.rowid')
@@ -85,11 +85,11 @@ export async function listOriginsToIndex (db) {
     })
     .whereIn('origin', [
       'hyper://private',
-      ...addressBookJson.profiles.map(item => 'hyper://' + item.key)
+      ...addressBook.profiles.map(item => 'hyper://' + item.key)
     ])
   var origins = new Set([
     'hyper://private',
-    ...addressBookJson.profiles.map(item => 'hyper://' + item.key),
+    ...addressBook.profiles.map(item => 'hyper://' + item.key),
     ...subscriptions.map(sub => normalizeOrigin(sub.href))
   ])
   return Array.from(origins)
@@ -100,8 +100,12 @@ export async function listOriginsToIndex (db) {
  */
 export async function listOriginsToCapture () {
   var fs = filesystem.get()
-  var drivesJson = await fs.pda.readFile('/drives.json', 'json')
-  return drivesJson.drives.map(item => 'hyper://' + item.key)
+  try {
+    var drivesJson = await fs.pda.readFile('/drives.json', 'json')
+    return drivesJson.drives.map(item => 'hyper://' + item.key)
+  } catch {
+    return []
+  }
 }
 
 /**

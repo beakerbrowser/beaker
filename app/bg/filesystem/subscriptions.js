@@ -108,8 +108,8 @@ export async function remove (href) {
  */
 export async function migrateSubscriptionsFromContacts () {
   var addressBook = await filesystem.getAddressBook()
-  var profileUrl = `hyper://${addressBook.profiles[0].key}`
-  for (let contact of addressBook.contacts) {
+  var profileUrl = `hyper://${addressBook?.profiles[0]?.key}`
+  for (let contact of addressBook?.contacts) {
     let url = `hyper://${contact.key}`
     if (!(await get(url))) {
       let info = await drives.getDriveInfo(url)

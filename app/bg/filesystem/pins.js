@@ -8,7 +8,6 @@ import { METADATA_KEYS } from '../indexer/const'
 
 export async function setup () {
   var privateDrive = filesystem.get()
-  var profileDrive = await filesystem.getProfileDrive()
 
   var exists = await privateDrive.pda.stat('/beaker/pins.json').catch(e => false)
   if (exists) return
@@ -19,12 +18,6 @@ export async function setup () {
     if (bookmark.stat.metadata.pinned || bookmark.stat.metadata['beaker/pinned']) {
       pins.push(normalizeUrl(bookmark.stat.metadata[METADATA_KEYS.href]))
       await privateDrive.pda.deleteMetadata(bookmark.path, ['pinned', 'beaker/pinned'])
-    }
-  }
-  for (let bookmark of await query(profileDrive, {path: '/bookmarks/*.goto'})) {
-    if (bookmark.stat.metadata.pinned || bookmark.stat.metadata['beaker/pinned']) {
-      pins.push(normalizeUrl(bookmark.stat.metadata[METADATA_KEYS.href]))
-      await profileDrive.pda.deleteMetadata(bookmark.path, ['pinned', 'beaker/pinned'])
     }
   }
   await write(pins)
