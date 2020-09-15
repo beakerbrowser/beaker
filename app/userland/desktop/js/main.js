@@ -295,20 +295,15 @@ class DesktopApp extends LitElement {
         <div class="sticky">
           <section class="create-box">
             <h3>Create New</h3>
-            <div class="btn-group">
-              <button @click=${e => this.onClickEditBookmark(undefined)}>
-                <i class="far fa-fw fa-star"></i> New Bookmark
-              </button>
-              <button @click=${this.onClickNewPost}>
-                <i class="far fa-fw fa-comment"></i> New Post
-              </button>
-              <button @click=${e => this.onClickNewPage()}>
-                <i class="far fa-fw fa-file"></i> New Page
-              </button>
-              <button @click=${this.onClickNewSite}>
-                <i class="fas fa-fw fa-sitemap"></i> New Website
-              </button>
-            </div>
+            <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
+              <i class="far fa-fw fa-star"></i> New Bookmark
+            </button>
+            <button class="transparent block" @click=${this.onClickNewPost}>
+              <i class="far fa-fw fa-comment"></i> New Post
+            </button>
+            <button class="transparent block" @click=${e => this.onClickNewPage()}>
+              <i class="far fa-fw fa-file"></i> New Page
+            </button>
           </section>
           ${this.renderLegacyArchivesNotice()}
           ${this.suggestedSites?.length > 0 ? html`
@@ -791,11 +786,6 @@ class DesktopApp extends LitElement {
       items,
       fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
     })
-  }
-
-  async onClickNewSite (e) {
-    var drive = await beaker.hyperdrive.createDrive()
-    beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
   }
 
   async onClickNewPost (e) {

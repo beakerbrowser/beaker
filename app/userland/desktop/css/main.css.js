@@ -637,47 +637,21 @@ beaker-sites-list {
   margin: 0 0 30px;
 }
 
-.create-box .btn-group {
-  display: block;
-  margin-top: 8px;
+.create-box h3 {
+  margin-bottom: 6px !important;
 }
 
 .create-box button {
-  display: block;
+  padding: 7px 8px;
   text-align: left;
-  width: 100%;
-  padding: 10px 16px;
   box-sizing: border-box;
   font-size: 13px;
-  color: var(--text-color--default);
-  border: 1px solid var(--border-color--light);
-  border-bottom-width: 0;
-}
-
-.create-box .btn-group button:first-child {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-}
-
-.create-box .btn-group button:last-child {
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-bottom-width: 1px;
 }
 
 .create-box button i {
   font-size: 13px;
   color: var(--text-color--light);
   margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .create-box button {
-    background: var(--bg-color--default);
-  }
-  .create-box button:hover {
-    background: var(--bg-color--light);
-  }
 }
 
 .empty {
