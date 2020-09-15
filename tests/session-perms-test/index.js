@@ -14,7 +14,7 @@ async function main () {
           publicFiles: [
             {path: '/pages/*.md', access: 'read'},
             {path: '/comments/*.md', access: 'read'},
-            {path: '/test/*.txt', access: 'write'}
+            {path: '/*.txt', access: 'write'}
           ],
           privateFiles: [
             {path: '/pages/*.md', access: 'read'},
@@ -27,7 +27,7 @@ async function main () {
           publicFiles: [
             {path: '/pages/*.md', access: 'read'},
             {path: '/comments/*.md', access: 'read'},
-            {path: '/test/test/*.txt', access: 'write'}
+            {path: '/test/*', access: 'write'}
           ],
           privateFiles: [
             {path: '/pages/*.md', access: 'read'},

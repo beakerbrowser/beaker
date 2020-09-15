@@ -30,11 +30,6 @@ export function validateAndNormalizePermissions (permissions) {
         while (v.prefix.endsWith('/')) v.prefix = v.prefix.slice(0, -1)
         if (!v.prefix || v.prefix === '/') throw new Error(`'${key}' permissions .path can not be '/'`)
         if (!v.extension) throw new Error(`'${key}' permissions .path must include an extension`)
-        if (getRecordType(v) === 'unknown') {
-          let numSlashes = v.prefix.match(/\//g)?.length || 0
-          if (numSlashes <= 1) throw new Error(`'${key}' permissions .path must be 2 folders deep if a custom type (eg "/my-app/pics/*.png")`)
-          if (!v.prefix.split('/')[1].includes('-')) throw new Error(`'${key}' permissions .path must include a dash in the first folder if a custom type (eg "/my-app/pics/*.png")`)
-        }
       }
     } else {
       throw new Error(`Invalid permission key: ${key}`)
