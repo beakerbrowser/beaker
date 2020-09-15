@@ -86,7 +86,7 @@ beaker-record {
   max-width: 100%;
 }
 
-.subject-content > pre {
+.subject-content pre {
   max-width: 100%;
   overflow: auto;
 }
