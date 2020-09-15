@@ -5,7 +5,7 @@ export default {
   get: 'promise',
   query: 'promise',
   countRecords: 'promise',
-  searchRecords: 'promise',
+  search: 'promise',
   clearNotifications: 'promise',
 
   getState: 'promise',

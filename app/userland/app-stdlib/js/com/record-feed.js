@@ -102,7 +102,7 @@ export class RecordFeed extends LitElement {
     var results = []
     if (this.fileQuery?.[0] === 'notifications') {
       if (this.filter) {
-        results = await beaker.index.searchRecords(this.filter, {
+        results = await beaker.index.search(this.filter, {
           notification: true,
           limit: this.limit,
           sort: 'rtime',
@@ -118,7 +118,7 @@ export class RecordFeed extends LitElement {
       }
     } else {
       if (this.filter) {
-        results = await beaker.index.searchRecords(this.filter, {
+        results = await beaker.index.search(this.filter, {
           file: this.fileQuery || DEFAULT_SEARCH_FILE_QUERIES,
           site: this.sources,
           limit: this.limit,

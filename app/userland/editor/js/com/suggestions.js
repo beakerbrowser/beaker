@@ -29,7 +29,7 @@ export class MarkdownSuggestions {
     if (term.length === 1) {
       return null
     }
-    const queryResults = await this.searchDebouncer(() => beaker.index.searchRecords(term, {
+    const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
       file: [
         {prefix: '/blog', extension: '.md'},
         {prefix: '/pages', extension: '.md'}
@@ -58,7 +58,7 @@ export class MarkdownSuggestions {
   }
 
   async completePeopleSuggestions (term, match, value) {
-    const queryResults = await this.searchDebouncer(() => beaker.index.searchRecords(term, {
+    const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
       file: {prefix: '/subscriptions', extension: '.goto'},
       site: `hyper://${this.profile?.key}`,
       limit: 10,
