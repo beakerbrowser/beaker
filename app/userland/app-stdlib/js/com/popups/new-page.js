@@ -220,9 +220,9 @@ export class NewPagePopup extends BasePopup {
               ` : html`
                 <a class="visibility" @click=${this.onClickVisibility}>
                   ${this.visibility === 'private' ? html`
-                    <span class="fas fa-fw fa-lock"></span> Only Me
+                    <span class="fas fa-fw fa-lock"></span> Private
                   ` : html`
-                    <span class="fas fa-fw fa-globe-africa"></span> Everybody
+                    <span class="fas fa-fw fa-globe-africa"></span> Public
                   `}
                   <span class="fas fa-fw fa-caret-down"></span>
                 </a>
@@ -288,8 +288,8 @@ export class NewPagePopup extends BasePopup {
     e.preventDefault()
     e.stopPropagation()
     const items = [
-      {icon: 'fas fa-lock', label: 'Only Me (Private)', click: () => { this.visibility = 'private' } },
-      {icon: 'fas fa-globe-africa', label: 'Everybody (Public)', click: () => { this.visibility = 'public' } }
+      {icon: 'fas fa-lock', label: 'Private (Only Me)', click: () => { this.visibility = 'private' } },
+      {icon: 'fas fa-globe-africa', label: 'Public (Everybody)', click: () => { this.visibility = 'public' } }
     ]
     contextMenu.create({
       x: rect.left,
