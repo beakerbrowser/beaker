@@ -23,7 +23,7 @@ export class NewPagePopup extends BasePopup {
     this.driveUrl = opts.driveUrl
     this.profile = undefined
 
-    this.type = 'page'
+    this.type = opts?.type || 'page'
     this.title = ''
     this.visibility = 'private'
   }

@@ -309,6 +309,9 @@ class DesktopApp extends LitElement {
             <button class="transparent block" @click=${e => this.onClickNewPage()}>
               <i class="far fa-fw fa-file"></i> New Page
             </button>
+            <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
+              <i class="fas fa-fw fa-blog"></i> New Blogpost
+            </button>
           </section>
           ${this.renderLegacyArchivesNotice()}
           ${this.suggestedSites?.length > 0 ? html`
@@ -852,6 +855,16 @@ class DesktopApp extends LitElement {
   async onClickNewPage (opts = {}) {
     try {
       var res = await NewPagePopup.create(opts)
+      beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
+    } catch (e) {
+      // ignore
+      console.log(e)
+    }
+  }
+
+  async onClickNewBlogpost () {
+    try {
+      var res = await NewPagePopup.create({type: 'blogpost'})
       beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
     } catch (e) {
       // ignore
