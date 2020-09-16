@@ -1,5 +1,5 @@
 import BeakerIndexer from 'beaker-index'
-import { dirname, extname } from 'path'
+import fetch from 'node-fetch'
 import { getHyperspaceClient } from '../hyper/daemon'
 import { normalizeOrigin, normalizeUrl, isSameOrigin } from '../../lib/urls'
 import { parseSimplePathSpec } from '../../lib/strings'
@@ -9,7 +9,9 @@ import {
 } from './util'
 import { getSite as fullGetSite } from './index'
 import { getProfileUrl } from '../filesystem/index'
+import { getMeta } from '../dbs/archives'
 
+const SITES_CACHE_TIME = 60e3 * 5 // 5 minutes
 const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a212435efaf2c12e1e5d18d' // TODO fetch from endpoint
 
 /**
@@ -38,6 +40,33 @@ export async function setup () {
 }
 
 /**
+ * @param {Object} [opts]
+ * @param {String} [opts.search]
+ * @param {String|String[]} [opts.index] - 'local', 'network', url of a specific hyperbee index
+ * @param {Boolean} [opts.writable]
+ * @param {Number} [opts.offset]
+ * @param {Number} [opts.limit]
+ * @returns {Promise<SiteDescription[]>}
+ */
+export async function listSites (opts) {
+  var fullList = await fetchFullSitesList()
+  if (opts.search) {
+    let search = opts.search.toLowerCase()
+    fullList = fullList.filter(s => (
+      (s.title || '').toLowerCase().includes(search)
+      || (s.description || '').toLowerCase().includes(search)
+    ))
+  }
+  if (typeof opts.writable === 'boolean') {
+    fullList = fullList.filter(s => s.writable === opts.writable)
+  }
+  if (opts.limit && opts.offset) fullList = fullList.slice(opts.offset, opts.limit + opts.offset)
+  else if (opts.limit) fullList = fullList.slice(0, opts.limit)
+  else if (opts.offset) fullList = fullList.slice(opts.offset)
+  return fullList
+}
+
+/**
  * @param {String} url 
  * @returns {Promise<SiteDescription>}
  */
@@ -51,7 +80,8 @@ export async function getSite (url) {
       url: origin,
       title: indexJson.title || origin,
       description: indexJson.description || '',
-      writable: false
+      writable: false,
+      index: {id: 'userlist.beakerbrowser.com'}
     }
   }
 }
@@ -288,5 +318,34 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     },
     content: content ? content.value : undefined,
     notification
+  }
+}
+
+var _fullSitesListCache = undefined
+var _lastFullSiteFetch = undefined
+async function fetchFullSitesList () {
+  if (_fullSitesListCache && (Date.now() - _lastFullSiteFetch < SITES_CACHE_TIME)) {
+    return _fullSitesListCache
+  }
+
+  try {
+    var json = await (await fetch('https://userlist.beakerbrowser.com/list.json')).json()
+    _fullSitesListCache = []
+    for (let user of json.users.sort((a, b) => b.peerCount - a.peerCount)) {
+      _fullSitesListCache.push({
+        origin: user.driveUrl,
+        url: user.driveUrl,
+        title: user.title || user.driveUrl,
+        description: user.description || '',
+        writable: Boolean((await getMeta(user.driveUrl, {noDefault: true}))?.writable),
+        index: {id: 'userlist.beakerbrowser.com'}
+      })
+    }
+
+    _lastFullSiteFetch = Date.now()
+    return _fullSitesListCache
+  } catch (e) {
+    console.log('Error fetching the sites list', e)
+    return []
   }
 }

@@ -287,6 +287,7 @@ class DesktopApp extends LitElement {
             ${navItem('my-sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Mine</span>`)}
             ${navItem('subscriptions', html`<span class="fas fa-fw fa-rss"></span> <span class="label">Subscribed</span>`)}
             ${navItem('subscribers', html`<span class="fas fa-fw fa-users"></span> <span class="label">Subscribers</span>`)}
+            ${navItem('network-sites', html`<span class="far fa-fw fa-address-book"></span> <span class="label">Communities</span>`)}
           </section>
         </div>
       </div>
@@ -336,13 +337,11 @@ class DesktopApp extends LitElement {
             <h3>Beaker</h3>
             <div>
               <a href="#" @click=${this.onClickReleaseNotes}>
-                <span class="fas fa-fw fa-rocket"></span>
                 <span>Release Notes</span>
               </a>
             </div>
             <div>
               <a href="https://docs.beakerbrowser.com/">
-                <span class="far fa-fw fa-life-ring"></span>
                 <span>Help</span>
               </a>
             </div>
@@ -354,7 +353,7 @@ class DesktopApp extends LitElement {
 
   renderCurrentView () {
     var hasSearchQuery = !!this.searchQuery
-    var isSitesView = ['my-sites', 'subscriptions', 'subscribers'].includes(this.currentNav)
+    var isSitesView = ['my-sites', 'subscriptions', 'subscribers', 'network-sites'].includes(this.currentNav)
     if (hasSearchQuery) {
       const searchLink = (label, url) => {
         return html`
@@ -380,45 +379,47 @@ class DesktopApp extends LitElement {
                 ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`)}
                 ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
               </div>
-              ${this.isEmpty ? this.renderEmptyMessage() : ''}
-              ${this.currentNav === 'all' || isSitesView ? html`
-                ${this.renderSites()}
+              ${this.currentNav === 'all' ? html`
+                ${this.renderSites('all')}
+                <h3 class="feed-heading">Links</h3>
+                <beaker-record-feed
+                  .pathQuery=${PATH_QUERIES.search.links}
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  limit="50"
+                  empty-message="No results found"
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+                <h3 class="feed-heading">Discussion</h3>
+                <beaker-record-feed
+                  .pathQuery=${PATH_QUERIES.search.discussion}
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  limit="50"
+                  empty-message="No results found"
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+              ` : isSitesView ? html`
+                ${this.renderSites(this.currentNav)}
               ` : html`
                 <beaker-record-feed
                   .pathQuery=${this.currentNavAsPathQuery}
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
+                  empty-message="No results found"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
                   @publish-reply=${this.onPublishReply}
                   profile-url=${this.profile ? this.profile.url : ''}
                 ></beaker-record-feed>
               `}
-              ${this.currentNav === 'all' ? html`
-                <beaker-record-feed
-                  .pathQuery=${PATH_QUERIES.search.links}
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  title="Links"
-                  limit="50"
-                  @load-state-updated=${this.onFeedLoadStateUpdated}
-                  @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
-                  profile-url=${this.profile ? this.profile.url : ''}
-                ></beaker-record-feed>
-                <beaker-record-feed
-                  .pathQuery=${PATH_QUERIES.search.discussion}
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  title="Discussion"
-                  limit="50"
-                  @load-state-updated=${this.onFeedLoadStateUpdated}
-                  @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
-                  profile-url=${this.profile ? this.profile.url : ''}
-                ></beaker-record-feed>
-              ` : ''}
             </div>
             ${this.renderRightSidebar()}
           </div>
@@ -434,7 +435,7 @@ class DesktopApp extends LitElement {
             </div>
             <div>
               ${isSitesView ? html`
-                ${this.renderSites()}
+                ${this.renderSites(this.currentNav)}
               ` : this.currentNav === 'legacy-archives' ? html`
                 ${this.renderLegacyArchivesView()}
               ` : html`
@@ -459,18 +460,29 @@ class DesktopApp extends LitElement {
     }
   }
 
-  renderSites () {
+  renderSites (id) {
     var listing = ({
       all: 'all',
       'my-sites': 'mine',
       subscriptions: 'subscribed',
-      subscribers: 'subscribers'
-    })[this.currentNav]
+      subscribers: 'subscribers',
+      'network-sites': 'network'
+    })[id]
+    var title = ({
+      all: 'Sites',
+      'my-sites': 'My sites',
+      subscriptions: 'My subscriptions',
+      subscribers: 'Subscribed to me',
+      'network-sites': 'Community: Beaker Userlist'
+    })[id]
+    var allSearch = !!this.searchQuery && id === 'all'
     return html`
+      ${title ? html`<h3 class="feed-heading">${title}</h3>` : ''}
       <beaker-sites-list
         listing=${listing}
         filter=${this.searchQuery}
-        ?single-row=${!!this.searchQuery && this.currentNav === 'all'}
+        empty-message="No results found"
+        ?single-row=${allSearch}
         .profile=${this.profile}
       ></beaker-sites-list>
     `

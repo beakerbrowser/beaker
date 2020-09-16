@@ -17,7 +17,8 @@ export class SitesList extends LitElement {
       singleRow: {type: Boolean, attribute: 'single-row'},
       filter: {type: String},
       profile: {type: Object},
-      sites: {type: Array}
+      sites: {type: Array},
+      emptyMessage: {type: String, attribute: 'empty-message'},
     }
   }
 
@@ -32,6 +33,7 @@ export class SitesList extends LitElement {
     this.filter = undefined
     this.profile = undefined
     this.sites = undefined
+    this.emptyMessage = undefined
 
     // query state
     this.activeQuery = undefined
@@ -91,10 +93,11 @@ export class SitesList extends LitElement {
 
     var subs = await beaker.index.query({
       path: '/subscriptions/*.goto',
-      index: ['local', 'network']
+      index: 'local'
     })
 
     var sites
+    var isFiltered = false
     if (this.listing === 'mine') {
       sites = await beaker.drives.list({includeSystem: true})
       sites = sites.filter(s => s.info?.writable)
@@ -119,13 +122,22 @@ export class SitesList extends LitElement {
         index: ['local', 'network']
       })
       sites = await Promise.all(subs2.map(sub => beaker.index.getSite(sub.site.url, {cacheOnly: true})))
-    } else {
+    } else if (this.listing === 'network') {
+      isFiltered = true
       sites = await beaker.index.listSites({
-        search: this.filter
+        search: this.filter,
+        index: 'network',
+        limit: 15
+      })
+    } else {
+      isFiltered = true
+      sites = await beaker.index.listSites({
+        search: this.filter,
+        index: ['local', 'network']
       })
     }
 
-    if (this.filter && this.listing !== 'all') {
+    if (this.filter && !isFiltered) {
       sites = sites.filter(s => (
         (s.title || '').toLowerCase().includes(this.filter.toLowerCase())
         || (s.description || '').toLowerCase().includes(this.filter.toLowerCase())
@@ -134,7 +146,10 @@ export class SitesList extends LitElement {
     if (this.singleRow) {
       sites = sites.slice(0, 3)
     }
-    sites.sort((a, b) => a.title.localeCompare(b.title))
+
+    if (!isFiltered) {
+      sites.sort((a, b) => a.title.localeCompare(b.title))
+    }
 
     for (let sub of subs) {
       try {
@@ -185,7 +200,13 @@ export class SitesList extends LitElement {
       return html``
     }
     if (!this.sites.length) {
-      return html``
+      if (!this.emptyMessage) return html``
+      return html`
+        <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+        <div class="sites empty">
+          <span>${this.emptyMessage}</div></span>
+        </div>
+      `
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
@@ -231,7 +252,7 @@ export class SitesList extends LitElement {
                 }
               >
                 <strong>${site.subscriptions?.length || 0}</strong>
-                ${pluralize(site.subscriptions?.length || 0, 'subscriber')}
+                ${pluralize(site.subscriptions?.length || 0, 'known subscriber')}
               </a>
             </div>
           ` : ''}

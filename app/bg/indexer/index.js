@@ -144,7 +144,8 @@ export async function getSite (url, opts) {
       url: siteRows[0].origin,
       title: siteRows[0].title,
       description: siteRows[0].description,
-      writable: Boolean(siteRows[0].writable)
+      writable: Boolean(siteRows[0].writable),
+      index: {id: 'local'}
     }
   }
   var hyperbeeResult = await hyperbees.getSite(url)
@@ -155,7 +156,8 @@ export async function getSite (url, opts) {
       url: origin,
       title: toNiceUrl(origin),
       description: '',
-      writable: false
+      writable: false,
+      index: {id: 'userlist.beakerbrowser.com'}
     }
   }
   var site = await loadSite(db, origin)
@@ -164,42 +166,43 @@ export async function getSite (url, opts) {
     url: site.origin,
     title: site.title,
     description: site.description,
-    writable: site.writable
+    writable: site.writable,
+    index: {id: 'live'}
   }
 }
 
 /**
  * @param {Object} [opts]
  * @param {String} [opts.search]
+ * @param {String|String[]} [opts.index] - 'local', 'network', url of a specific hyperbee index
  * @param {Boolean} [opts.writable]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @returns {Promise<SiteDescription[]>}
  */
 export async function listSites (opts) {
-  var query = db('sites')
-    .select('*')
-    .offset(opts?.offset || 0)
-  if (typeof opts?.limit === 'number') {
-    query = query.limit(opts.limit)
+  opts = opts && typeof opts === 'object' ? opts : {}
+  opts.index = opts.index ? toArray(opts.index) : ['local']
+
+  var results = []
+  if (opts.index.includes('local')) {
+    results.push(await local.listSites(db, opts))
   }
-  if (opts?.search) {
-    query = query.whereRaw(
-      `sites.title LIKE ? OR sites.description LIKE ?`,
-      [`%${opts.search}%`, `%${opts.search}%`]
-    )
+  if (opts.index.includes('network') || opts.index.includes('userlist.beakerbrowser.com')) {
+    results.push(await hyperbees.listSites(opts))
   }
-  if (typeof opts?.writable === 'boolean') {
-    query = query.where('sites.writable', opts.writable ? 1 : 0)
+
+  if (results.length === 1) {
+    return results[0]
   }
-  var siteRows = await query
-  return siteRows.map(row => ({
-    origin: row.origin,
-    url: row.origin,
-    title: row.title,
-    description: row.description,
-    writable: Boolean(row.writable)
-  }))
+
+  var sites = []
+  for (let result of results.flat()) {
+    if (!sites.find(s => s.url === result.url)) {
+      sites.push(result)
+    }
+  }
+  return sites
 }
 
 /**
@@ -270,7 +273,7 @@ export async function get (url, permissions) {
  * @param {String|String[]} [opts.path]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
- * @param {String|String[]} [opts.index] - 'local' or 'network'
+ * @param {String|String[]} [opts.index] - 'local', 'network', url of a specific hyperbee index
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]

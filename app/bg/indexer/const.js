@@ -36,6 +36,8 @@ export const METADATA_KEYS = {
  * @prop {String} title
  * @prop {String} description
  * @prop {Boolean} writable
+ * @prop {Object} index
+ * @prop {String} index.id
  *  
  * @typedef {Object} ParsedUrl
  * @prop {String} origin

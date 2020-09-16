@@ -24,6 +24,43 @@ import { METADATA_KEYS } from './const'
 
 /**
  * @param {Object} db
+ * @param {Object} [opts]
+ * @param {String} [opts.search]
+ * @param {String|String[]} [opts.index] - 'local', 'network', url of a specific hyperbee index
+ * @param {Boolean} [opts.writable]
+ * @param {Number} [opts.offset]
+ * @param {Number} [opts.limit]
+ * @returns {Promise<SiteDescription[]>}
+ */
+export async function listSites (db, opts) {
+  var query = db('sites')
+    .select('*')
+    .offset(opts?.offset || 0)
+  if (typeof opts?.limit === 'number') {
+    query = query.limit(opts.limit)
+  }
+  if (opts?.search) {
+    query = query.whereRaw(
+      `sites.title LIKE ? OR sites.description LIKE ?`,
+      [`%${opts.search}%`, `%${opts.search}%`]
+    )
+  }
+  if (typeof opts?.writable === 'boolean') {
+    query = query.where('sites.writable', opts.writable ? 1 : 0)
+  }
+  var siteRows = await query
+  return siteRows.map(row => ({
+    origin: row.origin,
+    url: row.origin,
+    title: row.title,
+    description: row.description,
+    writable: Boolean(row.writable),
+    index: {id: 'local'}
+  }))
+}
+
+/**
+ * @param {Object} db
  * @param {Object} opts
  * @param {String|String[]} [opts.origin]
  * @param {String|String[]} [opts.path]

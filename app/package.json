@@ -66,6 +66,7 @@
     "moment": "^2.24.0",
     "ms": "^2.1.2",
     "nat-upnp": "^1.1.1",
+    "node-fetch": "^2.6.1",
     "normalize-url": "^3.3.0",
     "once": "^1.4.0",
     "os-locale": "^3.1.0",

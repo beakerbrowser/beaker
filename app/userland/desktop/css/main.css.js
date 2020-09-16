@@ -332,6 +332,17 @@ main {
   margin-bottom: 20px;
 }
 
+h3.feed-heading {
+  margin: 0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #fff;
+  padding: 10px 0;
+  margin: 0 0 10px;
+  border-bottom: 1px solid var(--border-color--light);
+}
+
 @media (max-width: 900px) {
   .pins {
     display: none;
@@ -431,7 +442,7 @@ main {
 
 .alternatives {
   color: var(--text-color--pretty-light);
-  margin: 0 0 20px;
+  margin: 0 0 10px;
 }
 
 .alternatives .search-engine {
@@ -456,9 +467,9 @@ main {
   object-fit: cover;
 }
 
-
+beaker-record-feed,
 beaker-sites-list {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .intro {
@@ -641,10 +652,11 @@ beaker-sites-list {
 }
 
 .create-box button {
-  padding: 7px 8px;
+  padding: 5px 4px;
   text-align: left;
   box-sizing: border-box;
   font-size: 13px;
+  width: 150px;
 }
 
 .create-box button i {
