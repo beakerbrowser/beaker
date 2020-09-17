@@ -219,13 +219,14 @@ export class SitesList extends LitElement {
   }
 
   renderSite (site) {
+    var title = site.title || toNiceDomain(site.origin)
     return html`
       <div class="site">
         <div class="thumb">
-          <a href=${site.origin} title=${site.title}><img src="asset:thumb:${site.origin}"></a>
+          <a href=${site.origin} title=${title}><img src="asset:thumb:${site.origin}"></a>
         </div>
         <div class="info">
-          <div class="title"><a href=${site.origin} title=${site.title}>${site.title}</a></div>
+          <div class="title"><a href=${site.origin} title=${title}>${title}</a></div>
           <div class="description">${shorten(site.description, 200)}</div>
           ${site.forkOf ? html`
             <div class="fork-of">

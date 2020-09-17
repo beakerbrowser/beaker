@@ -148,7 +148,7 @@ a:hover {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: scale-down;
+  object-fit: cover;
 }
 
 .record.expanded-link .info {
@@ -297,7 +297,7 @@ a:hover {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: scale-down;
+  object-fit: cover;
 }
 
 .record.action .author {
@@ -376,7 +376,7 @@ a:hover {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: scale-down;
+  object-fit: cover;
 }
 
 .record.link .container {
@@ -479,7 +479,7 @@ a:hover {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: scale-down;
+  object-fit: cover;
 }
 
 :host([noborders]) .record.card .thumb .sysicon {
