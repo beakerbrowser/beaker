@@ -4,11 +4,11 @@ import * as logLib from '../logger'
 const logger = logLib.get().child({category: 'hyper', subcategory: 'filesystem'})
 import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
+import { promises as fsp } from 'fs'
 import * as archivesDb from '../dbs/archives'
 import * as bookmarks from './bookmarks'
 import * as trash from './trash'
 import * as modals from '../ui/subwindows/modals'
-import { PATHS } from '../../lib/const'
 import lock from '../../lib/lock'
 import { isSameOrigin } from '../../lib/urls'
 
@@ -282,9 +282,11 @@ export async function ensureDir (path, drive = rootDrive) {
 
 export async function setupDefaultProfile ({title, description, thumbBase64, thumbExt}) {
   var drive = await hyper.drives.createNewDrive({title, description})
-  if (thumbBase64) {
-    await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
+  if (!thumbBase64) {
+    thumbBase64 = await fsp.readFile(joinPath(__dirname, './assets/img/default-user-thumb.jpg'), 'base64')
+    thumbExt = 'jpg'
   }
+  await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
   await ensureAddressBook(drive.key.toString('hex'))
   profileDriveUrl = drive.url
 }
