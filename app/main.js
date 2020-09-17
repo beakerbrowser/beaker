@@ -141,6 +141,11 @@ app.on('ready', async function () {
   log.info('Running setup flow')
   await runSetupFlow()
 
+  // abort if the profile is not setup
+  if (!filesystem.getProfileUrl()) {
+    return app.quit()
+  }
+
   // ui
   log.info('Initializing window menu')
   windowMenu.setup()
