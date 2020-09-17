@@ -979,7 +979,7 @@ async function getLiveRecord (url) {
     for (let k in stat.metadata) {
       record.metadata[k] = stat.metadata[k]
     }
-    if (record.extension === '.md') {
+    if (record.path.endsWith('.md')) {
       record.content = await site.fetch(update.path)
       record.index.links = markdownLinkExtractor(record.content)
     }
@@ -1023,7 +1023,7 @@ async function listLiveRecords (origin, opts) {
 
         // helper to fetch the rest of the data if in the results set
         fetchData: async function () {
-          if (this.extension === '.md') {
+          if (this.path.endsWith('.md')) {
             this.content = await site.fetch(file.path)
             this.index.links = markdownLinkExtractor(this.content)
           }
