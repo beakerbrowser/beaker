@@ -142,7 +142,7 @@ export async function getSite (url, opts) {
     return {
       origin: siteRows[0].origin,
       url: siteRows[0].origin,
-      title: siteRows[0].title,
+      title: siteRows[0].title || toNiceUrl(siteRows[0].origin),
       description: siteRows[0].description,
       writable: Boolean(siteRows[0].writable),
       index: {id: 'local'}
@@ -248,7 +248,7 @@ export async function get (url, permissions) {
     },
     site: {
       url: urlp.origin,
-      title: rows[0].title
+      title: rows[0].title || toNiceUrl(urlp.origin)
     },
     content: undefined
   }
@@ -570,7 +570,7 @@ export async function search (q = '', opts, permissions) {
       metadata: {},
       site: {
         url: mergedHits[0].origin,
-        title: mergedHits[0].siteTitle
+        title: mergedHits[0].siteTitle || toNiceUrl(mergedHits[0].origin)
       },
       index: {
         id: 'local',
@@ -971,7 +971,7 @@ async function getLiveRecord (url) {
       },
       site: {
         url: site.origin,
-        title: site.title
+        title: site.title || toNiceUrl(urlp.origin)
       },
       content: undefined,
       notification: undefined
@@ -1016,7 +1016,7 @@ async function listLiveRecords (origin, opts) {
         },
         site: {
           url: site.origin,
-          title: site.title
+          title: site.title || toNiceUrl(site.origin)
         },
         content: undefined,
         notification: undefined,

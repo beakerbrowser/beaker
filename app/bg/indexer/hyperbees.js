@@ -2,7 +2,7 @@ import BeakerIndexer from 'beaker-index'
 import fetch from 'node-fetch'
 import { getHyperspaceClient } from '../hyper/daemon'
 import { normalizeOrigin, normalizeUrl, isSameOrigin } from '../../lib/urls'
-import { parseSimplePathSpec } from '../../lib/strings'
+import { parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
 import {
   toArray,
   parseUrl
@@ -78,7 +78,7 @@ export async function getSite (url) {
     return {
       origin: origin,
       url: origin,
-      title: indexJson.title || origin,
+      title: indexJson.title || toNiceUrl(origin),
       description: indexJson.description || '',
       writable: false,
       index: {id: 'userlist.beakerbrowser.com'}
@@ -314,7 +314,7 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     },
     site: {
       url: backlink.value.drive,
-      title: site.title
+      title: site.title || toNiceUrl(urlp.origin)
     },
     content: content ? content.value : undefined,
     notification
@@ -335,7 +335,7 @@ async function fetchFullSitesList () {
       _fullSitesListCache.push({
         origin: user.driveUrl,
         url: user.driveUrl,
-        title: user.title || user.driveUrl,
+        title: user.title || toNiceUrl(user.driveUrl),
         description: user.description || '',
         writable: Boolean((await getMeta(user.driveUrl, {noDefault: true}))?.writable),
         index: {id: 'userlist.beakerbrowser.com'}

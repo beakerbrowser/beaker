@@ -1,6 +1,6 @@
 import { PermissionsError } from 'beaker-error-constants'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
-import { joinPath, parseSimplePathSpec } from '../../lib/strings'
+import { joinPath, parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
 import {
   toArray,
   checkShouldExcludePrivate
@@ -52,7 +52,7 @@ export async function listSites (db, opts) {
   return siteRows.map(row => ({
     origin: row.origin,
     url: row.origin,
-    title: row.title,
+    title: row.title || toNiceUrl(row.origin),
     description: row.description,
     writable: Boolean(row.writable),
     index: {id: 'local'}
@@ -193,7 +193,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
       content: undefined,
       site: {
         url: row.origin,
-        title: row.siteTitle
+        title: row.siteTitle || toNiceUrl(row.origin)
       },
       notification: undefined
     }
