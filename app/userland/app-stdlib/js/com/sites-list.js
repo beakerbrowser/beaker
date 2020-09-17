@@ -290,7 +290,7 @@ export class SitesList extends LitElement {
       this.requestUpdate()
       await beaker.subscriptions.remove(site.url)
     } else {
-      site.subscriptions = site.subscriptions.concat([{site: this.profile}])
+      site.subscriptions = (site.subscriptions || []).concat([{site: this.profile}])
       this.requestUpdate()
       await beaker.subscriptions.add({
         href: site.origin,
