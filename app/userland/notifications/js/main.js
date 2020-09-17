@@ -128,9 +128,15 @@ class NotificationsApp extends LitElement {
       </div>
       <div class="results">
         ${!this.results ? html`<div class="loading"><span class="spinner"></span></div>` : ''}
-        ${this.results ?
-          html`<div>${repeat(this.results, result => result.url, result => this.renderResult(result))}</div>`
-        : ''}
+        ${this.results ? html`
+          <div>${repeat(this.results, result => result.url, result => this.renderResult(result))}</div>
+        ` : ''}
+        ${this.results && !this.results.length ? html`
+          <div class="empty">
+            <div><span class="fas fa-bell"></span></div>
+            <div>No notifications yet</div>
+          </div>
+        ` : ''}
       </div>
     `
   }

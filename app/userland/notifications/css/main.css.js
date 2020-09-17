@@ -39,6 +39,22 @@ ${spinnerCSS}
   padding: 10px;
 }
 
+.empty {
+  display: grid;
+  align-content: center;
+  text-align: center;
+  background: var(--bg-color--light);
+  color: var(--text-color--light);
+  height: calc(100vh - 48px);
+  padding-bottom: 10px;
+}
+
+.empty .fas {
+  font-size: 66px;
+  color: var(--text-color--very-light);
+  margin-bottom: 20px;
+}
+
 beaker-record {
   display: block;
   border-bottom: 1px solid var(--border-color--semi-light);
