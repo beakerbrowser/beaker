@@ -10,6 +10,7 @@ import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
 import { shorten, pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
+import * as QP from './lib/qp.js'
 import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
@@ -93,6 +94,8 @@ class DesktopApp extends LitElement {
     this.isIntroActive = false
     this.legacyArchives = []
     this.isEmpty = false
+
+    this.configFromQP()
     this.load().then(() => {
       this.loadSuggestions()
     })
@@ -105,6 +108,10 @@ class DesktopApp extends LitElement {
       this.isIntroActive = true
     }
 
+    window.addEventListener('popstate', (event) => {
+      this.configFromQP()
+    })
+
     window.addEventListener('focus', e => {
       if (!this.searchQuery) {
         this.load()
@@ -115,7 +122,21 @@ class DesktopApp extends LitElement {
     })
   }
 
+  configFromQP () {
+    this.currentNav = QP.getParam('view', 'all')
+    this.searchQuery = QP.getParam('q', undefined)
+    this.currentSource = QP.getParam('source', 'all')
+    
+    if (this.searchQuery) {
+      this.updateComplete.then(() => {
+        this.shadowRoot.querySelector('.search-ctrl input').value = this.searchQuery
+      })
+    }
+  }
+
   async load () {
+    console.log({currentNav: this.currentNav, searchQuery: this.searchQuery, currentSource: this.currentSource})
+
     cacheBuster = Date.now()
     let sourceOptions
     ;[this.profile, this.pins, sourceOptions] = await Promise.all([
@@ -213,6 +234,7 @@ class DesktopApp extends LitElement {
 
   async setCurrentNav (nav) {
     this.currentNav = nav
+    QP.setParams({view: nav})
     await this.requestUpdate()
     this.shadowRoot.querySelector('.all-view').scrollTop = 0
   }
@@ -750,6 +772,7 @@ class DesktopApp extends LitElement {
     e.stopPropagation()
     const fixedClick = (v) => {
       this.currentSource = v
+      QP.setParams({source: v})
       this.load()
     }
     const items = this.sourceOptions.slice(1).map(({href, title}) => ({
@@ -757,6 +780,7 @@ class DesktopApp extends LitElement {
       label: title,
       click: () => {
         this.currentSource = href
+        QP.setParams({source: href})
         this.load()
       }
     }))
@@ -776,12 +800,14 @@ class DesktopApp extends LitElement {
     }
     this.keyupSearchTo = setTimeout(() => {
       this.searchQuery = value
+      QP.setParams({q: this.searchQuery})
       this.keyupSearchTo = undefined
     }, 100)
   }
 
   onClickClearSearch (e) {
     this.searchQuery = ''
+    QP.setParams({q: false})
     this.shadowRoot.querySelector('.search-ctrl input').value = ''
   }
 
