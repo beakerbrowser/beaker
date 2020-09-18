@@ -57,6 +57,7 @@ a:hover {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-color--result-link);
+  padding: 10px 14px;
 }
 
 .vote-ctrl :-webkit-any(.far, .fas) {
@@ -597,11 +598,6 @@ a:hover {
   padding: 0px 4px 2px;
   border: 1px solid var(--border-color--light);
   font-size: 11px;
-}
-
-.record.card .context beaker-record[render-mode="link"] {
-  display: block;
-  padding: 10px 13px;
 }
 
 .record.card .content {

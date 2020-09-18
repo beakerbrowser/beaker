@@ -150,14 +150,24 @@ export class Record extends LitElement {
 
   renderAsCard () {
     const res = this.record
+    const rtype = getRecordType(res)
 
     var context = undefined
     var contextAction
-    switch (getRecordType(res)) {
+    switch (rtype) {
       case 'comment':
         context = res.metadata['comment/parent'] || res.metadata['comment/subject']
         contextAction = res.metadata['comment/parent'] ? 'reply to' : 'comment on'
         break
+    }
+
+    var shouldShowContent = ['comment', 'microblogpost'].includes(rtype)
+    if (shouldShowContent && !res.content) {
+      return html`
+        <a class="unknown-link" href=${res.url}>
+          ${asyncReplace(fancyUrlAsync(res.url))}
+        </a>
+      `
     }
 
     return html`
