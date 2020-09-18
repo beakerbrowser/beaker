@@ -403,7 +403,6 @@ a:hover {
 }
 
 .record.link .title {
-  max-width: 590px;
   color: var(--text-color--light); 
 }
 
