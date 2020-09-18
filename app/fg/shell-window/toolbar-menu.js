@@ -10,10 +10,10 @@ const WINDOW_MENU_ENABLED = false
 const BASIC_BUILTINS = [
   {builtin: true, url: 'beaker://about/', hyperOnly: true},
   {builtin: true, url: 'beaker://activity/'},
-  {builtin: true, url: 'beaker://library/'},
   {builtin: true, url: 'beaker://editor/'}
 ]
 const ADVANCED_BUILTINS = [
+  {builtin: true, url: 'beaker://library/'},
   {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
   {builtin: true, url: 'beaker://webterm/'}
 ]
