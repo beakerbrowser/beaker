@@ -44,8 +44,8 @@ export const setup = async function (opts) {
     browser_theme: 'system',
     analytics_enabled: 1,
     search_engines: [
-      {name: 'Beaker', url: 'beaker://desktop/', selected: true},
-      {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/'},
+      {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
+      {name: 'Beaker', url: 'beaker://desktop/'},
       {name: 'Google', url: 'https://www.google.com/search'}
     ],
     adblock_lists: [
