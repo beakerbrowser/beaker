@@ -411,7 +411,7 @@ class DesktopApp extends LitElement {
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
-                  empty-message="No results found"
+                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
                   @publish-reply=${this.onPublishReply}
@@ -423,7 +423,7 @@ class DesktopApp extends LitElement {
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
-                  empty-message="No results found"
+                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
                   @publish-reply=${this.onPublishReply}
@@ -437,7 +437,7 @@ class DesktopApp extends LitElement {
                   .filter=${this.searchQuery}
                   .sources=${this.sources}
                   limit="50"
-                  empty-message="No results found"
+                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
                   @publish-reply=${this.onPublishReply}
