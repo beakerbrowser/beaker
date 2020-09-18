@@ -453,11 +453,13 @@ export async function count (opts, permissions) {
  * @param {Object} [opts]
  * @param {String|Array<String>} [opts.origin]
  * @param {String|Array<String>} [opts.path]
+ * @param {String|Array<String>} [opts.field]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
+ * @param {Boolean} [opts.includeContent]
  * @param {Object} [permissions]
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  * @returns {Promise<RecordDescription[]>}
@@ -495,7 +497,7 @@ export async function search (q = '', opts, permissions) {
     .innerJoin('records_data', 'records_data.rowid', 'records_data_fts.rowid')
     .innerJoin('records', 'records.rowid', 'records_data.record_rowid')
     .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
-    .whereIn('records_data.key', ['_content', 'title'])
+    .whereIn('records_data.key', toStringArray(opts.field) || ['_content', 'title'])
     .whereRaw(`records_data_fts.value MATCH ?`, [q])
     .offset(opts?.offset || 0)
   if (typeof opts?.limit === 'number') {
@@ -592,7 +594,9 @@ export async function search (q = '', opts, permissions) {
     var rows = await db('records_data').select('*').where({record_rowid: mergedHits[0].record_rowid})
     for (let row of rows) {
       if (row.key === METADATA_KEYS.content) {
-        record.content = row.value
+        if (opts?.includeContent) {
+          record.content = row.value
+        }
       } else if (row.key === METADATA_KEYS.link) {
         record.index.links.push(row.value)
       } else {
@@ -1048,4 +1052,11 @@ export async function getNotificationsRtimes () {
     local_notifications_rtime: localRows[0]?.value ? (+localRows[0]?.value) : 0,
     network_notifications_rtime: networkRows[0]?.value ? (+networkRows[0]?.value) : 0
   }
+}
+
+function toStringArray (v) {
+  if (!v) return
+  v = toArray(v).filter(item => typeof item === 'string')
+  if (v.length === 0) return
+  return v
 }
