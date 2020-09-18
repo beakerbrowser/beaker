@@ -94,6 +94,7 @@ class LocationBar extends LitElement {
             }
           </div>
           <div class="list">
+            ${searchLink('Beaker', `beaker://desktop/?q=${encodeURIComponent(this.query)}`)}
             ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.query)}`)}
             ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.query)}`)}
             ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.query)}`)}
@@ -333,6 +334,7 @@ LocationBar.styles = [css`
 .search-engines .list a img {
   width: 24px;
   height: 24px;
+  image-rendering: -webkit-optimize-contrast;
 }
 `]
 
