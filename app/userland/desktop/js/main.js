@@ -309,7 +309,6 @@ class DesktopApp extends LitElement {
             ${navItem('my-sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Mine</span>`)}
             ${navItem('subscriptions', html`<span class="fas fa-fw fa-rss"></span> <span class="label">Subscribed</span>`)}
             ${navItem('subscribers', html`<span class="fas fa-fw fa-users"></span> <span class="label">Subscribers</span>`)}
-            ${navItem('network-sites', html`<span class="far fa-fw fa-address-book"></span> <span class="label">Communities</span>`)}
           </section>
         </div>
       </div>
@@ -490,24 +489,22 @@ class DesktopApp extends LitElement {
       all: 'all',
       'my-sites': 'mine',
       subscriptions: 'subscribed',
-      subscribers: 'subscribers',
-      'network-sites': 'network'
+      subscribers: 'subscribers'
     })[id]
     var title = ({
       all: 'Sites',
       'my-sites': 'My sites',
       subscriptions: 'My subscriptions',
-      subscribers: 'Subscribed to me',
-      'network-sites': 'Community: Beaker Userlist'
+      subscribers: 'Subscribed to me'
     })[id]
     var allSearch = !!this.searchQuery && id === 'all'
     return html`
       ${title ? html`<h3 class="feed-heading">${title}</h3>` : ''}
       <beaker-sites-list
         listing=${listing}
-        filter=${this.searchQuery}
-        empty-message="No results found"
-        ?single-row=${allSearch}
+        .filter=${this.searchQuery}
+        .limit=${allSearch ? 6 : undefined}
+        empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
         .profile=${this.profile}
       ></beaker-sites-list>
     `

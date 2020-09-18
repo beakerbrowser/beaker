@@ -16,6 +16,7 @@ export class SitesList extends LitElement {
       listing: {type: String},
       singleRow: {type: Boolean, attribute: 'single-row'},
       filter: {type: String},
+      limit: {type: Number},
       profile: {type: Object},
       sites: {type: Array},
       emptyMessage: {type: String, attribute: 'empty-message'},
@@ -31,6 +32,7 @@ export class SitesList extends LitElement {
     this.listing = undefined
     this.singleRow = false
     this.filter = undefined
+    this.limit = undefined
     this.profile = undefined
     this.sites = undefined
     this.emptyMessage = undefined
@@ -145,6 +147,8 @@ export class SitesList extends LitElement {
     }
     if (this.singleRow) {
       sites = sites.slice(0, 3)
+    } else if (this.limit) {
+      sites = sites.slice(0, this.limit)
     }
 
     if (!isFiltered) {
