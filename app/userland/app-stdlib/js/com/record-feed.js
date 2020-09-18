@@ -106,7 +106,8 @@ export class RecordFeed extends LitElement {
           notification: true,
           limit: this.limit,
           sort: 'rtime',
-          reverse: true
+          reverse: true,
+          includeContent: true
         })
       } else {
         results = await beaker.index.query({
@@ -123,7 +124,8 @@ export class RecordFeed extends LitElement {
           origin: this.sources,
           limit: this.limit,
           sort: 'crtime',
-          reverse: true
+          reverse: true,
+          includeContent: true
         })
       } else {
         // because we collapse results, we need to run the query until the limit is fulfilled

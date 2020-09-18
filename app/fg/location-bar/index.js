@@ -151,6 +151,11 @@ class LocationBar extends LitElement {
       <div class="provenance">
         ${toNiceUrl(r.urlDecorated ? unsafeHTML(joinSegments(r.urlDecorated)) : r.url)}
       </div>
+      ${r.origin ? html`
+        <div class="origin">
+          <span class="fa-fw ${r.origin.icon}"></span> ${r.origin.label}
+        </div>
+      ` : ''}
     `
   }
 
@@ -275,6 +280,11 @@ LocationBar.styles = [css`
   font-size: 12px;
 }
 
+.result .origin {
+  margin-left: 6px;
+  color: #888;
+}
+
 .result:hover {
   background: #f0f0f0;
 }
@@ -286,7 +296,8 @@ LocationBar.styles = [css`
 
 .result.selected .icon *,
 .result.selected .title,
-.result.selected .provenance {
+.result.selected .provenance,
+.result.selected .origin {
   color: #fff;
 }
 

@@ -2,6 +2,12 @@ import { examineLocationInput } from '../../lib/urls'
 import { joinPath } from '../../lib/strings'
 import _uniqWith from 'lodash.uniqwith'
 
+const DATA_PATHS = [
+  '/blog/*.md',
+  '/bookmarks/*.goto',
+  '/pages/*.md'
+]
+
 /**
  * Used by ../shell-window/navbar/location.js
  * Mainly put here to keep that file from growing too large
@@ -18,57 +24,27 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   var searchEngine = searchEngines.find(se => se.selected) || searchEngines[0]
   var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(ctx.inputValue || '/')
 
-  var [historyResults, bookmarks] = await Promise.all([
+  var [historyResults, networkResults, bookmarks] = await Promise.all([
     ctx.inputValue ? bg.history.search(ctx.inputValue) : [],
+    ctx.inputValue ? bg.index.search(ctx.inputValue, {path: DATA_PATHS, limit: 10, index: 'local', field: 'title'}) : [],
     ctx.bookmarksFetch
   ])
-
-  var bookmarkResults = [];
-  {
-    let query = ctx.inputValue.toLowerCase()
-    for (let bookmark of bookmarks) {
-      let titleIndex = bookmark.title.toLowerCase().indexOf(query)
-      let hrefIndex = bookmark.href.indexOf(query)
-      if (titleIndex === -1 && hrefIndex === -1) {
-        continue
-      }
-
-      var titleDecorated = undefined
-      if (titleIndex !== -1) {
-        let t = bookmark.title
-        let start = titleIndex
-        let end = start + query.length
-        titleDecorated = [t.slice(0, start), t.slice(start, end), t.slice(end)]
-      }
-
-      var urlDecorated = undefined
-      if (hrefIndex !== -1) {
-        let h = bookmark.href
-        let start = hrefIndex
-        let end = start + query.length
-        urlDecorated = [h.slice(0, start), h.slice(start, end), h.slice(end)]
-      }
-
-      bookmarkResults.push({
-        isBookmark: true,
-        url: bookmark.href,
-        urlDecorated,
-        title: bookmark.title,
-        titleDecorated
-      })
-    }
-  }
 
   // abort if changes to the input have occurred since triggering these queries
   if (queryId !== ctx.queryIdCounter) return
 
   // decorate results with bolded regions
   var searchTerms = ctx.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
+  networkResults = networkResults.map(networkResultToItem).filter(Boolean)
   historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
-  finalResults = bookmarkResults.concat(historyResults)
-  finalResults = _uniqWith(finalResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
-  finalResults = finalResults.slice(0, 10) // apply limit
+  if (ctx.inputValue) {
+    finalResults = networkResults.concat(historyResults)
+    finalResults = _uniqWith(finalResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
+    finalResults = finalResults.slice(0, 10) // apply limit
+  } else {
+    finalResults = bookmarks
+  }
 
   // see if we have any URL guesses
   // we only do this if the input changed, in case the user deleted our suggested guess
@@ -116,6 +92,32 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   ctx.results = finalResults
   ctx.lastInputValue = ctx.inputValue
   onResults()
+}
+
+function networkResultToItem (record) {
+  if (record.path.startsWith('/bookmarks/')) {
+    if (!record.metadata.href) return
+    return {
+      url: record.metadata.href,
+      title: record.metadata.title || record.metadata.href,
+      titleDecorated: record.index.matches.find(m => m.key === 'title')?.value.split(/\<\/?b\>/g) || [record.metadata.title || record.metadata.href],
+      origin: {icon: 'far fa-star', label: `Bookmarked by ${record.site.title}`}
+    }
+  } else if (record.path.startsWith('/blog/')) {
+    return {
+      url: record.url,
+      title: record.metadata.title || record.url,
+      titleDecorated: record.index.matches.find(m => m.key === 'title')?.value.split(/\<\/?b\>/g) || [record.metadata.title || record.metadata.href],
+      origin: {icon: 'fas fa-blog', label: `Blogged by ${record.site.title}`}
+    }
+  } else if (record.path.startsWith('/pages/')) {
+    return {
+      url: record.url,
+      title: record.metadata.title || record.url,
+      titleDecorated: record.index.matches.find(m => m.key === 'title')?.value.split(/\<\/?b\>/g) || [record.metadata.title || record.metadata.href],
+      origin: {icon: 'far fa-file', label: `Page by ${record.site.title}`}
+    }
+  }
 }
 
 // helper for history search results

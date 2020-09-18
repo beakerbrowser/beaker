@@ -36,7 +36,8 @@ export class MarkdownSuggestions {
       ],
       limit: 10,
       sort: 'rank',
-      reverse: true
+      reverse: true,
+      field: 'title'
     }))
     const suggestions = queryResults.map(s => {
       var type = 'blogpost'
