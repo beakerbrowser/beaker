@@ -146,6 +146,8 @@ class ShellWindowTabs extends LitElement {
                 : ''}
             ${tab.isActive ? html`
               <div class="tab-minimize" title="Minimize to background" @click=${e => this.onClickMinimize(e, index)}></div>
+            ` : ''}
+            ${this.tabs.length < 12 || tab.isActive ? html`
               <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
             ` : ''}
           `}
