@@ -5,7 +5,7 @@ import { normalizeOrigin } from '../../lib/urls'
 import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
 import { query } from '../filesystem/query'
-import { READ_TIMEOUT } from './const'
+import { READ_TIMEOUT, READ_DIFF_TIMEOUT } from './const'
 
 // typedefs
 // =
@@ -184,7 +184,7 @@ export async function loadSite (db, origin) {
     },
 
     async listUpdates () {
-      return timer(READ_TIMEOUT, async (checkin) => {
+      return timer(READ_DIFF_TIMEOUT, async (checkin) => {
         checkin('fetching recent updates')
         // HACK work around the diff stream issue -prf
         // let changes = await drive.pda.diff(+record.last_indexed_version || 0)
