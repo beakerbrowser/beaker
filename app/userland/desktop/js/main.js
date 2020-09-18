@@ -532,7 +532,7 @@ class DesktopApp extends LitElement {
     return html`
       <div class="empty">
           <div class=${icon}></div>
-        <div>No ${thing}... yet!</div>
+        <div>Subscribe to sites to see ${thing}</div>
       </div>
     `
   }
