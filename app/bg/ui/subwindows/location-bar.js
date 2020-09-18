@@ -12,6 +12,7 @@ import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import locationBarRPCManifest from '../../rpc-manifests/location-bar'
 import * as tabManager from '../tabs/manager'
+import * as settingsDb from '../../dbs/settings'
 
 // globals
 // =
@@ -24,7 +25,8 @@ var views = {} // map of {[parentWindow.id] => BrowserView}
 // =
 
 export function setup (parentWindow) {
-  var view = views[parentWindow.id] = new BrowserView({
+  var id = parentWindow.id
+  var view = views[id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'fg', 'location-bar', 'index.build.js')
@@ -35,6 +37,12 @@ export function setup (parentWindow) {
     console.log('Location-Bar window says:', message)
   })
   view.webContents.loadURL('beaker://location-bar/')
+
+  settingsDb.on('set:search_engines', newValue => {
+    if (id in views) {
+      parentWindow.webContents.send('command', 'set-search-engines', newValue)
+    }
+  })
 }
 
 export function destroy (parentWindow) {

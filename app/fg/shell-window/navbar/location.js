@@ -356,7 +356,7 @@ class NavbarLocation extends LitElement {
   // events
   // =
 
-  onCommand (e, cmd) {
+  onCommand (e, cmd, ...args) {
     if (cmd === 'create-bookmark') {
       this.onClickBookmark()
     }
@@ -366,6 +366,9 @@ class NavbarLocation extends LitElement {
     }
     if (cmd === 'unfocus-location') {
       this.unfocusLocation()
+    }
+    if (cmd === 'set-search-engines') {
+      this.autocompleteState.searchEnginesPromise = JSON.parse(args[0])
     }
   }
 

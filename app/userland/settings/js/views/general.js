@@ -1,6 +1,7 @@
 import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import viewCSS from '../../css/views/general.css.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
+
 class GeneralSettingsView extends LitElement {
   static get properties () {
     return {
