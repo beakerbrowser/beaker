@@ -465,6 +465,7 @@ h3.feed-heading {
   width: 18px;
   height: 18px;
   object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 beaker-record-feed,
