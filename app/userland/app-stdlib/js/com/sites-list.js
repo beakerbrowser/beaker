@@ -234,12 +234,6 @@ export class SitesList extends LitElement {
               Fork of <a href="hyper://${site.forkOf.key}">${toNiceDomain(`hyper://${site.forkOf.key}`)}</a>
             </div>
           ` : ''}
-          ${isSameOrigin(site.origin, 'hyper://private') ? html`
-            <div class="fork-of"><span class="label">My Private Site</span></div>
-          ` : ''}
-          ${isSameOrigin(site.origin, this.profileUrl) ? html`
-            <div class="fork-of"><span class="label">My Profile Site</span></div>
-          ` : ''}
           ${!isSameOrigin(site.origin, 'hyper://private') && (!site.writable || site.subscriptions?.length > 0) ? html`
             <div class="known-subscribers">
               <a
@@ -257,20 +251,29 @@ export class SitesList extends LitElement {
               </a>
             </div>
           ` : ''}
-        </div>
-        ${site.writable ? html`
-          <button class="transparent" @click=${e => this.onClickMenu(e, site)}>
-            <span class="fas fa-fw fa-ellipsis-h"></span>
-          </button>
-        ` : html`
-          <button class="transparent" @click=${e => this.onToggleSubscribe(e, site)}>
-            ${this.isSubscribed(site) ? html`
-              <span class="fas fa-fw fa-check"></span> Subscribed
+          <div class="ctrls">
+            ${site.writable ? html`
+              ${isSameOrigin(site.origin, 'hyper://private') ? html`
+                <span class="label">My Private Site</span></div>
+              ` : isSameOrigin(site.origin, this.profileUrl) ? html`
+                <span class="label">My Profile Site</span></div>
+              ` : html`
+                <span class="label">My Site</span>
+              `}
+              <button class="transparent" @click=${e => this.onClickMenu(e, site)}>
+                <span class="fas fa-fw fa-ellipsis-h"></span>
+              </button>
             ` : html`
-              <span class="fas fa-fw fa-rss"></span> Subscribe
+              <button @click=${e => this.onToggleSubscribe(e, site)}>
+                ${this.isSubscribed(site) ? html`
+                  <span class="fas fa-fw fa-check"></span> Subscribed
+                ` : html`
+                  <span class="fas fa-fw fa-rss"></span> Subscribe
+                `}
+              </button>
             `}
-          </button>
-        `}
+          </div>
+        </div>
       </div>
     `
   }

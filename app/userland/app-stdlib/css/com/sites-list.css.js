@@ -47,16 +47,14 @@ h2 {
 
 .site {
   position: relative;
-  border: 1px solid var(--border-color--light);
   background: var(--bg-color--default);
-  border-radius: 4px;
 }
 
 .sites.full .site {
   display: flex;
-  align-items: center;
-  border-bottom-width: 0;
-  border-radius: 0;
+  align-items: flex-start;
+  border-top: 1px solid var(--border-color--very-light);
+  padding: 6px 0 4px;
 }
 
 .sites.full .site:last-child {
@@ -73,7 +71,7 @@ h2 {
 }
 
 .sites.full .site .thumb {
-  padding: 8px 10px 8px;
+  padding: 8px 10px 8px 0;
 }
 
 .site .thumb img {
@@ -82,7 +80,6 @@ h2 {
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid var(--border-color--light);
 }
 
 .sites.full .site .thumb img {
@@ -127,7 +124,7 @@ h2 {
 }
 
 .site .description {
-  margin-top: 4px;
+  margin-top: 6px;
   word-break: break-word;
 }
 
@@ -166,6 +163,15 @@ h2 {
 
 .site .known-subscribers a strong {
   color: var(--text-color--default);
+}
+
+.sites.full .site .ctrls {
+  margin-top: 8px;
+}
+
+.sites.full .site .ctrls button {
+  font-size: 11px;
+  padding: 3px 6px;
 }
 
 .empty {
