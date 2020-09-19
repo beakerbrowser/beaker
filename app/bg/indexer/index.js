@@ -474,11 +474,7 @@ export async function search (q = '', opts, permissions) {
   }
 
   // prep search terms
-  q = q
-    .toLowerCase()
-    .replace(/[:^*]/g, '') // strip symbols that sqlite interprets
-    .replace(/[-]/g, ' ') // strip symbols that sqlite interprets
-    + '*' // allow partial matches
+  q = `"${q.replace(/["]/g, '""')}" *`
 
   var query = db('records_data_fts')
     .select(
