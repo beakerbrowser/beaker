@@ -504,7 +504,7 @@ class DesktopApp extends LitElement {
       ${title ? html`<h3 class="feed-heading">${title}</h3>` : ''}
       <beaker-sites-list
         listing=${listing}
-        .filter=${this.searchQuery}
+        filter=${this.searchQuery || ''}
         .limit=${allSearch ? 6 : undefined}
         empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
         .profile=${this.profile}
