@@ -839,6 +839,9 @@ class EditorApp extends LitElement {
                   <input type="text" name="value" value=${v} ?disabled=${this.readOnly} placeholder="Value" @change=${onChange}>
                 </div>
               `)}
+              ${this.readOnly && entries.length === 0 ? html`
+                <div class="empty">No metadata</div>
+              ` : ''}
               ${!this.readOnly ? html`
                 <button class="primary" @click=${onClickSaveMetadata} disabled><span class="fas fa-fw fa-check"></span> Save</button>
               ` : ''}
