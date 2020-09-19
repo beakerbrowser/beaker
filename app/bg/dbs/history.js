@@ -74,7 +74,44 @@ export const addVisit = async function (profileId, {url, title}) {
       await db.run('UPDATE visits SET ts = ?, title = ? WHERE rowid = ?', [ts, title, visit.rowid])
     } else {
       // log visit
-      await db.run('INSERT INTO visits (profileId, url, title, ts) VALUES (?, ?, ?, ?);', [profileId, url, title, ts])
+      await db.run('INSERT INTO visits (profileId, url, title, tabClose, ts) VALUES (?, ?, ?, ?, ?);', [profileId, url, title, 0, ts])
+    }
+
+    await db.run('COMMIT;')
+  } finally {
+    release()
+  }
+}
+
+/**
+ * @param {number} profileId
+ * @param {Object} values
+ * @param {string} values.url
+ * @param {string} values.title
+ * @returns {Promise<void>}
+ */
+export const addTabClose = async function (profileId, {url, title}) {
+  // validate parameters
+  if (!url || typeof url !== 'string') {
+    throw new BadParamError('url must be a string')
+  }
+  if (!title || typeof title !== 'string') {
+    throw new BadParamError('title must be a string')
+  }
+
+  var release = await lock('history-db')
+  try {
+    await db.run('BEGIN TRANSACTION;')
+
+    var ts = Date.now()
+    // visited within 1 hour?
+    var visit = await db.get('SELECT rowid, * from visits WHERE profileId = ? AND url = ? AND ts > ? ORDER BY ts DESC LIMIT 1', [profileId, url, ts - 1000 * 60 * 60])
+    if (visit) {
+      // update visit ts and title
+      await db.run('UPDATE visits SET ts = ?, title = ?, tabClose = ? WHERE rowid = ?', [ts, title, 1, visit.rowid])
+    } else {
+      // log visit
+      await db.run('INSERT INTO visits (profileId, url, title, tabClose, ts) VALUES (?, ?, ?, ?);', [profileId, url, title, 1, ts])
     }
 
     await db.run('COMMIT;')
@@ -91,9 +128,10 @@ export const addVisit = async function (profileId, {url, title}) {
  * @param {number} [opts.limit]
  * @param {number} [opts.before]
  * @param {number} [opts.after]
+ * @param {Boolean} [opts.tabClose]
  * @returns {Promise<Array<Visit>>}
  */
-export const getVisitHistory = async function (profileId, {search, offset, limit, before, after}) {
+export const getVisitHistory = async function (profileId, {search, offset, limit, before, after, tabClose}) {
   var release = await lock('history-db')
   try {
     const params = /** @type Array<string | number> */([
@@ -113,26 +151,29 @@ export const getVisitHistory = async function (profileId, {search, offset, limit
         SELECT visits.*
           FROM visit_fts
             LEFT JOIN visits ON visits.url = visit_fts.url
-          WHERE visits.profileId = ?1 AND visit_fts MATCH ?4
+          WHERE visits.profileId = ?1 AND visit_fts MATCH ?4 ${tabClose ? `AND tabClose = 1` : ''}
           ORDER BY visits.ts DESC
           LIMIT ?2 OFFSET ?3
       `, params)
     }
-    let timeWhere = ''
+    let where = ''
     if (before && after) {
-      timeWhere += 'AND ts <= ?4 AND ts >= ?5'
+      where += 'AND ts <= ?4 AND ts >= ?5'
       params.push(before)
       params.push(after)
     } else if (before) {
-      timeWhere += 'AND ts <= ?4'
+      where += 'AND ts <= ?4'
       params.push(before)
     } else if (after) {
-      timeWhere += 'AND ts >= ?4'
+      where += 'AND ts >= ?4'
       params.push(after)
+    }
+    if (tabClose) {
+      where += `AND tabClose = 1`
     }
     return await db.all(`
       SELECT * FROM visits
-        WHERE profileId = ?1 ${timeWhere}
+        WHERE profileId = ?1 ${where}
         ORDER BY ts DESC
         LIMIT ?2 OFFSET ?3
     `, params)

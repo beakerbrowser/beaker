@@ -386,6 +386,9 @@ export class Pane extends EventEmitter {
   }
 
   destroy () {
+    if (this.url && !this.url.startsWith('beaker://')) {
+      historyDb.addTabClose(0, {url: this.url, title: this.title})
+    }
     this.hide()
     this.stopLiveReloading()
     this.browserView.webContents.destroy()
@@ -428,7 +431,7 @@ export class Pane extends EventEmitter {
   async updateHistory () {
     var url = this.url
     var title = this.title
-    if (url && url !== 'beaker://desktop/' && url !== 'beaker://history/') {
+    if (url && !url.startsWith('beaker://')) {
       historyDb.addVisit(0, {url, title})
     }
   }

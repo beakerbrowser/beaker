@@ -3,6 +3,5 @@
 
 body {
   font-size: 13px;
-  background: #f7f7fa;
-  --border-color: #d4d7dc;
+  background: var(--bg-color--light);
 }

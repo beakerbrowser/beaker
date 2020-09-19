@@ -1,6 +1,7 @@
-import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
-import _debounce from 'lodash.debounce'
-import moment from 'moment'
+import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { findParent } from 'beaker://app-stdlib/js/dom.js'
+import _debounce from 'beaker://app-stdlib/vendor/lodash.debounce.js'
+import moment from 'beaker://app-stdlib/vendor/moment.js'
 import mainCSS from '../css/main.css.js'
 
 // how many px from bottom till more is loaded?
@@ -15,17 +16,34 @@ export class HistoryApp extends LitElement {
 
   constructor () {
     super()
+    beaker.panes.setAttachable()
+    beaker.panes.attachToLastActivePane()
 
     this.onUpdateSearchQueryDebounced = _debounce(this.onUpdateSearchQuery.bind(this), 500)
     this.visits = []
     this.isAtEnd = false
     this.query = ''
+    this.closedTabs = false
     this.currentPeriodFilter = 'all'
     this.lastRenderedDate = undefined
     this.isFetching = false
 
     this.fillPage()
     this.addEventListener('scroll', this.onScroll.bind(this))
+
+    this.addEventListener('click', e => {
+      // route navigations to the attached pane if present
+      var attachedPane = beaker.panes.getAttachedPane()
+      if (!attachedPane) return
+      let anchor = findParent(e.path[0], el => el.tagName === 'A')
+      if (anchor) {
+        if (!e.metaKey && anchor.getAttribute('target') !== '_blank') {
+          e.stopPropagation()
+          e.preventDefault()
+          beaker.panes.navigate(attachedPane.id, anchor.getAttribute('href'))
+        }
+      }
+    })
   }
 
   async fetchMore () {
@@ -64,9 +82,9 @@ export class HistoryApp extends LitElement {
       after: +after,
       offset,
       limit: BATCH_SIZE,
-      search: this.query ? this.query : false
+      search: this.query ? this.query : false,
+      tabClose: this.closedTabs
     })
-    console.log('hit', rows)
     // did we reach the end?
     if (rows.length === 0) {
       this.isAtEnd = true
@@ -84,32 +102,28 @@ export class HistoryApp extends LitElement {
     this.isFetching = false
   }
 
+  setClosedTabs (v) {
+    this.closedTabs = v
+    this.fillPage()
+  }
+
   // rendering
   // =
 
   render () {
+    const navItem = (closedTabs, label) => html`
+      <a class=${this.closedTabs === closedTabs ? 'current' : ''} @click=${e => this.setClosedTabs(closedTabs)}>${label}</a>
+    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <nav>
-        <h1><img src="asset:favicon:beaker://history/"> History</h1>
-        <div class="section">
-          <a @click=${this.onUpdatePeriodFilter} data-period="all" class="${this.currentPeriodFilter === 'all' ? 'active' : ''}">
-            <i class="fas fa-angle-right"></i>
-            All history
-          </a>
-          <a @click=${this.onUpdatePeriodFilter} data-period="today" class="${this.currentPeriodFilter === 'today' ? 'active' : ''}">
-            <i class="fas fa-angle-right"></i>
-            Today
-          </a>
-          <a @click=${this.onUpdatePeriodFilter} data-period="yesterday" class="${this.currentPeriodFilter === 'yesterday' ? 'active' : ''}">
-            <i class="fas fa-angle-right"></i>
-            Yesterday
-          </a>
-        </div>
-      </nav>
-  
-      <main>
+      <header>
+        <nav>
+          ${navItem(false, 'All')}
+          ${navItem(true, 'Recently Closed Tabs')}
+        </nav>
         ${this.renderSubheader()}
+      </header>
+      <main>
         <div class="rows">${this.renderRows()}</div>
       </main>
     `
@@ -150,10 +164,8 @@ export class HistoryApp extends LitElement {
   }
 
   renderClearHistoryButton () {
-    if (this.query && this.query.length) return ''
-
     return html`
-      <div class="clear-history">
+      <span class="clear-history">
         <a @click=${this.onClickDeleteBulk}>
           Clear history
         </a>
@@ -164,7 +176,7 @@ export class HistoryApp extends LitElement {
           <option value="month">from this month</option>
           <option value="all">from all time</option>
         </select>
-      </div>
+      </span>
     `
   }
 

@@ -10,10 +10,12 @@ const WINDOW_MENU_ENABLED = false
 const BASIC_BUILTINS = [
   {builtin: true, url: 'beaker://about/', hyperOnly: true},
   {builtin: true, url: 'beaker://activity/'},
-  {builtin: true, url: 'beaker://editor/'}
+  {builtin: true, url: 'beaker://editor/'},
+  {type: 'separator'},
+  {builtin: true, url: 'beaker://history/'},
+  {builtin: true, url: 'beaker://library/'}
 ]
 const ADVANCED_BUILTINS = [
-  {builtin: true, url: 'beaker://library/'},
   {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
   {builtin: true, url: 'beaker://webterm/'}
 ]
@@ -276,6 +278,7 @@ class ShellWindowToolbarMenu extends LitElement {
       'beaker://activity': 'Comments',
       'beaker://editor': 'Editor',
       'beaker://explorer': 'Files Explorer',
+      'beaker://history': 'History',
       'beaker://library': 'My Library',
       'beaker://webterm': 'Terminal'
     })[(new URL(item.url)).origin] || item.url
