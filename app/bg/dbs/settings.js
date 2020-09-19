@@ -43,6 +43,8 @@ export const setup = async function (opts) {
     default_zoom: 0,
     browser_theme: 'system',
     analytics_enabled: 1,
+    extended_network_index: 'default',
+    extended_network_index_url: '',
     search_engines: [
       {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
       {name: 'Beaker', url: 'beaker://desktop/'},

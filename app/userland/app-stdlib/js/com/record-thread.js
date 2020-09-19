@@ -117,8 +117,7 @@ export class RecordThread extends LitElement {
       reverse: true
     })
     networkReplies = networkReplies.filter(reply => !replies.find(reply2 => reply.url === reply2.url)) // filter out in-network items
-    if (networkReplies.length === 0) return
-    this.networkReplies = toThreadTree(networkReplies)
+   this.networkReplies = toThreadTree(networkReplies)
     await this.requestUpdate()
     emit(this, 'load')
   }

@@ -2,7 +2,7 @@ import BeakerIndexer from 'beaker-index'
 import fetch from 'node-fetch'
 import { getHyperspaceClient } from '../hyper/daemon'
 import { normalizeOrigin, normalizeUrl, isSameOrigin } from '../../lib/urls'
-import { parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
+import { parseSimplePathSpec, toNiceUrl, DRIVE_KEY_REGEX } from '../../lib/strings'
 import {
   toArray,
   parseUrl
@@ -10,6 +10,7 @@ import {
 import { getSite as fullGetSite } from './index'
 import { getProfileUrl } from '../filesystem/index'
 import { getMeta } from '../dbs/archives'
+import * as settingsDb from '../dbs/settings'
 
 const SITES_CACHE_TIME = 60e3 * 5 // 5 minutes
 const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a212435efaf2c12e1e5d18d' // TODO fetch from endpoint
@@ -29,13 +30,36 @@ const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a2124
 // =
 
 var beakerNetworkIndex
+var isDisabled = false
 
 // exported api
 // =
 
 export async function setup () {
+  await configureIndex()
+
+  settingsDb.on('set:extended_network_index', configureIndex)
+  settingsDb.on('set:extended_network_index_url', configureIndex)
+}
+
+async function configureIndex () {
+  var choice = await settingsDb.get('extended_network_index')
+  if (choice === 'disabled') {
+    isDisabled = true
+    return
+  }
+
+  var key = BEAKER_NETWORK_INDEX_KEY
+  if (choice === 'custom') {
+    key = DRIVE_KEY_REGEX.exec(await settingsDb.get('extended_network_index_url'))?.[0]
+  }
+  if (!key) {
+    isDisabled = true
+  }
+
+  isDisabled = false
   var client = getHyperspaceClient()
-  beakerNetworkIndex = new BeakerIndexer(client.corestore(), client.network, BEAKER_NETWORK_INDEX_KEY)
+  beakerNetworkIndex = new BeakerIndexer(client.corestore(), client.network, key)
   await beakerNetworkIndex.ready()
 }
 
@@ -49,6 +73,8 @@ export async function setup () {
  * @returns {Promise<SiteDescription[]>}
  */
 export async function listSites (opts) {
+  if (isDisabled) return []
+
   var fullList = await fetchFullSitesList()
   if (opts.search) {
     let search = opts.search.toLowerCase()
@@ -71,6 +97,7 @@ export async function listSites (opts) {
  * @returns {Promise<SiteDescription>}
  */
 export async function getSite (url) {
+  if (isDisabled) return undefined
   var origin = normalizeOrigin(url)
   if (!origin.startsWith('hyper://')) return undefined // hyper only for now
   var indexJson = await beakerNetworkIndex.drives.get(origin)
@@ -103,6 +130,8 @@ export async function getSite (url) {
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
 export async function query (opts, {existingResults, notificationRtime} = {}) {
+  if (isDisabled) return {records: [], missedOrigins: undefined}
+
   var pathQuery = opts.path ? toArray(opts.path).map(parseSimplePathSpec) : undefined
   if (opts.origin) {
     opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
@@ -212,6 +241,8 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
  * @returns {Promise<{count: Number, missedOrigins: String[]}>}
  */
 export async function count (opts, {existingResultOrigins, notificationRtime} = {}) {
+  if (isDisabled) return {count: 0, missedOrigins: undefined}
+  
   var pathQuery = opts.path ? toArray(opts.path).map(parseSimplePathSpec) : undefined
   if (opts.origin) {
     opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
