@@ -214,17 +214,22 @@ export class RecordThread extends LitElement {
               </div>
             `}
           </div>
+          <div class="extended-comments-header">
+            <div class="label">
+              My Network
+            </div>
+          </div>
           ${this.renderReplies(this.replies)}
         </div>
       ` : ''}
-      ${this.networkReplies ? html`
+      ${!this.networkReplies || this.networkReplies.length ? html`
         <div class="comments">
           <div class="extended-comments-header">
             <div class="label">
-              Community: Beaker Userlist
+              Extended Network
             </div>
           </div>
-          ${this.renderReplies(this.networkReplies)}
+          ${this.networkReplies ? this.renderReplies(this.networkReplies) : html`<div class="comments-loading"><span class="spinner"></span></div>`}
         </div>
       ` : ''}
     `

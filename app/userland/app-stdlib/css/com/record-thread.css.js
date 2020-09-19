@@ -34,6 +34,10 @@ beaker-record {
   margin-right: 10px;
 }
 
+.comments-loading {
+  padding: 0 10px;
+}
+
 .subject {
   background: var(--bg-color--default);
   border: 1px solid var(--border-color--light);
