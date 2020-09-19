@@ -15,6 +15,7 @@ import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
+import './com/indexer-state.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
@@ -271,6 +272,7 @@ class DesktopApp extends LitElement {
           <input @keyup=${this.onKeyupSearch}>
           ${this.renderSourcesCtrl()}
         </div>
+        <beaker-indexer-state></beaker-indexer-state>
       </header>
       ${this.renderReleaseNotice()}
       <main>

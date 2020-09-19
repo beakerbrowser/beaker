@@ -111,6 +111,7 @@ export async function setup (opts) {
     for (let state of states) {
       DEBUGGING.setSiteState({
         url: state.origin,
+        progress: undefined,
         last_indexed_version: state.last_indexed_version,
         last_indexed_ts: state.last_indexed_ts,
         error: undefined
@@ -695,8 +696,8 @@ const DEBUGGING = {
     events.emit('status-change', {task, nextRun})
   },
   
-  setSiteState ({url, last_indexed_version, last_indexed_ts, error}) {
-    const siteState = {url, last_indexed_version, last_indexed_ts, error}
+  setSiteState ({url, progress, last_indexed_version, last_indexed_ts, error}) {
+    const siteState = {url, progress, last_indexed_version, last_indexed_ts, error}
     state.sites[url] = siteState
     events.emit('site-state-change', siteState)
   },
@@ -775,7 +776,18 @@ async function indexSite (origin, myOrigins) {
   var isFirstIndex
   try {
     current_version = undefined
-    let site = await loadSite(db, origin)
+    let site = await loadSite(db, origin, {onIsFirstIndex: () => {
+      isFirstIndex = true
+      // optimistically indicate in the UI that sync is occurring
+      // (we want to do this as quickly as possible to make things responsive)
+      DEBUGGING.setSiteState({
+        url: origin,
+        progress: 0,
+        last_indexed_version: 0,
+        last_indexed_ts: Date.now(),
+        error: undefined
+      })
+    }})
     current_version = site.current_version
     if (site.current_version === site.last_indexed_version) {
       return
@@ -785,9 +797,16 @@ async function indexSite (origin, myOrigins) {
     let updates = await site.listUpdates()
     logger.silly(`${updates.length} updates found for ${origin}`)
     if (updates.length === 0) return
-    isFirstIndex = site.last_indexed_version == 0
 
+    let progCurr = 0, progTotal = updates.length
     for (let update of updates) {
+      DEBUGGING.setSiteState({
+        url: site.origin,
+        progress: Math.round(progCurr++ / progTotal * 100),
+        last_indexed_version: site.current_version,
+        last_indexed_ts: Date.now(),
+        error: undefined
+      })
       if (update.remove) {
         // file deletion
         let res = await db('records').select('rowid').where({
@@ -898,6 +917,7 @@ async function indexSite (origin, myOrigins) {
     }
     DEBUGGING.setSiteState({
       url: site.origin,
+      progress: undefined,
       last_indexed_version: site.current_version,
       last_indexed_ts: Date.now(),
       error: undefined
@@ -907,6 +927,7 @@ async function indexSite (origin, myOrigins) {
   } catch (e) {
     DEBUGGING.setSiteState({
       url: origin,
+      progress: undefined,
       last_indexed_version: current_version,
       last_indexed_ts: Date.now(),
       error: e.toString()

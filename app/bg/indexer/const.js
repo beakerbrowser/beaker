@@ -3,7 +3,7 @@
 
 export const TICK_INTERVAL = 15e3
 export const READ_TIMEOUT = 5e3
-export const READ_DIFF_TIMEOUT = 15e3
+export const READ_DIFF_TIMEOUT = 30e3
 export const METADATA_KEYS = {
   content: '_content',
   link: '_link',

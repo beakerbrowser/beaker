@@ -125,9 +125,20 @@ export async function listOriginsToDeindex (db, originsToIndex) {
 /**
  * @param {Object} db
  * @param {String} origin
+ * @param {Object} [opts]
+ * @param {Function} [opts.onIsFirstIndex]
  * @returns {Promise<Site>}
  */
-export async function loadSite (db, origin) {
+export async function loadSite (db, origin, opts) {
+  var record = undefined
+  var res = await db('sites')
+    .select('sites.rowid as rowid', 'last_indexed_version', 'last_indexed_ts')
+    .where({origin})
+
+  if (typeof opts?.onIsFirstIndex === 'function' && (!res[0] || res[0].last_indexed_version === 0)) {
+    opts?.onIsFirstIndex()
+  }
+
   var drive, driveInfo
   await timer(READ_TIMEOUT, async (checkin) => {
     checkin('loading hyperdrive from the network')
@@ -140,10 +151,6 @@ export async function loadSite (db, origin) {
     throw new Error('Failed to load hyperdrive from the network')
   }
 
-  var record = undefined
-  var res = await db('sites')
-    .select('sites.rowid as rowid', 'last_indexed_version', 'last_indexed_ts')
-    .where({origin})
   if (!res[0]) {
     res = await db('sites').insert({
       origin,
