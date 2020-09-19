@@ -179,10 +179,10 @@ header {
   cursor: pointer;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1060px) {
   .search-ctrl .clear-search  {
-    left: unset;
-    right: 98px;
+    left: 10px;
+    z-index: 2;
   }
 }
 
