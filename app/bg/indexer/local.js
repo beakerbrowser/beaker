@@ -125,8 +125,11 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
       }
       query = query.where({origin})
     }
-  } else if (shouldExcludePrivate) {
-    query = query.whereNot({origin: 'hyper://private'})
+  } else {
+    if (shouldExcludePrivate) {
+      query = query.whereNot({origin: 'hyper://private'})
+    }
+    query = query.whereRaw(`sites.is_index_target = ?`, [1])
   }
   if (opts?.path) {
     if (Array.isArray(opts.path)) {
@@ -159,22 +162,26 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     }
   }
 
-  var indexStatesQuery
-  if (opts?.origin && !opts?.links && !opts?.notification) {
+  var unindexedSitesQuery
+  if (!opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
-    indexStatesQuery = db('sites')
+    unindexedSitesQuery = db('sites')
       .select('origin')
-      .where('last_indexed_version', '>', 0)
-    if (Array.isArray(opts.origin)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
+      .where({is_indexed: 0})
+    if (opts?.origin) {
+      if (Array.isArray(opts.origin)) {
+        unindexedSitesQuery = unindexedSitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
+      } else {
+        unindexedSitesQuery = unindexedSitesQuery.where({origin: normalizeOrigin(opts.origin)})
+      }
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.origin)})
+      unindexedSitesQuery = unindexedSitesQuery.where({is_index_target: 1})
     }
   }
 
-  var [rows, indexStates] = await Promise.all([
+  var [rows, unindexedSites] = await Promise.all([
     query,
-    indexStatesQuery
+    unindexedSitesQuery
   ])
 
   var records = rows.map(row => {
@@ -219,19 +226,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     return record
   })
 
-  // identify the origins not found in the index
-  var missedOrigins
-  if (indexStates) {
-    missedOrigins = []
-    for (let origin of toArray(opts.origin)) {
-      origin = normalizeOrigin(origin)
-      if (indexStates.find(state => state.origin === origin)) {
-        continue
-      }
-      missedOrigins.push(origin)
-    }
-  }
-
+  var missedOrigins = unindexedSites?.map(state => state.origin)
   return {records, missedOrigins}
 }
 
@@ -273,8 +268,11 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
       }
       query = query.where({origin})
     }
-  } else if (shouldExcludePrivate) {
-    query = query.whereNot({origin: 'hyper://private'})
+  } else {
+    if (shouldExcludePrivate) {
+      query = query.whereNot({origin: 'hyper://private'})
+    }
+    query = query.whereRaw(`sites.is_index_target = ?`, [1])
   }
   if (opts?.path) {
     if (Array.isArray(opts.path)) {
@@ -302,39 +300,30 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
     }
   }
 
-  var indexStatesQuery
-  if (opts?.origin && !opts?.links && !opts?.notification) {
+  var unindexedSitesQuery
+  if (!opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
-    indexStatesQuery = db('sites')
+    unindexedSitesQuery = db('sites')
       .select('origin')
-      .where('last_indexed_version', '>', 0)
-    if (Array.isArray(opts.origin)) {
-      indexStatesQuery = indexStatesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
+      .where({is_indexed: 0})
+    if (opts?.origin) {
+      if (Array.isArray(opts.origin)) {
+        unindexedSitesQuery = unindexedSitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
+      } else {
+        unindexedSitesQuery = unindexedSitesQuery.where({origin: normalizeOrigin(opts.origin)})
+      }
     } else {
-      indexStatesQuery = indexStatesQuery.where({origin: normalizeOrigin(opts.origin)})
+      unindexedSitesQuery = unindexedSitesQuery.where({is_index_target: 1})
     }
   }
 
-  var [rows, indexStates] = await Promise.all([
+  var [rows, unindexedSites] = await Promise.all([
     query,
-    indexStatesQuery
+    unindexedSitesQuery
   ])
 
   var count = rows.reduce((acc, row) => acc + row.count, 0)
   var includedOrigins = rows.map(row => row.origin)
-
-  // identify the origins not found in the index
-  var missedOrigins
-  if (indexStates) {
-    missedOrigins = []
-    for (let origin of toArray(opts.origin)) {
-      origin = normalizeOrigin(origin)
-      if (indexStates.find(state => state.origin === origin)) {
-        continue
-      }
-      missedOrigins.push(origin)
-    }
-  }
-
+  var missedOrigins = unindexedSites?.map(state => state.origin)
   return {count, includedOrigins, missedOrigins}
 }

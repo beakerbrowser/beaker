@@ -44,6 +44,7 @@ import {
   getIsFirstRun,
   getIndexState,
   updateIndexState,
+  setSiteFlags,
   listMyOrigins,
   listOriginsToIndex,
   listOriginsToCapture,
@@ -320,12 +321,13 @@ export async function query (opts, permissions) {
   if (missedOrigins.length) {
     // fetch the live records
     let records
-    for (let origin of toArray(opts.origin)) {
-      origin = normalizeOrigin(origin)
-      if (missedOrigins.includes(origin)) {
+    for (let origin of missedOrigins) {
+      try {
         records = (records || []).concat(
           await listLiveRecords(origin, opts)
         )
+      } catch (e) {
+        logger.silly(`Failed to live-list records from ${origin}`, {error: e})
       }
     }
     if (records && records?.length) {
@@ -422,14 +424,13 @@ export async function count (opts, permissions) {
 
   if (missedOrigins.length) {
     // fetch the live records
-    for (let origin of toArray(opts.origin)) {
-      origin = normalizeOrigin(origin)
-      let count = 0
-      if (missedOrigins.includes(origin)) {
+    for (let origin of missedOrigins) {
+      try {
         let files = await listLiveRecords(origin, opts)
-        count += files.length
+        results.push({count: files.length})
+      } catch (e) {
+        logger.silly(`Failed to live-count records from ${origin}`, {error: e})
       }
-      results.push({count})
     }
   }
 
@@ -784,6 +785,10 @@ async function indexSite (origin, myOrigins) {
         error: undefined
       })
     }})
+    if (!site.is_index_target) {
+      // is now an index target
+      await setSiteFlags(db, site, {is_index_target: true})
+    }
     current_version = site.current_version
     if (site.current_version === site.last_indexed_version) {
       return
@@ -792,7 +797,13 @@ async function indexSite (origin, myOrigins) {
     logger.silly(`Indexing ${origin} [ v${site.last_indexed_version} -> v${site.current_version} ]`)
     let updates = await site.listUpdates()
     logger.silly(`${updates.length} updates found for ${origin}`)
-    if (updates.length === 0) return
+    if (updates.length === 0) {
+      if (!site.is_indexed && site.last_indexed_version > 0) {
+        // was indexed prior to site flags were introduced, correct the record
+        await setSiteFlags(db, site, {is_indexed: true})
+      }
+      return
+    }
 
     let progCurr = 0, progTotal = updates.length
     for (let update of updates) {
@@ -920,6 +931,10 @@ async function indexSite (origin, myOrigins) {
     })
     logger.debug(`Indexed ${origin} [ v${site.last_indexed_version} -> v${site.current_version} ]`)
     await updateIndexState(db, site)
+    if (!site.is_indexed) {
+      // indicate this site's index is now ready to be used
+      await setSiteFlags(db, site, {is_indexed: true})
+    }
   } catch (e) {
     DEBUGGING.setSiteState({
       url: origin,
@@ -948,7 +963,12 @@ async function deindexSite (origin) {
       await db('records_data').del().where({record_rowid: record.rowid})
     }
     await db('records').del().where({site_rowid: site.rowid})
-    await db('sites').update({last_indexed_version: 0, last_indexed_ts: 0}).where({origin})
+    await db('sites').update({
+      last_indexed_version: 0,
+      last_indexed_ts: 0,
+      is_index_target: 0, // no longer an indexing target
+      is_indexed: 0 // no longer indexed
+    }).where({origin})
     logger.debug(`Deindexed ${site.origin}/*`, {origin: site.origin})
   } catch (e) {
     logger.debug(`Failed to de-index site ${origin}. ${e.toString()}`, {origin, error: e.toString()})

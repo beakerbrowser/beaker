@@ -23,6 +23,8 @@ export const METADATA_KEYS = {
  * @prop {Number} current_version
  * @prop {Number} last_indexed_version
  * @prop {Number} last_indexed_ts
+ * @prop {Boolean} is_index_target - indicataes this site is actively being indexed, eg because subbed
+ * @prop {Boolean} is_indexed - indicates this site's index is now ready to be used
  * @prop {String} title
  * @prop {String} description
  * @prop {Boolean} writable

@@ -13,6 +13,8 @@ exports.up = async function (knex) {
     table.integer('writable')
     table.integer('last_indexed_version')
     table.integer('last_indexed_ts')
+    table.integer('is_indexed').defaultTo(0)
+    table.integer('is_index_target').defaultTo(0)
 
     table.index('origin')
     table.unique('origin')

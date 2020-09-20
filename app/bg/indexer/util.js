@@ -57,6 +57,21 @@ export async function updateIndexState (db, site) {
 }
 
 /**
+ * @param {Object} db
+ * @param {Site} site 
+ * @param {Object} flags
+ * @param {Boolean} [flags.is_index_target] - indicates this site is being indexed (subbed, my profile, etc)
+ * @param {Boolean} [flags.is_indexed] - indicates this site's index is now ready to be queried
+ * @returns {Promise<void>}
+ */
+export async function setSiteFlags (db, site, flags) {
+  var update = {}
+  if (typeof flags.is_index_target !== 'undefined') update.is_index_target = flags.is_index_target ? 1 : 0
+  if (typeof flags.is_indexed !== 'undefined') update.is_indexed = flags.is_indexed ? 1 : 0
+  await db('sites').update(update).where({origin: site.origin})
+}
+
+/**
  * @returns {Promise<String[]>}
  */
 export async function listMyOrigins () {
@@ -158,12 +173,20 @@ export async function loadSite (db, origin, opts) {
       description: driveInfo.description,
       writable: driveInfo.writable ? 1 : 0
     })
-    record = {rowid: res[0], last_indexed_version: 0, last_indexed_ts: undefined}
+    record = {
+      rowid: res[0],
+      last_indexed_version: 0,
+      last_indexed_ts: undefined,
+      is_index_target: false,
+      is_indexed: false
+    }
   } else {
     record = {
       rowid: res[0].rowid,
       last_indexed_version: res[0].last_indexed_version,
       last_indexed_ts: res[0].last_indexed_ts,
+      is_index_target: Boolean(res[0].is_index_target),
+      is_indexed: Boolean(res[0].is_indexed)
     }
     /*dont await*/ db('sites').update({
       title: driveInfo.title,
@@ -178,6 +201,8 @@ export async function loadSite (db, origin, opts) {
     current_version: driveInfo.version,
     last_indexed_version: record.last_indexed_version,
     last_indexed_ts: record.last_indexed_ts,
+    is_index_target: record.is_index_target,
+    is_indexed: record.is_indexed,
     title: driveInfo.title,
     description: driveInfo.description,
     writable: driveInfo.writable,
