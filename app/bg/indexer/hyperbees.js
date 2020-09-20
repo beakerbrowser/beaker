@@ -315,7 +315,7 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     backlink.value.content ? beakerNetworkIndex.db.get(backlink.value.content) : undefined
   ])
   var notification = undefined
-  if (notificationRtime) {
+  if (typeof notificationRtime !== 'undefined') {
     // try to detect the link
     notification = {
       key: undefined,
