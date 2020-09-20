@@ -644,7 +644,7 @@ export async function clearNotifications () {
     sort: 'rtime',
     reverse: true
   })
-  var lastLocalTs = localRes.records[0] ? localRes.records[0].rtime : Date.now()
+  var lastLocalTs = localRes.records[0] ? localRes.records[0].index.rtime : Date.now()
   await db('indexer_state')
     .insert({key: 'local_notifications_rtime', value: lastLocalTs})
     .onConflictDoUpdate('key', {key: 'local_notifications_rtime', value: lastLocalTs})
@@ -655,7 +655,7 @@ export async function clearNotifications () {
     sort: 'rtime',
     reverse: true
   })
-  var lastNetworkTs = networkRes.records[0] ? networkRes.records[0].rtime : Date.now()
+  var lastNetworkTs = networkRes.records[0] ? networkRes.records[0].index.rtime : Date.now()
   await db('indexer_state')
     .insert({key: 'network_notifications_rtime', value: lastNetworkTs})
     .onConflictDoUpdate('key', {key: 'network_notifications_rtime', value: lastNetworkTs})
