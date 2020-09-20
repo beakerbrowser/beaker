@@ -15,6 +15,7 @@ exports.up = async function (knex) {
     table.integer('last_indexed_ts')
 
     table.index('origin')
+    table.unique('origin')
   })
   await knex.schema.createTable('records', table => {
     table.integer('site_rowid').unsigned().notNullable()
