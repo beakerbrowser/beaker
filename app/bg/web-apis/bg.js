@@ -25,6 +25,7 @@ import datLegacyManifest from './manifests/internal/dat-legacy'
 import downloadsManifest from './manifests/internal/downloads'
 import folderSyncManifest from './manifests/internal/folder-sync'
 import historyManifest from './manifests/internal/history'
+import hyperdebugManifest from './manifests/internal/hyperdebug'
 import sitedataManifest from './manifests/internal/sitedata'
 import watchlistManifest from './manifests/internal/watchlist'
 
@@ -37,6 +38,7 @@ import beakerFilesystemAPI from './bg/beaker-filesystem'
 import datLegacyAPI from './bg/dat-legacy'
 import folderSyncAPI from './bg/folder-sync'
 import historyAPI from './bg/history'
+import hyperdebugAPI from './bg/hyperdebug'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
 import watchlistAPI from './bg/watchlist'
 import { WEBAPI as downloadsAPI } from '../ui/downloads'
@@ -90,6 +92,7 @@ export const setup = function () {
   rpc.exportAPI('drives', drivesManifest, drivesAPI, internalOnly)
   rpc.exportAPI('folder-sync', folderSyncManifest, folderSyncAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
+  rpc.exportAPI('hyperdebug', hyperdebugManifest, hyperdebugAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
 

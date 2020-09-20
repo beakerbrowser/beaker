@@ -17,7 +17,8 @@ const BASIC_BUILTINS = [
 ]
 const ADVANCED_BUILTINS = [
   {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
-  {builtin: true, url: 'beaker://webterm/'}
+  {builtin: true, url: 'beaker://webterm/'},
+  {builtin: true, url: 'beaker://hypercore-tools/', hyperOnly: true}
 ]
 
 class ShellWindowToolbarMenu extends LitElement {
@@ -279,6 +280,7 @@ class ShellWindowToolbarMenu extends LitElement {
       'beaker://editor': 'Editor',
       'beaker://explorer': 'Files Explorer',
       'beaker://history': 'History',
+      'beaker://hypercore-tools': 'Hypercore Devtools',
       'beaker://library': 'My Library',
       'beaker://webterm': 'Terminal'
     })[(new URL(item.url)).origin] || item.url
