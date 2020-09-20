@@ -113,13 +113,13 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
 
   if (opts?.origin) {
     if (Array.isArray(opts.origin)) {
-      let origins = opts.origin.map(origin => normalizeOrigin(origin))
+      let origins = opts.origin = opts.origin.map(origin => normalizeOrigin(origin))
       if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
         throw new PermissionsError()
       }
       query = query.whereIn('origin', origins)
     } else {
-      let origin = normalizeOrigin(opts.origin)
+      let origin = opts.origin = normalizeOrigin(opts.origin)
       if (shouldExcludePrivate && origin === 'hyper://private') {
         throw new PermissionsError()
       }
@@ -162,26 +162,28 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     }
   }
 
-  var unindexedSitesQuery
+  var sitesQuery
   if (!opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
-    unindexedSitesQuery = db('sites')
-      .select('origin')
-      .where({is_indexed: 0})
+    sitesQuery = db('sites').select('origin')
     if (opts?.origin) {
+      // if it's a known list of origins, we want to check which ones are indexed
+      // and then we figure out the 'missed origins' by taking a set difference
+      sitesQuery = sitesQuery.where({is_indexed: 1})
       if (Array.isArray(opts.origin)) {
-        unindexedSitesQuery = unindexedSitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
+        sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
       } else {
-        unindexedSitesQuery = unindexedSitesQuery.where({origin: normalizeOrigin(opts.origin)})
+        sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
       }
     } else {
-      unindexedSitesQuery = unindexedSitesQuery.where({is_index_target: 1})
+      // if it's querying our index targets, we want to check which ones are not indexed
+      sitesQuery = sitesQuery.where({is_index_target: 1, is_indexed: 0})
     }
   }
 
-  var [rows, unindexedSites] = await Promise.all([
+  var [rows, siteStates] = await Promise.all([
     query,
-    unindexedSitesQuery
+    sitesQuery
   ])
 
   var records = rows.map(row => {
@@ -226,7 +228,22 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     return record
   })
 
-  var missedOrigins = unindexedSites?.map(state => state.origin)
+  var missedOrigins
+  if (siteStates) {
+    if (opts?.origin) {
+      // siteStates is a list of sites that are indexed
+      // set-diff the desired origins against it
+      missedOrigins = []
+      for (let origin of toArray(opts.origin)) {
+        if (!siteStates.find(state => state.origin === origin)) {
+          missedOrigins.push(origin)
+        }
+      }
+    } else {
+      // siteStates is a list of index targets that are not yet indexed
+      missedOrigins = siteStates.map(state => state.origin)
+    }
+  }
   return {records, missedOrigins}
 }
 
@@ -256,13 +273,13 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
 
   if (opts?.origin) {
     if (Array.isArray(opts.origin)) {
-      let origins = opts.origin.map(origin => normalizeOrigin(origin))
+      let origins = opts.origin = opts.origin.map(origin => normalizeOrigin(origin))
       if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
         throw new PermissionsError()
       }
       query = query.whereIn('origin', origins)
     } else {
-      let origin = normalizeOrigin(opts.origin)
+      let origin = opts.origin = normalizeOrigin(opts.origin)
       if (shouldExcludePrivate && origin === 'hyper://private') {
         throw new PermissionsError()
       }
@@ -300,30 +317,49 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
     }
   }
 
-  var unindexedSitesQuery
+  var sitesQuery
   if (!opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
-    unindexedSitesQuery = db('sites')
-      .select('origin')
-      .where({is_indexed: 0})
+    sitesQuery = db('sites').select('origin')
     if (opts?.origin) {
+      // if it's a known list of origins, we want to check which ones are indexed
+      // and then we figure out the 'missed origins' by taking a set difference
+      sitesQuery = sitesQuery.where({is_indexed: 1})
       if (Array.isArray(opts.origin)) {
-        unindexedSitesQuery = unindexedSitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
+        sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
       } else {
-        unindexedSitesQuery = unindexedSitesQuery.where({origin: normalizeOrigin(opts.origin)})
+        sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
       }
     } else {
-      unindexedSitesQuery = unindexedSitesQuery.where({is_index_target: 1})
+      // if it's querying our index targets, we want to check which ones are not indexed
+      sitesQuery = sitesQuery.where({is_index_target: 1, is_indexed: 0})
     }
   }
 
-  var [rows, unindexedSites] = await Promise.all([
+  var [rows, siteStates] = await Promise.all([
     query,
-    unindexedSitesQuery
+    sitesQuery
   ])
 
   var count = rows.reduce((acc, row) => acc + row.count, 0)
   var includedOrigins = rows.map(row => row.origin)
-  var missedOrigins = unindexedSites?.map(state => state.origin)
+  
+  var missedOrigins
+  if (siteStates) {
+    if (opts?.origin) {
+      // siteStates is a list of sites that are indexed
+      // set-diff the desired origins against it
+      missedOrigins = []
+      for (let origin of toArray(opts.origin)) {
+        if (!siteStates.find(state => state.origin === origin)) {
+          missedOrigins.push(origin)
+        }
+      }
+    } else {
+      // siteStates is a list of index targets that are not yet indexed
+      missedOrigins = siteStates.map(state => state.origin)
+    }
+  }
+
   return {count, includedOrigins, missedOrigins}
 }
