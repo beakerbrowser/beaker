@@ -200,7 +200,7 @@ class DesktopApp extends LitElement {
       return undefined // all data in the index this.sourceOptions.map(source => source.url)
     }
     if (this.currentSource === 'mine') {
-      return ['hyper://private/', this.profile.url]
+      return ['hyper://private/', this.profile?.url]
     }
     if (this.currentSource === 'others') {
       return this.sourceOptions.slice(2).map(source => source.href)
