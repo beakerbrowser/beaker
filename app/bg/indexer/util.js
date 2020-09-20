@@ -146,6 +146,7 @@ export async function listOriginsToDeindex (db, originsToIndex) {
  */
 export async function loadSite (db, origin, opts) {
   var record = undefined
+  origin = normalizeOrigin(origin)
   var res = await db('sites')
     .select('sites.rowid as rowid', 'last_indexed_version', 'last_indexed_ts')
     .where({origin})
