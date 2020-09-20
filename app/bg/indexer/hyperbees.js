@@ -291,7 +291,7 @@ export async function count (opts, {existingResultOrigins, notificationRtime} = 
       }
     }
     if (existingResultOrigins?.length) {
-      if (existingResultOrigins.find(res => res.url === entry.value.drive)) {
+      if (existingResultOrigins.find(origin => origin === entry.value.drive)) {
         return false
       }
     }
