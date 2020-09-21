@@ -10,8 +10,6 @@ export class SiteInfo extends LitElement {
     return {
       url: {type: String},
       siteInfo: {type: Object},
-      subscribers: {type: Array},
-      isSubscribedToUser: {type: Boolean, attribute: 'is-subscribed-to-user'},
       profileUrl: {type: String, attribute: 'profile-url'}
     }
   }
@@ -24,8 +22,6 @@ export class SiteInfo extends LitElement {
     super()
     this.url = undefined
     this.siteInfo = undefined
-    this.subscribers = undefined
-    this.isSubscribedToUser = false
     this.profileUrl = ''
   }
 
@@ -39,10 +35,6 @@ export class SiteInfo extends LitElement {
 
   get isPrivate () {
     return this.url.startsWith('hyper://private')
-  }
-
-  get isSubscribed () {
-    return this.subscribers.find(s => s.site.url === this.profileUrl)
   }
 
   // rendering
@@ -59,7 +51,7 @@ export class SiteInfo extends LitElement {
         </div>
       `
     }
-    const showSubs = !(this.isPrivate || this.siteInfo.writable && !this.subscribers?.length)
+    const showSubs = !(this.isPrivate || this.siteInfo.writable && !this.siteInfo.graph?.counts?.network)
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="full">
@@ -77,12 +69,11 @@ export class SiteInfo extends LitElement {
               <a
                 href="#" 
                 @click=${this.onClickShowSites}
-                data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
               >
-                <strong>${this.subscribers?.length}</strong>
-                ${pluralize(this.subscribers?.length || 0, 'subscriber')}
+                <strong>${this.siteInfo.graph?.counts?.network}</strong>
+                ${pluralize(this.siteInfo.graph?.counts?.network || 0, 'subscriber')}
               </a>
-              ${this.isSubscribedToUser ? html`
+              ${this.siteInfo.graph?.user?.isSubscribedTo ? html`
                 <span class="label">Subscribed to you</span>
               ` : ''}
             </div>
@@ -107,7 +98,7 @@ export class SiteInfo extends LitElement {
     if (this.siteInfo.url.startsWith('hyper://')) {
       return html`
         <button class="subscribe" @click=${this.onToggleSubscribe}>
-          ${this.isSubscribed ? html`
+          ${this.siteInfo.graph?.user?.isSubscriber ? html`
             <span class="fas fa-fw fa-check"></span> Subscribed
           ` : html`
             Subscribe
@@ -120,10 +111,11 @@ export class SiteInfo extends LitElement {
   // events
   // =
 
-  onClickShowSites (e) {
+  async onClickShowSites (e) {
     e.preventDefault()
     e.stopPropagation()
-    SitesListPopup.create('Subscribers', this.subscribers.map(s => s.site))
+    let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
+    SitesListPopup.create('Subscribers', subscribers.map(s => s.site))
   }
 
   onToggleSubscribe (e) {

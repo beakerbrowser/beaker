@@ -46,8 +46,6 @@ class AboutApp extends LitElement {
     this.profile = undefined
     this.siteInfo = undefined
     this.contentCounts = undefined
-    this.subscribers = []
-    this.isSubscribedToUser = false
 
     var ignoreNextAttachEvent = false
     beaker.panes.addEventListener('pane-attached', e => {
@@ -112,8 +110,10 @@ class AboutApp extends LitElement {
 
     if (url) {
       if (this.url.startsWith('hyper://')) {
-        this.siteInfo = await beaker.hyperdrive.getInfo(this.url).catch(e => undefined)
-      } else {
+        this.siteInfo = await beaker.index.getSite(this.url).catch(e => undefined)
+      } 
+      
+      if (!this.siteInfo) {
         this.siteInfo = {
           url: (new URL(this.url)).origin,
           title: (new URL(this.url)).hostname
@@ -121,15 +121,6 @@ class AboutApp extends LitElement {
       }
       this.requestUpdate()
 
-      let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
-      beaker.index.count({
-        path: '/subscriptions/*.goto',
-        links: this.profile.url,
-        origin: this.siteInfo.url
-      }).then(count => {
-        this.isSubscribedToUser = count !== 0
-        this.requestUpdate()
-      })
       let counts = Object.fromEntries(
         await Promise.all(
           Object.entries({
@@ -148,7 +139,6 @@ class AboutApp extends LitElement {
         )        
       )
       
-      this.subscribers = subscribers
       this.contentCounts = counts
     }
     
@@ -192,8 +182,6 @@ class AboutApp extends LitElement {
         <site-info
           url=${this.url}
           .siteInfo=${this.siteInfo}
-          .subscribers=${this.subscribers}
-          ?is-subscribed-to-user=${this.isSubscribedToUser}
           profile-url=${this.profile.url}
           @toggle-subscribe=${this.onToggleSubscribe}
           @edit-properties=${this.onEditProperties}
@@ -239,13 +227,17 @@ class AboutApp extends LitElement {
   }
 
   async onToggleSubscribe (e) {
-    const isSubscribed = this.subscribers.find(s => s.site.url === this.profile.url)
-    if (isSubscribed) {
-      this.subscribers = this.subscribers.filter(s => s.site.url !== this.profile.url)
+    if (!this.siteInfo.graph) return // cant operate :|
+    if (this.siteInfo.graph.user.isSubscriber) {
+      this.siteInfo.graph.user.isSubscriber = false
+      this.siteInfo.graph.counts.network--
+      this.siteInfo.graph.counts.local--
       this.requestUpdate()
       await beaker.subscriptions.remove(this.siteInfo.url)
     } else {
-      this.subscribers = this.subscribers.concat([{site: this.profile}])
+      this.siteInfo.graph.user.isSubscriber = true
+      this.siteInfo.graph.counts.network++
+      this.siteInfo.graph.counts.local++
       this.requestUpdate()
       await beaker.subscriptions.add({
         href: this.siteInfo.url,
@@ -253,7 +245,7 @@ class AboutApp extends LitElement {
         site: this.profile.url
       })
     }
-    this.subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
+    this.siteInfo = await beaker.index.getSite(this.siteInfo.url)
   }
 
   async onEditProperties () {

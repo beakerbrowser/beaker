@@ -37,6 +37,7 @@ const logger = logLib.get().child({category: 'indexer'})
 import { TICK_INTERVAL, METADATA_KEYS } from './const'
 import * as hyperbees from './hyperbees'
 import * as local from './local'
+import * as filesystem from '../filesystem/index'
 import lock from '../../lib/lock'
 import { joinPath, toNiceUrl, parseSimplePathSpec } from '../../lib/strings'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
@@ -60,6 +61,7 @@ import {
 /**
  * @typedef {import('./const').Site} Site
  * @typedef {import('./const').SiteDescription} SiteDescription
+ * @typedef {import('./const').SiteDescriptionGraph} SiteDescriptionGraph
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
@@ -147,11 +149,15 @@ export async function getSite (url, opts) {
       title: siteRows[0].title || toNiceUrl(siteRows[0].origin),
       description: siteRows[0].description,
       writable: Boolean(siteRows[0].writable),
-      index: {id: 'local'}
+      index: {id: 'local'},
+      graph: await getSiteGraph(origin)
     }
   }
   var hyperbeeResult = await hyperbees.getSite(url)
-  if (hyperbeeResult) return hyperbeeResult
+  if (hyperbeeResult) {
+    hyperbeeResult.graph = await getSiteGraph(origin)
+    return hyperbeeResult
+  }
   if (opts?.cacheOnly) {
     return {
       origin: origin,
@@ -159,7 +165,8 @@ export async function getSite (url, opts) {
       title: toNiceUrl(origin),
       description: '',
       writable: false,
-      index: {id: 'userlist.beakerbrowser.com'}
+      index: {id: 'userlist.beakerbrowser.com'},
+      graph: await getSiteGraph(origin)
     }
   }
   var site = await loadSite(db, origin)
@@ -169,7 +176,8 @@ export async function getSite (url, opts) {
     title: site.title,
     description: site.description,
     writable: site.writable,
-    index: {id: 'live'}
+    index: {id: 'live'},
+    graph: await getSiteGraph(site.origin)
   }
 }
 
@@ -194,16 +202,22 @@ export async function listSites (opts) {
     results.push(await hyperbees.listSites(opts))
   }
 
+  var sites
   if (results.length === 1) {
-    return results[0]
-  }
-
-  var sites = []
-  for (let result of results.flat()) {
-    if (!sites.find(s => s.url === result.url)) {
-      sites.push(result)
+    sites = results[0]
+  } else {
+    sites = []
+    for (let result of results.flat()) {
+      if (!sites.find(s => s.url === result.url)) {
+        sites.push(result)
+      }
     }
   }
+
+  await Promise.all(sites.map(async site => {
+    site.graph = await getSiteGraph(site.origin)
+  }))
+
   return sites
 }
 
@@ -1080,7 +1094,7 @@ async function listLiveRecords (origin, opts) {
 /**
  * @returns {Promise<{local_notifications_rtime: Number, network_notifications_rtime: Number}>}
  */
-export async function getNotificationsRtimes () {
+async function getNotificationsRtimes () {
   var [localRows, networkRows] = await Promise.all([
     db('indexer_state').select('value').where({key: 'local_notifications_rtime'}),
     db('indexer_state').select('value').where({key: 'network_notifications_rtime'})
@@ -1089,6 +1103,38 @@ export async function getNotificationsRtimes () {
     local_notifications_rtime: localRows[0]?.value ? (+localRows[0]?.value) : 0,
     network_notifications_rtime: networkRows[0]?.value ? (+networkRows[0]?.value) : 0
   }
+}
+
+/**
+ * @param {String} targetOrigin 
+ * @returns {Promise<SiteDescriptionGraph>}
+ */
+async function getSiteGraph (targetOrigin) {
+  if (targetOrigin === 'hyper://private') {
+    // special case
+    return {user: {isSubscriber: false, isSubscribedTo: false}, counts: {local: 0, network: 0}}
+  }
+  let userOrigin = normalizeOrigin(filesystem.getProfileUrl())
+  const getUserSubset = async () => {
+    let [isUserSubbed, isSubbedToUser] = await Promise.all([
+      count({path: '/subscriptions/*.goto', origin: userOrigin, links: targetOrigin}),
+      count({path: '/subscriptions/*.goto', origin: targetOrigin, links: userOrigin})
+    ])
+    return {
+      isSubscriber: isUserSubbed > 0,
+      isSubscribedTo: isSubbedToUser > 0
+    }
+  }
+  let [user, localSubs] = await Promise.all([
+    getUserSubset(),
+    query({path: '/subscriptions/*.goto', links: targetOrigin, index: 'local'})
+  ])
+  let networkCount = await hyperbees.countSubscribers(targetOrigin, localSubs) // use the index that's more optimized for sub counts
+  if (typeof networkCount === 'undefined') {
+    // hyperbee is disabled by the user, just use the local count
+    networkCount = localSubs.length
+  }
+  return {user, counts: {local: localSubs.length, network: networkCount}}
 }
 
 function toStringArray (v) {

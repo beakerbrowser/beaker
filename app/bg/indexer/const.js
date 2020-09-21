@@ -39,9 +39,16 @@ export const METADATA_KEYS = {
  * @prop {String} title
  * @prop {String} description
  * @prop {Boolean} writable
+ * @prop {SiteDescriptionGraph} graph
  * @prop {Object} index
  * @prop {String} index.id
- *  
+ * 
+ * @typedef {Object} SiteDescriptionGraph
+ * @typedef {Object} user
+ * @typedef {Boolean} user.isSubscriber
+ * @typedef {Boolean} user.isSubscribedTo
+ * @typedef {Object<String, Number>} counts - map of {indexId: Number}, eg {'local': 5, 'network': 15}
+ *   
  * @typedef {Object} ParsedUrl
  * @prop {String} origin
  * @prop {String} path

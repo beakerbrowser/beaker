@@ -43,8 +43,6 @@ class DriveViewApp extends LitElement {
     this.profile = undefined
     this.contentCounts = undefined
     this.showFilesOverride = false
-    this.subscribers = []
-    this.isSubscribedToUser = false
     this.hasThumb = true
     this.load()
   }
@@ -60,18 +58,6 @@ class DriveViewApp extends LitElement {
     beaker.index.getSite(window.location.origin).then(info => {
       this.info = info
       console.log(this.info)
-      this.requestUpdate()
-    })
-    beaker.subscriptions.listNetworkFor(window.location.origin).then(subs => {
-      this.subscribers = subs
-      this.requestUpdate()
-    })
-    beaker.index.count({
-      path: '/subscriptions/*.goto',
-      links: this.profile.url,
-      origin: window.location.origin
-    }).then(count => {
-      this.isSubscribedToUser = count !== 0
       this.requestUpdate()
     })
     this.contentCounts = Object.fromEntries(
@@ -98,8 +84,8 @@ class DriveViewApp extends LitElement {
     return location.pathname.endsWith('/')
   }
 
-  get isSubscribed () {
-    return this.subscribers.find(s => s.site.url === this.profile.url)
+  get isSubscriber () {
+    return this.info?.graph?.user?.isSubscriber
   }
 
   get isSystem () {
@@ -122,7 +108,7 @@ class DriveViewApp extends LitElement {
         </a>
       `
     }
-    const showSubs = !(isSameOrigin(this.info.origin, 'hyper://private') || this.info.writable && !this.subscribers?.length)
+    const showSubs = !(isSameOrigin(this.info.origin, 'hyper://private') || this.info.writable && !this.info?.graph?.counts?.network)
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <div class="content">
@@ -144,17 +130,16 @@ class DriveViewApp extends LitElement {
           <div class="description">${this.info.description || ''}</div>
           ${!showSubs ? '' : html`
             <div class="known-subscribers">
-              ${this.isSubscribedToUser ? html`
+              ${this.info?.graph?.user?.isSubscribedTo ? html`
                 <span class="subscribed-to-you"><span>Subscribed to you</span></span>
               `: ''}
               <a
                 href="#"
                 class="tooltip-left"
                 @click=${this.onClickShowSubscribers}
-                data-tooltip=${shorten(this.subscribers?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)}
               >
-                <strong>${this.subscribers?.length}</strong>
-                ${pluralize(this.subscribers?.length || 0, 'subscriber')}
+                <strong>${this.info?.graph?.counts?.network}</strong>
+                ${pluralize(this.info?.graph?.counts?.network || 0, 'subscriber')}
               </a>
             </div>
           `}
@@ -179,7 +164,7 @@ class DriveViewApp extends LitElement {
           </button>
         ` : html`
           <button class="transparent" @click=${this.onToggleSubscribe}>
-            ${this.isSubscribed ? html`
+            ${this.isSubscriber ? html`
               <span class="fas fa-fw fa-check"></span> Subscribed
             ` : html`
               <span class="fas fa-fw fa-rss"></span> Subscribe
@@ -324,20 +309,25 @@ class DriveViewApp extends LitElement {
   }
 
   async onToggleSubscribe () {
-    if (this.isSubscribed) {
-      this.subscribers = this.subscribers.filter(s => s.site.url !== this.profile.url)
+    if (!this.info.graph) return // cant operate :|
+    if (this.info.graph.user.isSubscriber) {
+      this.info.graph.user.isSubscriber = false
+      this.info.graph.counts.network--
+      this.info.graph.counts.local--
       this.requestUpdate()
-      await beaker.subscriptions.remove(this.info.origin)
+      await beaker.subscriptions.remove(this.info.url)
     } else {
-      this.subscribers = this.subscribers.concat([{site: this.profile}])
+      this.info.graph.user.isSubscriber = true
+      this.info.graph.counts.network++
+      this.info.graph.counts.local++
       this.requestUpdate()
       await beaker.subscriptions.add({
-        href: this.info.origin,
+        href: this.info.url,
         title: this.info.title,
         site: this.profile.url
       })
     }
-    this.subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
+    this.info = await beaker.index.getSite(this.info.url)
   }
 
   async onEditProperties () {
@@ -355,7 +345,7 @@ class DriveViewApp extends LitElement {
     ]
     if (!this.isSystem) {
       items.unshift('-')
-      items.unshift(this.isSubscribed
+      items.unshift(this.isSubscriber
         ? {icon: 'fas fa-times', label: 'Unsubscribe', click: this.onToggleSubscribe}
         : {icon: 'fas fa-rss', label: 'Subscribe', click: this.onToggleSubscribe},
       )
@@ -391,10 +381,11 @@ class DriveViewApp extends LitElement {
     window.location.reload()
   }
 
-  onClickShowSubscribers (e) {
+  async onClickShowSubscribers (e) {
     e.preventDefault()
     e.stopPropagation()
-    SitesListPopup.create('Subscribers', this.subscribers.map(s => s.site))
+    let subscribers = await beaker.subscriptions.listNetworkFor(this.info.url)
+    SitesListPopup.create('Subscribers', subscribers.map(s => s.site))
   }
 
   onThumbFail (e) {

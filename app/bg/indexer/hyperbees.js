@@ -108,7 +108,8 @@ export async function getSite (url) {
       title: indexJson.title || toNiceUrl(origin),
       description: indexJson.description || '',
       writable: false,
-      index: {id: 'userlist.beakerbrowser.com'}
+      index: {id: 'userlist.beakerbrowser.com'},
+      graph: undefined
     }
   }
 }
@@ -302,6 +303,33 @@ export async function count (opts, {existingResultOrigins, notificationRtime} = 
 }
 
 /**
+ * @param {String} targetOrigin 
+ * @param {RecordDescription[]} localSubs
+ * @returns {Promise<Number>}
+ */
+export async function countSubscribers (targetOrigin, localSubs) {
+  if (isDisabled) return undefined
+  try {
+    let subscriptions = await beakerNetworkIndex.subscriptions.getSubscribers(targetOrigin)
+    let count = subscriptions.length
+
+    // make sure local subs are included
+    for (let localSub of localSubs) {
+      if (!subscriptions.includes(localSub.site.url)) {
+        count++
+      }
+    }
+
+    return count
+  } catch (e) {
+    return undefined
+  }
+}
+
+// internal methods
+// =
+
+/**
  * 
  * @param {HyperbeeBacklink} backlink 
  * @param {Number} [notificationRtime]
@@ -354,6 +382,9 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
 
 var _fullSitesListCache = undefined
 var _lastFullSiteFetch = undefined
+/**
+ * @returns {Promise<SiteDescription[]>}
+ */
 async function fetchFullSitesList () {
   if (_fullSitesListCache && (Date.now() - _lastFullSiteFetch < SITES_CACHE_TIME)) {
     return _fullSitesListCache
@@ -369,7 +400,8 @@ async function fetchFullSitesList () {
         title: user.title || toNiceUrl(user.driveUrl),
         description: user.description || '',
         writable: Boolean((await getMeta(user.driveUrl, {noDefault: true}))?.writable),
-        index: {id: 'userlist.beakerbrowser.com'}
+        index: {id: 'userlist.beakerbrowser.com'},
+        graph: undefined
       })
     }
 

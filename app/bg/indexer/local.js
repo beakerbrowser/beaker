@@ -55,7 +55,8 @@ export async function listSites (db, opts) {
     title: row.title || toNiceUrl(row.origin),
     description: row.description,
     writable: Boolean(row.writable),
-    index: {id: 'local'}
+    index: {id: 'local'},
+    graph: undefined
   }))
 }
 

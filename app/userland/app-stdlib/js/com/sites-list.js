@@ -69,10 +69,10 @@ export class SitesList extends LitElement {
   }
 
   getSiteIdent (site) {
-    if (isSameOrigin(site.origin, this.profileUrl)) {
+    if (isSameOrigin(site.url, this.profileUrl)) {
       return 'profile'
     }
-    if (isSameOrigin(site.origin, 'hyper://private')) {
+    if (isSameOrigin(site.url, 'hyper://private')) {
       return 'private'
     }
     return undefined
@@ -93,37 +93,34 @@ export class SitesList extends LitElement {
   async query () {
     emit(this, 'load-state-updated')
 
-    var subs = await beaker.index.query({
-      path: '/subscriptions/*.goto',
-      index: 'local'
-    })
-
     var sites
     var isFiltered = false
     if (this.listing === 'mine') {
       sites = await beaker.drives.list({includeSystem: true})
       sites = sites.filter(s => s.info?.writable)
-      sites = sites.map(s => ({
+      sites = await Promise.all(sites.map(async s => ({
         origin: s.url,
         url: s.url,
         title: s.info?.title || 'Untitled',
         description: s.info?.description,
         writable: s.info?.writable,
-        forkOf: s.forkOf
-      }))
+        forkOf: s.forkOf,
+        graph: (await beaker.index.getSite(s.url)).graph
+      })))
     } else if (this.listing === 'subscribed') {
-      sites = await Promise.all(
-        subs
-          .filter(sub => isSameOrigin(sub.site.url, this.profileUrl))
-          .map(sub => beaker.index.getSite(sub.metadata.href))
-      )
+      var subs = await beaker.index.query({
+        path: '/subscriptions/*.goto',
+        index: 'local',
+        origin: this.profileUrl
+      })
+      sites = await Promise.all(subs.map(sub => beaker.index.getSite(sub.metadata.href)))
     } else if (this.listing === 'subscribers') {
-      let subs2 = await beaker.index.query({
+      let subs = await beaker.index.query({
         links: this.profileUrl,
         path: '/subscriptions/*.goto',
         index: ['local', 'network']
       })
-      sites = await Promise.all(subs2.map(sub => beaker.index.getSite(sub.site.url, {cacheOnly: true})))
+      sites = await Promise.all(subs.map(sub => beaker.index.getSite(sub.site.url, {cacheOnly: true})))
     } else if (this.listing === 'network') {
       isFiltered = true
       sites = await beaker.index.listSites({
@@ -155,20 +152,6 @@ export class SitesList extends LitElement {
       sites.sort((a, b) => a.title.localeCompare(b.title))
     }
 
-    for (let sub of subs) {
-      try {
-        let origin = (new URL(sub.metadata.href)).origin
-        let site = sites.find(s => s.origin === origin)
-        if (site) {
-          site.subscriptions = site.subscriptions || []
-          site.subscriptions.push(sub)
-        }
-      } catch (e) {
-        console.debug(e)
-        // skip
-      }
-    }
-
     // always put the profile and private site on top
     moveToTopIfExists(sites, this.profile?.url)
     moveToTopIfExists(sites, 'hyper://private/')
@@ -182,7 +165,7 @@ export class SitesList extends LitElement {
     for (let site of this.sites) {
       if (!site.unknown) continue
       try {
-        let info = await beaker.index.getSite(site.origin)
+        let info = await beaker.index.getSite(site.url)
         site.title = info.title
         site.description = info.description
         this.sites = this.sites.slice()
@@ -193,7 +176,7 @@ export class SitesList extends LitElement {
   }
 
   isSubscribed (site) {
-    return site.subscriptions?.find(sub => isSameOrigin(sub.site.url, this.profileUrl))
+    return site.graph.user.isSubscriber
   }
 
   // rendering
@@ -220,21 +203,21 @@ export class SitesList extends LitElement {
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <div class="container">
         <div class="sites ${this.singleRow ? 'single-row' : 'full'}">
-          ${repeat(this.sites, site => site.origin, site => this.renderSite(site))}
+          ${repeat(this.sites, site => site.url, site => this.renderSite(site))}
         </div>
       </div>
     `
   }
 
   renderSite (site) {
-    var title = site.title || toNiceDomain(site.origin)
+    var title = site.title || toNiceDomain(site.url)
     return html`
       <div class="site">
         <div class="thumb">
-          <a href=${site.origin} title=${title}><img src="asset:thumb:${site.origin}"></a>
+          <a href=${site.url} title=${title}><img src="asset:thumb:${site.url}"></a>
         </div>
         <div class="info">
-          <div class="title"><a href=${site.origin} title=${title}>${title}</a></div>
+          <div class="title"><a href=${site.url} title=${title}>${title}</a></div>
           <div class="description">${shorten(site.description, 200)}</div>
           ${site.forkOf ? html`
             <div class="fork-of">
@@ -242,28 +225,23 @@ export class SitesList extends LitElement {
               Fork of <a href="hyper://${site.forkOf.key}">${toNiceDomain(`hyper://${site.forkOf.key}`)}</a>
             </div>
           ` : ''}
-          ${!isSameOrigin(site.origin, 'hyper://private') && (!site.writable || site.subscriptions?.length > 0) ? html`
+          ${!isSameOrigin(site.url, 'hyper://private') && (!site.writable || site.graph?.counts.network > 0) ? html`
             <div class="known-subscribers">
               <a
                 href="#" 
                 class="tooltip-top"
-                @click=${e => this.onClickShowSubscribers(e, site.subscriptions)}
-                data-tooltip=${
-                  ifDefined(site.subscriptions?.length > 0
-                    ? shorten(site.subscriptions?.map(r => r.site.title || 'Untitled').join(', ') || '', 100)
-                    : undefined)
-                }
+                @click=${e => this.onClickShowSubscribers(e, site)}
               >
-                <strong>${site.subscriptions?.length || 0}</strong>
-                ${pluralize(site.subscriptions?.length || 0, 'known subscriber')}
+                <strong>${site.graph?.counts.network || 0}</strong>
+                ${pluralize(site.graph?.counts.network || 0, 'subscriber')}
               </a>
             </div>
           ` : ''}
           <div class="ctrls">
             ${site.writable ? html`
-              ${isSameOrigin(site.origin, 'hyper://private') ? html`
+              ${isSameOrigin(site.url, 'hyper://private') ? html`
                 <span class="label">My Private Site</span></div>
-              ` : isSameOrigin(site.origin, this.profileUrl) ? html`
+              ` : isSameOrigin(site.url, this.profileUrl || '') ? html`
                 <span class="label">My Profile Site</span></div>
               ` : html`
                 <span class="label">My Site</span>
@@ -289,22 +267,28 @@ export class SitesList extends LitElement {
   // events
   // =
 
-  onClickShowSubscribers (e, subscriptions) {
+  async onClickShowSubscribers (e, site) {
     e.preventDefault()
     e.stopPropagation()
-    SitesListPopup.create('Subscribers', subscriptions.map(s => s.site))
+    let subscribers = await beaker.subscriptions.listNetworkFor(site.url)
+    SitesListPopup.create('Subscribers', subscribers.map(s => s.site))
   }
 
   async onToggleSubscribe (e, site) {
+    if (!site.graph) return // cant operate :|
     if (this.isSubscribed(site)) {
-      site.subscriptions = site.subscriptions.filter(s => !isSameOrigin(s.site.url, this.profileUrl))
+      site.graph.user.isSubscriber = false
+      site.graph.counts.network--
+      site.graph.counts.local--
       this.requestUpdate()
       await beaker.subscriptions.remove(site.url)
     } else {
-      site.subscriptions = (site.subscriptions || []).concat([{site: this.profile}])
+      site.graph.user.isSubscriber = true
+      site.graph.counts.network++
+      site.graph.counts.local++
       this.requestUpdate()
       await beaker.subscriptions.add({
-        href: site.origin,
+        href: site.url,
         title: site.title,
         site: this.profileUrl
       })

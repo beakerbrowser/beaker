@@ -12,11 +12,7 @@ import { READ_TIMEOUT, READ_DIFF_TIMEOUT } from './const'
 
 /**
  * @typedef {import('./const').Site} Site
- * @typedef {import('./const').SiteDescription} SiteDescription
- * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
- * @typedef {import('./const').RecordDescription} RecordDescription
- * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  */
 
