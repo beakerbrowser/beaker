@@ -24,6 +24,7 @@ body {
   --bg-color--private-light: #f5faf7;
   --bg-color--private-semi-light: #edf6f1;
   --bg-color--light-highlight: #f7faff;
+  --bg-color--selected: var(--text-color--link);
   --bg-color--unread: #f2f3ff;
 }
 
@@ -53,6 +54,7 @@ body {
     --bg-color--private-light: #202f2f;
     --bg-color--private-semi-light: #354a48;
     --bg-color--light-highlight: #3e3e5a;
+    --bg-color--selected: var(--text-color--link);
     --bg-color--unread: #333658;
   }
 }

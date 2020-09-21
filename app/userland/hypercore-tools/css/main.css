@@ -4,7 +4,7 @@
 body {
 
   font-size: 14px;
-  background: var(--bg-color--light);
+  background: var(--bg-color--default);
   color: var(--text-color--default);
 }
 

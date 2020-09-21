@@ -1,7 +1,8 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import * as QP from './lib/qp.js'
 import css from '../css/main.css.js'
-import { toHex, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { toHex, isSameOrigin } from 'beaker://app-stdlib/js/strings.js'
+import 'beaker://app-stdlib/js/com/hover-card.js'
 
 class HypercoreToolsApp extends LitElement {
   static get styles () {
@@ -10,12 +11,16 @@ class HypercoreToolsApp extends LitElement {
 
   static get properties () {
     return {
+      selectedDrive: {type: Object},
+      currentDriveView: {type: String}
     }
   }
 
   constructor () {
     super()
     beaker.panes.setAttachable()
+    this.selectedDrive = undefined
+    this.currentDriveView = 'cores'
     this.url = undefined
     this.drivecores = []
 
@@ -47,6 +52,9 @@ class HypercoreToolsApp extends LitElement {
       return
     }
     QP.setParams({url})
+    if (!(url && this.url && isSameOrigin(url, this.url))) {
+      this.selectedDrive = undefined
+    }
     this.url = url
     this.drivecores = await beaker.hyperdebug.listCores(url)
     console.log(this.drivecores)
@@ -84,9 +92,15 @@ class HypercoreToolsApp extends LitElement {
     events.addEventListener('ready', () => log('Ready'))
     events.addEventListener('opened', () => log('Opened'))
     events.addEventListener('error', (err) => log('Error', err))
-    events.addEventListener('peer-add', (peer) => log('Peer Added:', JSON.stringify(peer)))
-    events.addEventListener('peer-remove', (peer) => log('Peer Removed:', JSON.stringify(peer)))
-    events.addEventListener('peer-open', (peer) => log('Peer Connected:', JSON.stringify(peer)))
+    events.addEventListener('peer-add', (peer) => {
+      core.peers++
+      log('Peer Added:', peer.remoteAddress)
+    })
+    events.addEventListener('peer-remove', (peer) => {
+      core.peers--
+      log('Peer Removed:', peer.remoteAddress)
+    })
+    events.addEventListener('peer-open', (peer) => log('Peer Connected:', peer.remoteAddress))
     events.addEventListener('download', (index) => {
       core.downloadedBlockBits[index] = true
       log('Downloaded block', index)
@@ -113,40 +127,133 @@ class HypercoreToolsApp extends LitElement {
   // =
 
   render () {
+    const driveNavItem = (id, label) => html`
+      <a
+        class="${id === this.currentDriveView ? 'current' : ''}"
+        @click=${e => this.currentDriveView = id}
+      >${label}</a>
+    `
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="hover-el"></div>
-      <div class="drives">
-        ${this.drivecores.map(this.renderDrive.bind(this))}
+      <nav>
+        <a class="current">Hypercores</a>
+      </nav>
+      <main>
+        ${this.selectedDrive ? html`
+          <div class="drives-list">
+            <div class="drives-list-header">
+              <div class="key">Key</div>
+              <nav>
+                <a @click=${this.onClickDeselectDrive}>&times;</a>
+                ${driveNavItem('cores', 'Cores')}
+                ${driveNavItem('files', 'Files')}
+              </nav>
+            </div>
+            <div class="drives-list-columns">
+              <div class="list">
+                ${this.drivecores.map(this.renderDriveListItemShort.bind(this))}
+              </div>
+              <div class="view">
+                ${this.currentDriveView === 'cores' ? html`
+                  ${this.renderDriveCores(this.selectedDrive)}
+                ` : this.currentDriveView === 'files' ? html`
+                  ${this.renderDriveFiles(this.selectedDrive)}
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        ` : html`
+          <div class="drives-list">
+            <div class="drives-list-header">
+              <div class="key">Key</div>
+              <div class="type">Type</div>
+              <div class="initiator">Initiator</div>
+              <div class="peers">Peers</div>
+              <div class="blocks">Blocks</div>
+            </div>
+            ${this.drivecores.map(this.renderDriveListItemFull.bind(this))}
+          </div>
+        `}
+      </main>
+    `
+  }
+
+  renderDriveListItemShort (drive, index) {
+    let keyStr = toHex(drive.metadata.key)
+    return html`
+      <div
+        class="drives-list-item ${this.selectedDrive === drive ? 'selected' : ''}"
+        @click=${e => this.onClickDriveListItem(e, drive)}
+      >
+        <div class="key">${keyStr.slice(0, 8)}..${keyStr.slice(-2)}</div>
       </div>
     `
   }
 
-  renderDrive (drive) {
+  renderDriveListItemFull (drive, index) {
+    let keyStr = toHex(drive.metadata.key)
+    let totalBlocks = drive.metadata.totalBlocks + (drive.content.totalBlocks || 0)
+    let downloadedBlocks = drive.metadata.downloadedBlocks + (drive.content.downloadedBlocks || 0)
+    return html`
+      <div
+        class="drives-list-item ${this.selectedDrive === drive ? 'selected' : ''}"
+        @click=${e => this.onClickDriveListItem(e, drive)}
+      >
+        <div class="key">${keyStr.slice(0, 8)}..${keyStr.slice(-2)}</div>
+        <div class="type">Drive</div>
+        <div class="initiator">${index === 0 ? 'Browser' : `Mount (${drive.path})`}</div>
+        <div class="peers">${drive.metadata.peers}</div>
+        <div class="blocks">${totalBlocks} (${Math.round(downloadedBlocks / totalBlocks * 100)}% downloaded)</div>
+      </div>
+    `
+  }
+
+  renderDriveCores (drive) {
     return html`
       <div class="drive">
-        <div class="path">${drive.path}</div>
+        ${drive.path !== '/' ? html`<div class="path">Mounted at ${drive.path}</div>` : ''}
         ${this.renderCore(drive.metadata, 'Metadata')}
         ${this.renderLog(drive.metadata, 'Metadata')}
         ${this.renderCore(drive.content, 'Content')}
         ${this.renderLog(drive.metadata, 'Content')}
+      </div>
+    `
+  }
+
+  renderDriveFiles (drive) {
+    return html`
+      <div class="drive">
+        ${drive.path !== '/' ? html`<div class="path">Mounted at ${drive.path}</div>` : ''}
         ${this.renderFiles(drive)}
       </div>
     `
   }
 
   renderCore (core, label) {
-    return html`
+    if (!core.key) {
+      return html`
       <section class="core">
         <div class="label">${label} Core</div>
-        <div class="key"><strong>Key:</strong> ${toHex(core.key)}</div>
-        <div class="key"><strong>Discovery Key:</strong> ${toHex(core.discoveryKey)}</div>
-        <div class="peers"><strong>Peers:</strong> ${core.peers}</div>
-        <div class="blocks-summary">
-          <strong>Blocks:</strong>
-          ${core.totalBlocks} ${pluralize(core.totalBlocks, 'block')} /
-          ${core.downloadedBlocks} downloaded
-          (${Math.round(core.downloadedBlocks / core.totalBlocks * 100)}%)
+        <div class="error">Not loaded</div>
+      </section>
+      `
+    }
+    return html`
+      <section class="core">
+        <div class="label">
+          ${label} Core
+          <beaker-hover-card>
+            <span slot="el" class="discovery-key-icon fas fa-info-circle"></span>
+            <div slot="card" class="discovery-key"><strong>Discovery Key:</strong><br>${toHex(core.discoveryKey)}</div></div>
+          </beaker-hover-card>
+        </div>
+        <div class="key">
+          ${toHex(core.key)}
+        </div>
+        <div class="stats">
+          <span class="peers"><small>Peers:</small> ${core.peers}</span>
+          <span class="blocks-summary"><small>Blocks:</small> ${core.totalBlocks}</span>
         </div>
         <div class="blocks-grid">
           ${this.renderBlocks(core)}
@@ -182,10 +289,10 @@ class HypercoreToolsApp extends LitElement {
 
   renderFiles (drive) {
     if (drive.filesError) {
-      return html`<div class="files error"><div class="label">Files</div>${drive.filesError}</div>`
+      return html`<section class="files error"><div class="label">Files</div>${drive.filesError}</section>`
     }
     if (!drive.files) {
-      return html`<div class="files loading"><div class="label">Files</div><span class="spinner"></span></div>`
+      return html`<section class="files loading"><div class="label">Files</div><span class="spinner"></span></section>`
     }
     return html`
       <section class="files">
@@ -205,6 +312,14 @@ class HypercoreToolsApp extends LitElement {
 
   // events
   // =
+
+  onClickDeselectDrive (e) {
+    this.selectedDrive = undefined
+  }
+
+  onClickDriveListItem (e, drive) {
+    this.selectedDrive = drive
+  }
 
   onMouseoverBlock (e) {
     let rect = e.currentTarget.getClientRects()[0]
