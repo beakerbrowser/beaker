@@ -98,6 +98,7 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
       db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
       db.raw(`group_concat(records_data.value, '${sep}') as data_values`)
     )
+    .where({is_indexed: 1})
     .groupBy('records.rowid')
     .offset(opts.offset)
     .orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
@@ -269,6 +270,7 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
       'origin',
       db.raw(`count(records.rowid) as count`)
     )
+    .where({'sites.is_indexed': 1})
     .groupBy('origin')
 
   if (opts?.origin) {
