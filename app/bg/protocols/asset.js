@@ -23,10 +23,10 @@ var activeCaptures = {} // [url] => Promise<NativeImage>
 
 export function setup () {
   var DEFAULTS = {
-    favicon: {type: 'image/png', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}},
-    thumb: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}},
-    cover: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}},
-    screenshot: {type: 'image/png', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}}
+    favicon: {type: 'image/png', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}},
+    thumb: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}},
+    cover: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}},
+    screenshot: {type: 'image/png', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}}
   }
 
   // load defaults
@@ -34,8 +34,8 @@ export function setup () {
     if (err) { console.error('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.png'), err) }
     if (buf) { DEFAULTS.favicon.data = buf }
   })
-  fs.readFile(path.join(__dirname, './assets/img/default-screenshot.jpg'), (err, buf) => {
-    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-screenshot.jpg'), err) }
+  fs.readFile(path.join(__dirname, './assets/img/default-thumb.jpg'), (err, buf) => {
+    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-thumb.jpg'), err) }
     if (buf) {
       DEFAULTS.thumb.data = buf
       DEFAULTS.screenshot.data = buf
