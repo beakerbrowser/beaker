@@ -3,6 +3,7 @@ import { html, css } from '../../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../../vendor/lit-element/lit-html/directives/repeat.js'
 import { BasePopup } from './base.js'
 import buttonsCSS from '../../../css/buttons2.css.js'
+import spinnerCSS from '../../../css/com/spinner.css.js'
 import popupsCSS from '../../../css/com/popups.css.js'
 import { toNiceUrl } from '../../strings.js'
 
@@ -10,8 +11,15 @@ import { toNiceUrl } from '../../strings.js'
 // =
 
 export class SitesListPopup extends BasePopup {
+  static get properties () {
+    return {isLoading: {type: Boolean}}
+  }
+
   static get styles () {
-    return [buttonsCSS, popupsCSS, css`
+    return [buttonsCSS, spinnerCSS, popupsCSS, css`
+      .loading {
+        padding: 10px 10px 0;
+      }
       .sites {
         margin: -5px 0 0 !important;
       }
@@ -44,7 +52,17 @@ export class SitesListPopup extends BasePopup {
   constructor ({title, sites}) {
     super()
     this.title = title
-    this.sites = sites
+    if (sites instanceof Promise) {
+      this.isLoading = true
+      this.sites = undefined
+      sites.then(s => {
+        this.isLoading = false
+        this.sites = s
+      })
+    } else {
+      this.isLoading = false
+      this.sites = sites
+    }
   }
 
   // management
@@ -66,10 +84,14 @@ export class SitesListPopup extends BasePopup {
   }
 
   renderBody () {
-    return html`  
+    return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="sites">
-        ${repeat(this.sites, site => this.renderSite(site))}
+        ${this.isLoading ? html`
+          <div class="loading"><span class="spinner"></span></div>
+        ` : html`
+          ${repeat(this.sites, site => this.renderSite(site))}
+        `}
       </div>
     `
   }

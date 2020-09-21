@@ -114,8 +114,8 @@ export class SiteInfo extends LitElement {
   async onClickShowSites (e) {
     e.preventDefault()
     e.stopPropagation()
-    let subscribers = await beaker.subscriptions.listNetworkFor(this.siteInfo.url)
-    SitesListPopup.create('Subscribers', subscribers.map(s => s.site))
+    let sites = /* dont await*/ beaker.subscriptions.listNetworkFor(this.siteInfo.url).then(subs => subs.map(s => s.site))
+    SitesListPopup.create('Subscribers', sites)
   }
 
   onToggleSubscribe (e) {
