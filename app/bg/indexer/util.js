@@ -219,13 +219,16 @@ export async function loadSite (db, origin, opts) {
     async listUpdates () {
       return timer(READ_DIFF_TIMEOUT, async (checkin) => {
         checkin('fetching recent updates')
-        // HACK work around the diff stream issue -prf
-        // let changes = await drive.pda.diff(+record.last_indexed_version || 0)
-        let changes = []
-        for (let i = 0; i < 10; i++) {
-          let c = await drive.pda.diff(+site.last_indexed_version || 0)
-          if (c.length > changes.length) changes = c
-        }
+
+        // HACK
+        // in certain network conditions, diff() will give partial results without erroring
+        // this completely fucks the indexer's state because it believes it got _all_ the data for a version range
+        // by calling readdir first, we ensure that the full metadata log is downloaded, avoiding partial results
+        // unlike diff(), if the data is not reachable, readdir will fail - which is what we want to happen
+        // -prf
+        await drive.pda.readdir('/', {recursive: true})
+
+        let changes = await drive.pda.diff(+record.last_indexed_version || 0)
         return changes.filter(change => ['put', 'del'].includes(change.type)).map(change => ({
           path: '/' + change.name,
           remove: change.type === 'del',
