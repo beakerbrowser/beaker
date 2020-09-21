@@ -160,7 +160,12 @@ export class RecordFeed extends LitElement {
 
   render () {
     if (!this.results) {
-      return html``
+      return html`
+        ${this.title ? html`<h2 class="title">${this.title}</h2>` : ''}
+        <div class="results empty">
+          <span class="spinner"></span>
+        </div>
+      `
     }
     if (!this.results.length) {
       if (!this.emptyMessage) return html``

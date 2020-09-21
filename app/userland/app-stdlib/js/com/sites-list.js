@@ -201,7 +201,11 @@ export class SitesList extends LitElement {
 
   render () {
     if (!this.sites) {
-      return html``
+      return html`
+        <div class="sites empty">
+          <span class="spinner"></span>
+        </div>
+      `
     }
     if (!this.sites.length) {
       if (!this.emptyMessage) return html``
