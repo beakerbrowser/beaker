@@ -132,6 +132,8 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
           driveAssets.update(drive)
         }
       })
+    } else {
+      driveAssets.update(drive)
     }
 
     // read the drive meta and size on disk

@@ -23,10 +23,10 @@ var activeCaptures = {} // [url] => Promise<NativeImage>
 
 export function setup () {
   var DEFAULTS = {
-    favicon: {type: 'image/png', data: NOT_FOUND},
-    thumb: {type: 'image/jpeg', data: NOT_FOUND},
-    cover: {type: 'image/jpeg', data: NOT_FOUND},
-    screenshot: {type: 'image/png', data: NOT_FOUND}
+    favicon: {type: 'image/png', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}},
+    thumb: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}},
+    cover: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}},
+    screenshot: {type: 'image/png', data: NOT_FOUND, headers: {'Cache-Control': 'no-cache'}}
   }
 
   // load defaults
@@ -120,7 +120,7 @@ export function setup () {
           let mimeType = /data:([^;]+);base64/.exec(parts[0])[1]
           data = parts[1]
           if (data) {
-            return cb({ mimeType, data: Buffer.from(data, 'base64'), headers: {'Cache-Control': 'no-cache'} })
+            return cb({mimeType, data: Buffer.from(data, 'base64'), headers: {'Cache-Control': 'no-cache'}})
           }
         }
       }
