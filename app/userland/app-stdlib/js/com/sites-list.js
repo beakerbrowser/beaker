@@ -54,17 +54,17 @@ export class SitesList extends LitElement {
   }
 
   updated (changedProperties) {
+    if (typeof this.sites === 'undefined') {
+      if (!this.activeQuery) {
+        this.queueQuery()
+      }
+    }
     if (changedProperties.has('singleRow') && changedProperties.get('singleRow') != this.singleRow) {
       this.queueQuery()
     } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
       this.queueQuery()
     } else if (changedProperties.has('listing') && changedProperties.get('listing') != this.listing) {
       this.queueQuery()
-    } else if (typeof this.sites === 'undefined') {
-      if (!this.activeQuery) {
-        this.queueQuery()
-      }
-      return
     }
   }
 
