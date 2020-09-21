@@ -67,12 +67,7 @@ export class RecordFeed extends LitElement {
   }
 
   updated (changedProperties) {
-    if (typeof this.results === 'undefined') {
-      if (!this.activeQuery) {
-        this.queueQuery()
-      }
-      return
-    } else if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
+    if (changedProperties.has('filter') && changedProperties.get('filter') != this.filter) {
       this.queueQuery()
     } else if (changedProperties.has('pathQuery') && changedProperties.get('pathQuery') != this.pathQuery) {
       // NOTE ^ to correctly track this, the query arrays must be reused
@@ -80,6 +75,11 @@ export class RecordFeed extends LitElement {
       this.queueQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
       this.queueQuery()
+    } else if (typeof this.results === 'undefined') {
+      if (!this.activeQuery) {
+        this.queueQuery()
+      }
+      return
     }
   }
 
