@@ -153,7 +153,7 @@ class ShellWindowToolbarMenu extends LitElement {
   }
 
   isPaneDisabled (item) {
-    return item.hyperOnly && (!this.activeTab || !this.activeTab.url.startsWith('hyper://'))
+    return item.hyperOnly && !this.isPaneActive(item) && (!this.activeTab || !this.activeTab.url.startsWith('hyper://'))
   }
 
   get isExpanded () {
@@ -265,6 +265,11 @@ class ShellWindowToolbarMenu extends LitElement {
     } else if (e.button === 0) {
       if (this.isPaneActive(item)) {
         el.classList.remove('pressed')
+        if (this.isPaneDisabled(item)) {
+          // pane was only 'not disabled' because it was active
+          // repaint to correctly disable
+          this.requestUpdate()
+        }
       } else {
         el.classList.add('pressed')
       }
