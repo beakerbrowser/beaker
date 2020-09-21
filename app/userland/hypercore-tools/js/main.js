@@ -2,6 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import * as QP from './lib/qp.js'
 import css from '../css/main.css.js'
 import { toHex, isSameOrigin } from 'beaker://app-stdlib/js/strings.js'
+import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import 'beaker://app-stdlib/js/com/hover-card.js'
 
 class HypercoreToolsApp extends LitElement {
@@ -212,7 +213,7 @@ class HypercoreToolsApp extends LitElement {
   renderDriveCores (drive) {
     return html`
       <div class="drive">
-        ${drive.path !== '/' ? html`<div class="path">Mounted at ${drive.path}</div>` : ''}
+        ${drive.path !== '/' ? html`<div class="mount-path">Mounted at ${drive.path}</div>` : ''}
         ${this.renderCore(drive.metadata, 'Metadata')}
         ${this.renderLog(drive.metadata, 'Metadata')}
         ${this.renderCore(drive.content, 'Content')}
@@ -224,7 +225,7 @@ class HypercoreToolsApp extends LitElement {
   renderDriveFiles (drive) {
     return html`
       <div class="drive">
-        ${drive.path !== '/' ? html`<div class="path">Mounted at ${drive.path}</div>` : ''}
+        ${drive.path !== '/' ? html`<div class="mount-path">Mounted at ${drive.path}</div>` : ''}
         ${this.renderFiles(drive)}
       </div>
     `
@@ -296,13 +297,26 @@ class HypercoreToolsApp extends LitElement {
     }
     return html`
       <section class="files">
-        <div class="label">Files</div>
+        <div class="file-header">
+          <span class="indicator"></span>
+          <span class="path">Path</span>
+          <span class="size">Size</span>
+          <span class="offset">Offset</span>
+          <span class="blocks">Blocks</span>
+        </div>
         ${drive.files.map(file => {
-          var d = file.stat.size === 0 || drive.content.downloadedBlockBits[file.stat.offset]
+          var d = file.stat.size === 0 || isRangeDownloaded(
+            drive.content.downloadedBlockBits,
+            file.stat.offset,
+            file.stat.blocks
+          )
           return html`
             <div class="file ${d ? 'downloaded' : ''}">
               <span class="indicator"></span>
-                <a href="${drive.url}/${file.name}" target="_blank">/${file.name} <small>[${file.stat.offset}]</small></a>
+              <a class="path" href="${drive.url}/${file.name}" target="_blank">/${file.name}</a>
+              <span class="size">${bytes(file.stat.size)}</span>
+              <span class="offset">${file.stat.offset}</span>
+              <span class="blocks">${file.stat.blocks}</span>
             </div>
           `
         })}
@@ -338,3 +352,10 @@ class HypercoreToolsApp extends LitElement {
 }
 
 customElements.define('hypercore-tools-app', HypercoreToolsApp)
+
+function isRangeDownloaded (bits, offset, blocks) {
+  for (let i = offset; i < (offset + blocks); i++) {
+    if (!bits[i]) return false
+  }
+  return true
+}

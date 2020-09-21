@@ -104,21 +104,10 @@ nav a.current {
   background: transparent;
 }
 
-.drives-list .key {
-  flex: 0 0 150px;
-}
-
-.drives-list .type {
-  flex: 0 0 50px;
-}
-
-.drives-list .initiator {
-  flex: 0 0 180px;
-}
-
-.drives-list .peers {
-  flex: 0 0 50px;
-}
+.drives-list .key { flex: 0 0 150px; }
+.drives-list .type { flex: 0 0 50px; }
+.drives-list .initiator { flex: 0 0 180px; }
+.drives-list .peers { flex: 0 0 50px; }
 
 .drives-list-header > *:last-child,
 .drives-list-item > *:last-child {
@@ -143,7 +132,7 @@ nav a.current {
 .drive {
 }
 
-.drive .path {
+.drive .mount-path {
   font-size: 11px;
   font-weight: bold;
   padding: 6px 10px;
@@ -210,21 +199,40 @@ section.log .entries {
 }
 
 section.files {
-  padding: 6px 10px;
+  padding: 0 10px 6px;
   font-size: 11px;
   font-variant: tabular-nums;
 }
 
+section.files .file-header,
+section.files .file {
+  display: flex;
+  align-items: center;
+}
+
+section.files .file-header {
+  position: sticky;
+  top: 0;
+  padding: 4px 0;
+  background: var(--bg-color--default);
+  color: var(--text-color--pretty-light);
+}
+
+section.files .indicator { flex: 0 0 6px; margin-right: 10px; }
+section.files .path { flex: 1; }
+section.files .size { flex: 0 0 120px; }
+section.files .offset { flex: 0 0 50px; }
+section.files .blocks { flex: 0 0 50px; }
+
 section.files .file .indicator {
   display: inline-block;
-  margin-right: 5px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--bg-color--semi-light);
 }
 
-section.files .file a {
+section.files .file a.path {
   color: var(--text-color--pretty-light);
 }
 
