@@ -62,7 +62,8 @@ export class RecordFeed extends LitElement {
     return !this.results || !!this.activeQuery
   }
 
-  async load () {
+  async load ({clearCurrent} = {clearCurrent: false}) {
+    if (clearCurrent) this.results = undefined
     this.queueQuery()
   }
 

@@ -31,6 +31,7 @@ import * as bookmarks from './filesystem/bookmarks'
 import * as subscriptions from './filesystem/subscriptions'
 import * as toolbar from './filesystem/toolbar'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
+import { isProfileListedInBeakerNetwork, addProfileToBeakerNetwork } from './indexer/hyperbees'
 import * as wcTrust from './wc-trust'
 
 // constants
@@ -183,6 +184,9 @@ export const WEBAPI = {
   getProfile,
   checkForUpdates,
   restartBrowser,
+
+  isProfileListedInBeakerNetwork,
+  addProfileToBeakerNetwork,
 
   getSetting,
   getSettings,

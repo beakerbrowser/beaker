@@ -487,40 +487,20 @@ beaker-sites-list {
 }
 
 .intro {
-  position: relative;
-  max-width: 1000px;
-  margin: 16px auto;
-  text-align: center;
-  border: 1px solid var(--border-color--default);
-  border-radius: 4px;
-}
-
-.intro .close {
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  font-size: 16px;
-}
-
-.intro h3 {
-  font-size: 46px;
-  font-weight: 500;
-  letter-spacing: 0.7px;
-  margin-bottom: 0;
+  margin-bottom: 10px;
 }
 
 .intro h4 {
-  font-size: 18px;
+  font-size: 21px;
+  margin: 22px 0 10px;
 }
 
-.intro h5 {
-  font-size: 17px;
-  font-weight: 500;
-  margin-bottom: 40px;
+.intro p {
+  font-size: 15px;
 }
 
 .intro a {
-  color: var(--blue);
+  color: var(--text-color--link);
   cursor: pointer;
 }
 
@@ -528,46 +508,84 @@ beaker-sites-list {
   text-decoration: underline;
 }
 
-.intro .col1,
-.intro .col3 {
-  margin: 30px 0;
+.intro button {
+  font-size: 15px;
 }
 
-.intro .col3 {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  max-width: 860px;
-  margin: 30px auto;
-}
-
-.intro .col1 {
+.intro section {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-color--light);
-  margin: 30px;
-  border-radius: 4px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0 0 5px;
+  border: 1px solid var(--border-color--default);
+  border-bottom-width: 0;
 }
 
-.intro .avatar img,
-.intro .icon {
-  display: block;
-  margin: 0 auto 10px;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
+.intro section:last-child {
+  border-bottom-width: 1px;
 }
 
 .intro .icon {
-  background: var(--bg-color--light);
-  font-size: 36px;
-  line-height: 100px;
+  font-size: 32px;
+  width: 80px;
+  height: 70px;
+  text-align: center;
+  line-height: 70px;
   color: inherit;
 }
 
-.intro .col1 .icon {
-  margin: 0; 
+.intro .icon .fa-user-plus {
+  font-size: 31px;
+}
+
+.intro .suggested-sites {
+  display: grid;
+  grid-template-columns: repeat(3, 220px);
+  grid-template-rows: auto auto;
+  align-items: baseline;
+  gap: 10px;
+  margin: 30px 2px 30px;
+}
+
+.intro .suggested-sites .site {
+  margin: 0px;
+  padding: 16px;
+  background: var(--bg-color--default);
+  border-radius: 4px;
+  border: 1px solid var(--border-color--light);
+}
+
+.intro .suggested-sites .site .title a {
+  font-size: 16px;
+}
+
+.intro .suggested-sites .site .description {
+  margin: 4px 0 10px;
+}
+
+.intro .suggested-sites .site button {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 13px;
+}
+
+.intro .suggested-sites .site .subscribers {
+  text-align: center;
+  margin-top: 5px;
+  padding: 4px 0;
+  border-radius: 4px;
+  background: var(--bg-color--light);
+  color: var(--text-color--light);
+}
+
+.intro .btn-group {
+  white-space: nowrap;
+  margin: 10px -12px;
+}
+
+.intro .btn-group button {
+  font-size: 15px;
 }
 
 .legacy-archives {

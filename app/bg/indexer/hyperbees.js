@@ -8,7 +8,7 @@ import {
   parseUrl
 } from './util'
 import { getSite as fullGetSite } from './index'
-import { getProfileUrl } from '../filesystem/index'
+import { getProfileUrl, getProfile } from '../filesystem/index'
 import { getMeta } from '../dbs/archives'
 import * as settingsDb from '../dbs/settings'
 
@@ -326,6 +326,42 @@ export async function countSubscribers (targetOrigin, localSubs) {
   }
 }
 
+var _isProfileListedInBeakerNetworkCache = undefined
+/**
+ * @returns {Promise<Boolean>}
+ */
+export async function isProfileListedInBeakerNetwork () {
+  if (typeof _isProfileListedInBeakerNetworkCache !== 'undefined') {
+    return _isProfileListedInBeakerNetworkCache
+  }
+  var profileUrl = getProfileUrl()
+  if (!profileUrl) return false
+  profileUrl = normalizeOrigin(profileUrl)
+  var userList = await fetchFullSitesList()
+  _isProfileListedInBeakerNetworkCache = !!userList.find(user => user.url === profileUrl)
+  return _isProfileListedInBeakerNetworkCache
+}
+
+/**
+ * @returns {Promise<Void>}
+ */
+export async function addProfileToBeakerNetwork () {
+  var profile = await getProfile()
+  if (!profile) return
+  var driveUrl = normalizeOrigin(profile.url)
+  var req = await fetch('https://userlist.beakerbrowser.com/', {
+    method: 'POST',
+    body: JSON.stringify({
+      driveUrl,
+      title: profile.title,
+      description: profile.description
+    }),
+    headers: {'Content-Type': 'application/json'}
+  })
+  await req.text()
+  _isProfileListedInBeakerNetworkCache = true
+}
+
 // internal methods
 // =
 
@@ -395,8 +431,8 @@ async function fetchFullSitesList () {
     _fullSitesListCache = []
     for (let user of json.users.sort((a, b) => b.peerCount - a.peerCount)) {
       _fullSitesListCache.push({
-        origin: user.driveUrl,
-        url: user.driveUrl,
+        origin: normalizeOrigin(user.driveUrl),
+        url: normalizeOrigin(user.driveUrl),
         title: user.title || toNiceUrl(user.driveUrl),
         description: user.description || '',
         writable: Boolean((await getMeta(user.driveUrl, {noDefault: true}))?.writable),

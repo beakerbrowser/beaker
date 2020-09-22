@@ -185,11 +185,13 @@ export async function loadSite (db, origin, opts) {
       is_index_target: Boolean(res[0].is_index_target),
       is_indexed: Boolean(res[0].is_indexed)
     }
-    /*dont await*/ db('sites').update({
-      title: driveInfo.title,
-      description: driveInfo.description,
-      writable: driveInfo.writable ? 1 : 0
-    }).where({origin})
+    if (res[0].title !== driveInfo.title || res[0].description !== driveInfo.description) {
+      /*dont await*/ db('sites').update({
+        title: driveInfo.title,
+        description: driveInfo.description,
+        writable: driveInfo.writable ? 1 : 0
+      }).where({origin})
+    }
   }
 
   var site = {

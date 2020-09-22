@@ -7,6 +7,9 @@ export default {
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
+  isProfileListedInBeakerNetwork: 'promise',
+  addProfileToBeakerNetwork: 'promise',
+
   getSettings: 'promise',
   getSetting: 'promise',
   setSetting: 'promise',
