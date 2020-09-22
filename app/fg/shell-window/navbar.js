@@ -17,7 +17,7 @@ class ShellWindowNavbar extends LitElement {
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
       notificationsCount: {type: Number},
-      userProfileUrl: {type: String},
+      userProfile: {type: Object},
       isNotificationsMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
@@ -31,7 +31,7 @@ class ShellWindowNavbar extends LitElement {
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
     this.isDaemonActive = false
-    this.userProfileUrl = undefined
+    this.userProfile = undefined
     this.isNotificationsMenuOpen = false
     this.isBrowserMenuOpen = false
 
@@ -245,10 +245,11 @@ class ShellWindowNavbar extends LitElement {
   }
 
   get profileBtn () {
-    if (!this.userProfileUrl) return html``
+    if (!this.userProfile) return html``
     return html`
       <button class="user-profile-btn" @click=${this.onClickUserProfile}>
-        <img src="asset:thumb:${this.userProfileUrl}?cache_buster=${Date.now()}">
+        <img src="asset:thumb:${this.userProfile.url}?cache_buster=${Date.now()}">
+        <span class="title">${this.userProfile.title}</span>
       </button>
     `
   }
@@ -311,7 +312,7 @@ class ShellWindowNavbar extends LitElement {
   }
 
   onClickUserProfile (e) {
-    bg.views.createTab(this.userProfileUrl, {setActive: true})
+    bg.views.createTab(this.userProfile.url, {setActive: true})
   }
 
   async onClickNotificationsMenu (e) {
@@ -432,16 +433,25 @@ svg.icon.refresh {
 }
 
 .user-profile-btn {
-  margin: 0 2px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  font-size: 13px;
+  padding: 0 4px;
+  margin: 0;
+  width: auto;
+  color: var(--text-color--navbar-btn--lighter);
 }
 
 .user-profile-btn img {
-  position: relative;
-  top: 1px;
   width: 20px;
   height: 20px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.user-profile-btn span {
+  margin-left: 6px;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)

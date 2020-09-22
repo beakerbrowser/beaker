@@ -28,7 +28,7 @@ class ShellWindowUI extends LitElement {
       isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean},
       hasLocationExpanded: {type: Boolean},
-      userProfileUrl: {type: String}
+      userProfile: {type: Object}
     }
   }
 
@@ -44,7 +44,7 @@ class ShellWindowUI extends LitElement {
     this.isFullscreen = false
     this.hasLocationExpanded = false
     this.activeTabIndex = -1
-    this.userProfileUrl = undefined
+    this.userProfile = undefined
     this.setup()
   }
 
@@ -116,23 +116,23 @@ class ShellWindowUI extends LitElement {
 
     // fetch initial tab state
     this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
-    ;[this.tabs, this.userProfileUrl] = await Promise.all([
+    ;[this.tabs, this.userProfile] = await Promise.all([
       bg.views.getState(),
-      bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
+      bg.beakerBrowser.getProfile()
     ])
     this.stateHasChanged()
     getDaemonStatus()
 
     // HACK
-    // periodically check to see if the user profile URL has changed
+    // periodically check to see if the user profile has changed
     // or the hole-punchability has changed
     // (would be better to have an event trigger this!)
     // -prf
     setInterval(async () => {
       getDaemonStatus()
-      var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
-      if (this.userProfileUrl !== userProfileUrl) {
-        this.userProfileUrl = userProfileUrl
+      var userProfile = await bg.beakerBrowser.getProfile()
+      if (this.userProfile.url !== userProfile.url || this.userProfile.title !== userProfile.title) {
+        this.userProfile = userProfile
         this.stateHasChanged()
       }
     }, 15e3)
@@ -168,7 +168,7 @@ class ShellWindowUI extends LitElement {
         <shell-window-navbar
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
-          .userProfileUrl=${this.userProfileUrl}
+          .userProfile=${this.userProfile}
           ?is-update-available=${this.isUpdateAvailable}
           ?is-holepunchable=${this.isHolepunchable}
           ?is-daemon-active=${this.isDaemonActive}
