@@ -18,6 +18,8 @@ class GeneralSettingsView extends LitElement {
     this.settings = undefined
     this.browserInfo = undefined
     this.defaultProtocolSettings = undefined
+    this.listingSelfState = undefined
+    this.isProfileListedInBeakerNetwork = false
   }
 
   get isAutoUpdateEnabled () {
@@ -39,6 +41,9 @@ class GeneralSettingsView extends LitElement {
       settings: this.settings,
       defaultProtocolSettings: this.defaultProtocolSettings
     })
+    this.requestUpdate()
+
+    this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     this.requestUpdate()
   }
 
@@ -396,6 +401,28 @@ class GeneralSettingsView extends LitElement {
                  ?disabled=${this.settings.extended_network_index !== 'custom'}
                  style="width: 300px; margin-top: 10px" />
         </div>
+        ${this.settings.extended_network_index === 'default' ? html`
+          <div>
+            ${this.isProfileListedInBeakerNetwork ? html`
+              <p style="margin-bottom: 0">
+                <span class="fas fa-fw fa-check"></span> Your site is listed on Beaker Network
+              </p>
+            ` : this.listingSelfState === 'attempting' ? html`
+              <p style="margin-bottom: 0">
+                <button class="primary" disabled>
+                  <span class="spinner"></span>
+                </button>
+              </p>
+            ` : html`
+              <p>
+                <button class="primary" @click=${this.onClickAddSiteToBeakerNetwork}>
+                  Add your site to Beaker Network
+                </button>
+              </p>
+              <p style="margin-bottom: 0">Get listed on Beaker Network so people can find you.</p>
+            `}
+          </div>
+        ` : ''}
       </div>
     `
   }
@@ -677,6 +704,16 @@ class GeneralSettingsView extends LitElement {
     el.innerHTML = '<span class="spinner"></span>'
     await beaker.browser.reconnectHyperdriveDaemon()
     this.browserInfo = await beaker.browser.getInfo()
+    this.requestUpdate()
+  }
+
+  async onClickAddSiteToBeakerNetwork (e) {
+    this.listingSelfState = 'attempting'
+    this.requestUpdate()
+
+    await beaker.browser.addProfileToBeakerNetwork()
+    this.isProfileListedInBeakerNetwork = true
+    this.listingSelfState = 'done'
     this.requestUpdate()
   }
 }
