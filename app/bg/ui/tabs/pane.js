@@ -104,7 +104,7 @@ export class Pane extends EventEmitter {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
         nodeIntegrationInSubFrames: true,
         contextIsolation: true,
-        worldSafeExecuteJavaScript: true,
+        worldSafeExecuteJavaScript: false, // TODO- this causes promises to fail in executeJavaScript, need to file an issue with electron
         webviewTag: false,
         sandbox: true,
         defaultEncoding: 'utf-8',

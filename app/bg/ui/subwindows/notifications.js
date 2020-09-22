@@ -29,7 +29,7 @@ export function setup (parentWindow) {
       preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
       nodeIntegrationInSubFrames: true,
       contextIsolation: true,
-      worldSafeExecuteJavaScript: true,
+      worldSafeExecuteJavaScript: false,
       webviewTag: false,
       sandbox: true,
       defaultEncoding: 'utf-8',
