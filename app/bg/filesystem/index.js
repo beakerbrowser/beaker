@@ -94,6 +94,20 @@ export async function setup () {
   logger.info('Loading root drive', {url: browsingProfile.url})
   hyper.dns.setLocal('private', browsingProfile.url)
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url, {persistSession: true})
+
+  // default pinned bookmarks
+  if (isInitialCreation) {
+    await rootDrive.pda.mkdir('/bookmarks')
+    await rootDrive.pda.writeFile(`/bookmarks/private.goto`, '', {metadata: {href: 'hyper://private/', title: 'My Private Site'}})
+    await rootDrive.pda.writeFile(`/bookmarks/docs-beakerbrowser-com.goto`, '', {metadata: {href: 'https://docs.beakerbrowser.com/', title: 'Beaker Help'}})
+    await rootDrive.pda.writeFile(`/bookmarks/discussions-beakerbrowser-beaker-github.goto`, '', {metadata: {href: 'https://github.com/beakerbrowser/beaker/discussions', title: 'Beaker Support Forum'}})
+    await rootDrive.pda.mkdir('/beaker')
+    await rootDrive.pda.writeFile(`/beaker/pins.json`, JSON.stringify([
+      'hyper://private/',
+      'https://docs.beakerbrowser.com/',
+      'https://github.com/beakerbrowser/beaker/discussions'
+    ], null, 2))
+  }
   
   // load drive config
   let profileObj = await getProfile()
