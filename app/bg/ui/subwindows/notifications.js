@@ -61,7 +61,7 @@ export function reposition (parentWindow) {
   if (view) {
     let parentBounds = parentWindow.getContentBounds()
     view.setBounds({
-      x: parentBounds.width - WIDTH - 65,
+      x: parentBounds.width - WIDTH - 30,
       y: 70,
       width: WIDTH,
       height: HEIGHT
