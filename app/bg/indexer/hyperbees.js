@@ -108,7 +108,7 @@ export async function getSite (url) {
       title: indexJson.title || toNiceUrl(origin),
       description: indexJson.description || '',
       writable: false,
-      index: {id: 'userlist.beakerbrowser.com'},
+      index: {id: 'network'},
       graph: undefined
     }
   }
@@ -403,7 +403,7 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     mtime: backlink.value.mrtime,
     metadata: backlink.value.metadata,
     index: {
-      id: 'userlist.beakerbrowser.com',
+      id: 'network',
       rtime: backlink.value.rtime,
       links: []
     },
@@ -436,7 +436,7 @@ async function fetchFullSitesList () {
         title: user.title || toNiceUrl(user.driveUrl),
         description: user.description || '',
         writable: Boolean((await getMeta(user.driveUrl, {noDefault: true}))?.writable),
-        index: {id: 'userlist.beakerbrowser.com'},
+        index: {id: 'network'},
         graph: undefined
       })
     }

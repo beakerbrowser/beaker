@@ -165,7 +165,7 @@ export async function getSite (url, opts) {
       title: toNiceUrl(origin),
       description: '',
       writable: false,
-      index: {id: 'userlist.beakerbrowser.com'},
+      index: {id: 'network'},
       graph: await getSiteGraph(origin)
     }
   }
@@ -198,7 +198,7 @@ export async function listSites (opts) {
   if (opts.index.includes('local')) {
     results.push(await local.listSites(db, opts))
   }
-  if (opts.index.includes('network') || opts.index.includes('userlist.beakerbrowser.com')) {
+  if (opts.index.includes('network')) {
     results.push(await hyperbees.listSites(opts))
   }
 
@@ -319,7 +319,7 @@ export async function query (opts, permissions) {
       notificationRtime: notificationRtimes?.local_notifications_rtime
     }))
   }
-  if (opts.index.includes('network') || opts.index.includes('userlist.beakerbrowser.com')) {
+  if (opts.index.includes('network')) {
     results.push(await hyperbees.query(opts, {
       existingResults: results[0]?.records,
       notificationRtime: notificationRtimes?.network_notifications_rtime
