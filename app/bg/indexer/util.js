@@ -144,7 +144,7 @@ export async function loadSite (db, origin, opts) {
   var record = undefined
   origin = normalizeOrigin(origin)
   var res = await db('sites')
-    .select('sites.rowid as rowid', 'last_indexed_version', 'last_indexed_ts')
+    .select('sites.rowid as rowid', 'last_indexed_version', 'last_indexed_ts', 'title', 'description')
     .where({origin})
 
   if (typeof opts?.onIsFirstIndex === 'function' && (!res[0] || res[0].last_indexed_version === 0)) {

@@ -232,10 +232,8 @@ export default {
 
         checkin('updating drive')
         await checkoutFS.pda.updateManifest(manifestUpdates)
-        await Promise.all([
-          drives.pullLatestDriveMeta(drive),
-          triggerSiteIndex(drive.url, {ifIndexingSite: true})
-        ])
+        await drives.pullLatestDriveMeta(drive),
+        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
       })
     ))
   },
