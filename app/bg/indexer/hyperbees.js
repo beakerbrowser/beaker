@@ -1,16 +1,13 @@
 import BeakerIndexer from 'beaker-index'
 import fetch from 'node-fetch'
-import { getHyperspaceClient } from '../hyper/daemon'
-import { normalizeOrigin, normalizeUrl, isSameOrigin } from '../../lib/urls'
-import { parseSimplePathSpec, toNiceUrl, DRIVE_KEY_REGEX } from '../../lib/strings'
-import {
-  toArray,
-  parseUrl
-} from './util'
-import { getSite as fullGetSite } from './index'
-import { getProfileUrl, getProfile } from '../filesystem/index'
+import { DRIVE_KEY_REGEX, parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
+import { isSameOrigin, normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import { getMeta } from '../dbs/archives'
 import * as settingsDb from '../dbs/settings'
+import { getProfile, getProfileUrl } from '../filesystem/index'
+import { getHyperspaceClient } from '../hyper/daemon'
+import { getSite as fullGetSite } from './index'
+import { parseUrl, toArray } from './util'
 
 const SITES_CACHE_TIME = 60e3 * 5 // 5 minutes
 const BEAKER_NETWORK_INDEX_KEY = '1332bcbf73d119399518adf3c4d5c9dbcf9d91d5d3a6c922296b539cfe7de381'
@@ -388,9 +385,10 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     }
     let profileUrl = getProfileUrl()
     for (let k in backlink.value.metadata) {
-      if (isSameOrigin(profileUrl, backlink.value.metadata[k])) {
+      let v = backlink.value.metadata[k]
+      if (v && typeof v === 'string' && v.startsWith('hyper://') && isSameOrigin(profileUrl, v)) {
         notification.key = k
-        notification.subject = backlink.value.metadata[k]
+        notification.subject = v
         break
       }
     }
