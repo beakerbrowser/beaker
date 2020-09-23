@@ -113,11 +113,11 @@ class ShellWindowNavbar extends LitElement {
         active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
-      <div class="buttons" style="padding-left: 6px">
+      <div class="buttons">
+        ${this.profileBtn}
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
         ${this.notificationsMenuBtn}
-        ${this.profileBtn}
         ${this.browserMenuBtn}
       </div>
     `
