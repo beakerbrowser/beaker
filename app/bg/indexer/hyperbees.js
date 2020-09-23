@@ -13,7 +13,7 @@ import { getMeta } from '../dbs/archives'
 import * as settingsDb from '../dbs/settings'
 
 const SITES_CACHE_TIME = 60e3 * 5 // 5 minutes
-const BEAKER_NETWORK_INDEX_KEY = '146100706d88c6ca4ee01fe759a2f154a7be23705a212435efaf2c12e1e5d18d' // TODO fetch from endpoint
+const BEAKER_NETWORK_INDEX_KEY = '1332bcbf73d119399518adf3c4d5c9dbcf9d91d5d3a6c922296b539cfe7de381'
 
 /**
  * @typedef {import('./const').Site} Site
