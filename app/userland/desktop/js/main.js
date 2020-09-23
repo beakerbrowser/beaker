@@ -642,7 +642,7 @@ class DesktopApp extends LitElement {
           <div>
             <h4>
               1. Subscribe to sites to see what's happening
-              <a href="#" @click=${e => this.onClickSkipIntroStep(e, 0)}><small>(skip)</small></a>
+              ${!this.isIntroStepCompleted(0) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 0)}><small>(skip)</small></a>` : ''}
             </h4>
             ${!this.suggestedSites ? html`<div><span class="spinner"></span></div>` : ''}
             ${this.suggestedSites?.length > 0 ? html`
@@ -678,7 +678,7 @@ class DesktopApp extends LitElement {
           <div>
             <h4>
               2. Get listed
-              <a href="#" @click=${e => this.onClickSkipIntroStep(e, 1)}><small>(skip)</small></a>
+              ${!this.isIntroStepCompleted(1) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 1)}><small>(skip)</small></a>` : ''}
             </h4>
             <p>Add your <a href=${this.profile?.url} target="_blank">personal site</a> to the Beaker Network so people can find you.</p>
             <p>
@@ -706,22 +706,24 @@ class DesktopApp extends LitElement {
           <div>
             <h4>
               3. Make your first post
-              <a href="#" @click=${e => this.onClickSkipIntroStep(e, 2)}><small>(skip)</small></a>
+              ${!this.isIntroStepCompleted(2) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 2)}><small>(skip)</small></a>` : ''}
             </h4>
-            <div class="btn-group">
-              <button class="transparent block" @click=${this.onClickNewPost}>
-                <i class="far fa-fw fa-comment-alt"></i> New Post
-              </button>
-              <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
-                <i class="far fa-fw fa-star"></i> New Bookmark
-              </button>
-              <button class="transparent block" @click=${e => this.onClickNewPage()}>
-                <i class="far fa-fw fa-file"></i> New Page
-              </button>
-              <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
-                <i class="fas fa-fw fa-blog"></i> New Blogpost
-              </button>
-            </div>
+            ${!this.isIntroStepCompleted(2) ? html`
+              <div class="btn-group">
+                <button class="transparent block" @click=${this.onClickNewPost}>
+                  <i class="far fa-fw fa-comment-alt"></i> New Post
+                </button>
+                <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
+                  <i class="far fa-fw fa-star"></i> New Bookmark
+                </button>
+                <button class="transparent block" @click=${e => this.onClickNewPage()}>
+                  <i class="far fa-fw fa-file"></i> New Page
+                </button>
+                <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
+                  <i class="fas fa-fw fa-blog"></i> New Blogpost
+                </button>
+              </div>
+            ` : ''}
           </div>
         </section>
       </div>
