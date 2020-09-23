@@ -13,11 +13,12 @@
         overflow: hidden;
       }
       #text {
+        position: relative;
         white-space: pre;
         margin-top: 1px;
-        padding: 0 8px 0;
-        height: 25px;
-        line-height: 25px;
+        box-sizing: border-box;
+        padding: 4px 8px 4px;
+        height: calc(100% - 6px);
         color: #555;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -26,14 +27,36 @@
         letter-spacing: 0.5px;
         background: #fff;
       }
+      #text.left-arrow {
+        overflow: visible;
+        margin-left: 5px;
+      }
+      #text.left-arrow::before {
+        content: '';
+        position: absolute;
+        left: -5px;
+        top: 8px;
+        width: 8px;
+        height: 8px;
+        background: #fff;
+        transform: rotate(45deg);
+        border-left: 1px solid #bbb;
+        border-bottom: 1px solid #bbb;
+        z-index: 1;
+      }
     </style>
     <script>
       window.set = opts => {
+        if (opts?.leftArrow) {
+          text.classList.add('left-arrow')
+        } else {
+          text.classList.remove('left-arrow')
+        }
         if (opts?.value) {
-          text.textContent = opts.value
+          text.innerHTML = opts.value
           document.body.style.display = 'block'
         } else {
-          text.textContent = ''
+          text.innerHTML = ''
           document.body.style.display = 'none'
         }
       }

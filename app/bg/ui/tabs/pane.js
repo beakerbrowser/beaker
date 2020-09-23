@@ -10,6 +10,7 @@ import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as zoom from './zoom'
 import * as modals from '../subwindows/modals'
+import * as overlay from '../subwindows/overlay'
 import * as windowMenu from '../window-menu'
 import { getResourceContentType } from '../../browser'
 import { DRIVE_KEY_REGEX } from '../../../lib/strings'
@@ -91,6 +92,11 @@ const STATE_VARS = [
   'donateLinkHref',
   'isLiveReloading'
 ]
+
+// globals
+// =
+
+var _hasSeenCommentsTip = undefined
 
 // classes
 // =
@@ -424,7 +430,7 @@ export class Pane extends EventEmitter {
   }
 
   transferWindow (targetWindow) {
-    this.deactivate()
+    this.hide()
     this.browserWindow = targetWindow
   }
 
@@ -649,10 +655,26 @@ export class Pane extends EventEmitter {
 
   async fetchBacklinkCount (noEmit = false) {
     this.backlinkCount = await indexer.count({
+      path: '/comments/*.md',
       links: stripUrlHash(this.url)
     })
     if (!noEmit) {
       this.emitUpdateState()
+    }
+
+    // show comments-pane tip
+    if (typeof _hasSeenCommentsTip === 'undefined') {
+      let v = await sitedataDb.get('beaker://shell/', 'comments-tip-dismissed')
+      _hasSeenCommentsTip = v === '1'
+    }
+    if (!_hasSeenCommentsTip && !this.url.startsWith('beaker:') && this.backlinkCount > 0) {
+      sitedataDb.set('beaker://shell/', 'comments-tip-dismissed', '1')
+      _hasSeenCommentsTip = true
+      overlay.set(this.browserWindow, {
+        value: '<strong>Comments</strong><br>See comments from your network by clicking here.',
+        leftArrow: true,
+        bounds: {x: 34, y: 114, width: 335, height: 46}
+      })
     }
   }
 

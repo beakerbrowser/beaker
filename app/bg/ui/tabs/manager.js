@@ -13,6 +13,7 @@ import * as shellMenus from '../subwindows/shell-menus'
 import * as locationBar from '../subwindows/location-bar'
 import * as prompts from '../subwindows/prompts'
 import * as permPrompt from '../subwindows/perm-prompt'
+import * as overlay from '../subwindows/overlay'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
 import * as notifications from '../subwindows/notifications'
@@ -214,6 +215,7 @@ class Tab extends EventEmitter {
     prompts.hide(this)
     permPrompt.hide(this)
     modals.hide(this)
+    overlay.hide(this.browserWindow)
     if (this.browserWindow) siteInfo.hide(this.browserWindow)
 
     var wasActive = this.isActive

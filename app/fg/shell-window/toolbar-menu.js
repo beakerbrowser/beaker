@@ -291,11 +291,12 @@ class ShellWindowToolbarMenu extends LitElement {
     })[(new URL(item.url)).origin] || item.url
     bg.overlay.set({
       value: label,
+      leftArrow: true,
       bounds: {
         x: rect.right + 5,
         y: rect.top + 2,
         width: 50 + label.length * 5, // rough approximation of needed width
-        height: 30
+        height: 32
       }
     })
   }
