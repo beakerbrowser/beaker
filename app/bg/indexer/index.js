@@ -39,6 +39,7 @@ import * as hyperbees from './hyperbees'
 import * as local from './local'
 import * as filesystem from '../filesystem/index'
 import lock from '../../lib/lock'
+import { timer } from '../../lib/time'
 import { joinPath, toNiceUrl, parseSimplePathSpec } from '../../lib/strings'
 import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
 import {
@@ -150,12 +151,12 @@ export async function getSite (url, opts) {
       description: siteRows[0].description,
       writable: Boolean(siteRows[0].writable),
       index: {id: 'local'},
-      graph: await getSiteGraph(origin)
+      graph: await timer(3e3, () => getSiteGraph(origin)).catch(e => undefined)
     }
   }
-  var hyperbeeResult = await hyperbees.getSite(url)
+  var hyperbeeResult = await timer(3e3, () => hyperbees.getSite(url))
   if (hyperbeeResult) {
-    hyperbeeResult.graph = await getSiteGraph(origin)
+    hyperbeeResult.graph = await timer(3e3, () => getSiteGraph(origin)).catch(e => undefined)
     return hyperbeeResult
   }
   if (opts?.cacheOnly) {
@@ -165,11 +166,11 @@ export async function getSite (url, opts) {
       title: toNiceUrl(origin),
       description: '',
       writable: false,
-      index: {id: 'network'},
-      graph: await getSiteGraph(origin)
+      index: {id: undefined},
+      graph: await timer(3e3, () => getSiteGraph(origin)).catch(e => undefined)
     }
   }
-  var site = await loadSite(db, origin)
+  var site = await timer(3e3, () => loadSite(db, origin))
   return {
     origin: site.origin,
     url: site.origin,
@@ -199,7 +200,11 @@ export async function listSites (opts) {
     results.push(await local.listSites(db, opts))
   }
   if (opts.index.includes('network')) {
-    results.push(await hyperbees.listSites(opts))
+    try {
+      results.push(await timer(5e3, hyperbees.listSites(opts)))
+    } catch (e) {
+      logger.silly(`Failed to fetch network sites list (${e.toString()})`, {error: e})
+    }
   }
 
   var sites
@@ -215,7 +220,7 @@ export async function listSites (opts) {
   }
 
   await Promise.all(sites.map(async site => {
-    site.graph = await getSiteGraph(site.origin)
+    site.graph = await timer(3e3, () => getSiteGraph(site.origin)).catch(e => undefined)
   }))
 
   return sites
@@ -320,10 +325,10 @@ export async function query (opts, permissions) {
     }))
   }
   if (opts.index.includes('network')) {
-    results.push(await hyperbees.query(opts, {
+    results.push(await timer(5e3, () => hyperbees.query(opts, {
       existingResults: results[0]?.records,
       notificationRtime: notificationRtimes?.network_notifications_rtime
-    }))
+    }).catch(e => [])))
   }
   
   // identify origins which we need to live-query
@@ -338,7 +343,7 @@ export async function query (opts, permissions) {
     for (let origin of missedOrigins) {
       try {
         records = (records || []).concat(
-          await listLiveRecords(origin, opts)
+          await timer(3e3, () => listLiveRecords(origin, opts))
         )
       } catch (e) {
         logger.silly(`Failed to live-list records from ${origin}`, {error: e})
@@ -382,7 +387,7 @@ export async function query (opts, permissions) {
     for (let record of records) {
       if (record.fetchData) {
         try {
-          await record.fetchData()
+          await timer(3e3, () => record.fetchData())
         } catch {
           // ignore
         }
@@ -440,7 +445,7 @@ export async function count (opts, permissions) {
     // fetch the live records
     for (let origin of missedOrigins) {
       try {
-        let files = await listLiveRecords(origin, opts)
+        let files = await timer(3e3, () => listLiveRecords(origin, opts))
         results.push({count: files.length})
       } catch (e) {
         logger.silly(`Failed to live-count records from ${origin}`, {error: e})
