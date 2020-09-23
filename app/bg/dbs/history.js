@@ -78,6 +78,9 @@ export const addVisit = async function (profileId, {url, title}) {
     }
 
     await db.run('COMMIT;')
+  } catch (e) {
+    await db.run('ROLLBACK;')
+    throw e
   } finally {
     release()
   }
@@ -115,6 +118,9 @@ export const addTabClose = async function (profileId, {url, title}) {
     }
 
     await db.run('COMMIT;')
+  } catch (e) {
+    await db.run('ROLLBACK;')
+    throw e
   } finally {
     release()
   }
@@ -258,6 +264,9 @@ export const removeVisit = async function (url) {
     db.run('DELETE FROM visit_stats WHERE url = ?;', url)
     db.run('DELETE FROM visit_fts WHERE url = ?;', url)
     await db.run('COMMIT;')
+  } catch (e) {
+    await db.run('ROLLBACK;')
+    throw e
   } finally {
     db.parallelize()
     release()
@@ -276,6 +285,9 @@ export const removeVisitsAfter = async function (timestamp) {
     db.run('DELETE FROM visits WHERE ts >= ?;', timestamp)
     db.run('DELETE FROM visit_stats WHERE last_visit_ts >= ?;', timestamp)
     await db.run('COMMIT;')
+  } catch (e) {
+    await db.run('ROLLBACK;')
+    throw e
   } finally {
     db.parallelize()
     release()
