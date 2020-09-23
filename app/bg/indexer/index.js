@@ -201,7 +201,7 @@ export async function listSites (opts) {
   }
   if (opts.index.includes('network')) {
     try {
-      results.push(await timer(5e3, hyperbees.listSites(opts)))
+      results.push(await timer(5e3, () => hyperbees.listSites(opts)))
     } catch (e) {
       logger.silly(`Failed to fetch network sites list (${e.toString()})`, {error: e})
     }
