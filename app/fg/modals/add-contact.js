@@ -193,7 +193,7 @@ class AddContactModal extends LitElement {
               <label>
                 ${!this.info.writable ? html`
                   <input type="checkbox" name="host" checked>
-                  Host this drive to help keep it online.
+                  Host this site to help keep it online.
                 ` : 'Note: This is your drive'}
               </label>
             </div>

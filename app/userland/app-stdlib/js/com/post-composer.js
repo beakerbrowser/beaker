@@ -136,7 +136,7 @@ class PostComposer extends LitElement {
         </nav>
 
         <div class="view">
-          ${this.isEmpty ? html`<div class="placeholder">${this.placeholder}</div>` : ''}
+          ${this.isEmpty && this.currentView === 'edit' ? html`<div class="placeholder">${this.placeholder}</div>` : ''}
           <div class="editor ${this.currentView === 'edit' ? '' : 'hidden'}" @contextmenu=${this.onContextmenu}></div>
           ${this.currentView === 'preview' ? this.renderPreview() : ''}
         </div>
