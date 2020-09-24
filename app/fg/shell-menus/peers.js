@@ -87,7 +87,7 @@ class PeersMenu extends LitElement {
                 @click=${this.onToggleHosting}
               >
               <div class="switch"></div>
-              <span class="text">Host This Drive</span>
+              <span class="text">Host This Site</span>
             </label>
           `}
 

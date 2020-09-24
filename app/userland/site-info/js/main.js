@@ -232,7 +232,7 @@ class SiteInfoApp extends LitElement {
                 </button>
               ` : html`
                 <button @click=${this.onToggleSaveDrive}>
-                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Hosting` : html`<span class="fas fa-fw fa-share-alt"></span> Host This Drive`}
+                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Hosting` : html`<span class="fas fa-fw fa-share-alt"></span> Host This Site`}
                 </button>
               `}
             ` : ''}

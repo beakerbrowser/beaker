@@ -212,7 +212,7 @@ export class AddContactPopup extends BasePopup {
           <div class="host-prompt">
             <label>
               <input type="checkbox" name="host" checked>
-              Host this drive to help keep it online.
+              Host this site to help keep it online.
             </label>
           </div>
         ` : ''}
