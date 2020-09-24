@@ -116,8 +116,11 @@ export class RecordThread extends LitElement {
       sort: 'crtime',
       reverse: true
     })
-    networkReplies = networkReplies.filter(reply => !replies.find(reply2 => reply.url === reply2.url)) // filter out in-network items
-   this.networkReplies = toThreadTree(networkReplies)
+    networkReplies = networkReplies.filter(reply => 
+      !reply.path.startsWith('/votes/') // filter out votes
+      && !replies.find(reply2 => reply.url === reply2.url) // filter out in-network items
+    )
+    this.networkReplies = toThreadTree(networkReplies)
     await this.requestUpdate()
     emit(this, 'load')
   }
