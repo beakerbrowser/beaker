@@ -1,3 +1,4 @@
+import { app } from 'electron'
 import * as os from 'os'
 import * as p from 'path'
 import { promises as fs } from 'fs'
@@ -151,16 +152,20 @@ export async function setup () {
   // Check which storage directory to use.
   // If .hyperspace/storage exists, use that. Otherwise use .hyperdrive/storage/cores
   const storageDir = await getDaemonStorageDir()
-  var daemonProcessArgs = ['-s', storageDir, '--no-migrate']
-  daemonProcess = childProcess.spawn(HYPERSPACE_BIN_PATH, daemonProcessArgs, {
-    stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
+  var daemonProcessArgs = [HYPERSPACE_BIN_PATH, '-s', storageDir, '--no-migrate']
+  logger.info(`Daemon: spawn ${app.getPath('exe')} ${daemonProcessArgs.join(' ')}`)
+  daemonProcess = childProcess.spawn(app.getPath('exe'), daemonProcessArgs, {
+    // stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
     env: Object.assign({}, process.env, {
       ELECTRON_RUN_AS_NODE: 1,
       ELECTRON_NO_ASAR: 1
     })
   })
+  daemonProcess.stdout.on('data', data => logger.info(`Daemon: ${data}`))
+  daemonProcess.stderr.on('data', data => logger.info(`Daemon (stderr): ${data}`))
   daemonProcess.on('error', (err) => logger.error(`Hyperspace Daemon error: ${err.toString()}`))
   daemonProcess.on('close', () => {
+    logger.info(`Daemon process has closed`)
     isDaemonActive = false
     daemonProcess = undefined
     events.emit('daemon-stopped')
