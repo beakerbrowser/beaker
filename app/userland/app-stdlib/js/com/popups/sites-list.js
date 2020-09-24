@@ -103,7 +103,6 @@ export class SitesListPopup extends BasePopup {
         <img class="thumb" src="asset:thumb:${site.url}"/>
         <span class="details">
           <span class="title">${title}</span>
-          <span class="url">${toNiceUrl(site.url)}</span>
         </span>
       </a>
     `
