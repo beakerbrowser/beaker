@@ -165,6 +165,7 @@ beaker-record {
 }
 
 .comment-prompt {
+  cursor: text;
   padding: 10px 14px;
   border-radius: 4px;
   border: 1px solid var(--border-color--light);
