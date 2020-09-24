@@ -126,6 +126,13 @@ a:hover {
   padding: 0 12px 5px;
 }
 
+.image-loading {
+  width: 14px;
+  height: 14px;
+  background: url(beaker://assets/spinner.gif);
+  background-size: 100%;
+}
+
 /** EXPANDED LINK STYLES **/
 
 .record.expanded-link {

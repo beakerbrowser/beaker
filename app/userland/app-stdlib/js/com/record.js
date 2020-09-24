@@ -59,6 +59,11 @@ export class Record extends LitElement {
   }
 
   updated (changedProperties) {
+    let markdownEl = this.shadowRoot.querySelector('.markdown')
+    if (markdownEl) {
+      this.attachImageLoaders(markdownEl)
+    }
+
     if (this.record && this.constrainHeight && !this.hasCheckedOverflow && document.visibilityState === 'visible') {
       this.hasCheckedOverflow = true
       this.whenContentLoaded().then(r => {
@@ -121,6 +126,16 @@ export class Record extends LitElement {
       }
     } catch {}
     return false
+  }
+
+  attachImageLoaders (el) {
+    for (let img of Array.from(el.querySelectorAll('img'))) {
+      if (!img.complete) {
+        img.classList.add('image-loading')
+        img.addEventListener('load', e => img.classList.remove('image-loading'))
+        img.addEventListener('error', e => img.classList.remove('image-loading'))
+      }
+    }
   }
 
   // rendering
