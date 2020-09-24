@@ -577,7 +577,7 @@ class DesktopApp extends LitElement {
     switch (this.currentSource) {
       case 'all': label = 'All'; break
       case 'mine': label = 'My Data'; break
-      case 'others': label = 'Others\'s Data'; break
+      case 'others': label = 'Others\' Data'; break
       default: label = this.sourceOptions.find(opt => opt.href === this.currentSource)?.title
     }
     return html`
