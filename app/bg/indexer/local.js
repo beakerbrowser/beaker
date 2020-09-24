@@ -165,21 +165,13 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
   }
 
   var sitesQuery
-  if (!opts?.links && !opts?.notification) {
+  if (opts?.origin && !opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
-    sitesQuery = db('sites').select('origin')
-    if (opts?.origin) {
-      // if it's a known list of origins, we want to check which ones are indexed
-      // and then we figure out the 'missed origins' by taking a set difference
-      sitesQuery = sitesQuery.where({is_indexed: 1})
-      if (Array.isArray(opts.origin)) {
-        sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
-      } else {
-        sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
-      }
+    sitesQuery = db('sites').select('origin').where({is_indexed: 1})
+    if (Array.isArray(opts.origin)) {
+      sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
     } else {
-      // if it's querying our index targets, we want to check which ones are not indexed
-      sitesQuery = sitesQuery.where({is_index_target: 1, is_indexed: 0})
+      sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
     }
   }
 
@@ -232,18 +224,13 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
 
   var missedOrigins
   if (siteStates) {
-    if (opts?.origin) {
-      // siteStates is a list of sites that are indexed
-      // set-diff the desired origins against it
-      missedOrigins = []
-      for (let origin of toArray(opts.origin)) {
-        if (!siteStates.find(state => state.origin === origin)) {
-          missedOrigins.push(origin)
-        }
+    // siteStates is a list of sites that are indexed
+    // set-diff the desired origins against it
+    missedOrigins = []
+    for (let origin of toArray(opts.origin)) {
+      if (!siteStates.find(state => state.origin === origin)) {
+        missedOrigins.push(origin)
       }
-    } else {
-      // siteStates is a list of index targets that are not yet indexed
-      missedOrigins = siteStates.map(state => state.origin)
     }
   }
   return {records, missedOrigins}
@@ -321,21 +308,13 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
   }
 
   var sitesQuery
-  if (!opts?.links && !opts?.notification) {
+  if (opts?.origin && !opts?.links && !opts?.notification) {
     // fetch info on whether each given site has been indexed
-    sitesQuery = db('sites').select('origin')
-    if (opts?.origin) {
-      // if it's a known list of origins, we want to check which ones are indexed
-      // and then we figure out the 'missed origins' by taking a set difference
-      sitesQuery = sitesQuery.where({is_indexed: 1})
-      if (Array.isArray(opts.origin)) {
-        sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
-      } else {
-        sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
-      }
+    sitesQuery = db('sites').select('origin').where({is_indexed: 1})
+    if (Array.isArray(opts.origin)) {
+      sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
     } else {
-      // if it's querying our index targets, we want to check which ones are not indexed
-      sitesQuery = sitesQuery.where({is_index_target: 1, is_indexed: 0})
+      sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
     }
   }
 
@@ -349,18 +328,13 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
   
   var missedOrigins
   if (siteStates) {
-    if (opts?.origin) {
-      // siteStates is a list of sites that are indexed
-      // set-diff the desired origins against it
-      missedOrigins = []
-      for (let origin of toArray(opts.origin)) {
-        if (!siteStates.find(state => state.origin === origin)) {
-          missedOrigins.push(origin)
-        }
+    // siteStates is a list of sites that are indexed
+    // set-diff the desired origins against it
+    missedOrigins = []
+    for (let origin of toArray(opts.origin)) {
+      if (!siteStates.find(state => state.origin === origin)) {
+        missedOrigins.push(origin)
       }
-    } else {
-      // siteStates is a list of index targets that are not yet indexed
-      missedOrigins = siteStates.map(state => state.origin)
     }
   }
 
