@@ -777,6 +777,7 @@ function relativeDate (d) {
   const endOfTodayMs = +((new Date).setHours(23,59,59,999))
   var diff = nowMs - d
   var dayDiff = Math.floor((endOfTodayMs - d) / DAY)
+  if (diff < (MINUTE * 5)) return 'just now'
   if (diff < HOUR) return rtf.format(Math.ceil(diff / MINUTE * -1), 'minute')
   if (dayDiff < 1) return rtf.format(Math.ceil(diff / HOUR * -1), 'hour')
   if (dayDiff <= 30) return rtf.format(dayDiff * -1, 'day')
