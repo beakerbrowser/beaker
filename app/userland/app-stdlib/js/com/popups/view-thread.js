@@ -24,7 +24,7 @@ export class ViewThreadPopup extends BasePopup {
     return [popupsCSS, css`
     .popup-inner {
       width: 100%;
-      max-width: 800px;
+      max-width: 640px;
       border-radius: 6px;
       overflow: visible;
     }

@@ -3,12 +3,10 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
-import { NewPagePopup } from 'beaker://app-stdlib/js/com/popups/new-page.js'
-import { NewPostPopup } from 'beaker://app-stdlib/js/com/popups/new-post.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { writeToClipboard } from 'beaker://app-stdlib/js/clipboard.js'
-import { shorten, pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import * as QP from './lib/qp.js'
 import * as desktop from './lib/desktop.js'
@@ -33,13 +31,10 @@ const RELEASES = [
 ]
 const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
 const DOCS_URL = 'https://docs.beakerbrowser.com'
-const USERLIST_URL = 'https://userlist.beakerbrowser.com'
-const BLAHBITY_BLOG_URL = 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/'
 const PATH_QUERIES = {
   blogposts: [typeToQuery('blogpost')],
   bookmarks: [typeToQuery('bookmark')],
   comments: [typeToQuery('comment')],
-  pages: [typeToQuery('page')],
   posts: [typeToQuery('microblogpost')],
   search: {
     links: [
@@ -55,14 +50,11 @@ const PATH_QUERIES = {
   all: [
     typeToQuery('blogpost'),
     typeToQuery('bookmark'),
-    typeToQuery('microblogpost'),
-    typeToQuery('comment'),
     typeToQuery('page'),
-    typeToQuery('subscription')
+    typeToQuery('microblogpost'),
+    typeToQuery('comment')
   ]
 }
-
-var cacheBuster = Date.now()
 
 class DesktopApp extends LitElement {
   static get properties () {
@@ -70,7 +62,6 @@ class DesktopApp extends LitElement {
       currentNav: {type: String},
       profile: {type: Object},
       pins: {type: Array},
-      suggestedSites: {type: Array},
       searchQuery: {type: String},
       sourceOptions: {type: Array},
       currentSource: {type: String},
@@ -90,7 +81,6 @@ class DesktopApp extends LitElement {
     this.currentNav = 'all'
     this.profile = undefined
     this.pins = []
-    this.suggestedSites = undefined
     this.searchQuery = ''
     this.sourceOptions = []
     this.currentSource = 'all'
@@ -100,9 +90,7 @@ class DesktopApp extends LitElement {
     this.isProfileListedInBeakerNetwork = undefined
 
     this.configFromQP()
-    this.load().then(() => {
-      this.loadSuggestions()
-    })
+    this.load()
 
     if (!localStorage.lastDismissedReleaseNotice) {
       localStorage.lastDismissedReleaseNotice = CURRENT_VERSION
@@ -137,7 +125,6 @@ class DesktopApp extends LitElement {
   async load ({clearCurrent} = {clearCurrent: false}) {
     console.log({currentNav: this.currentNav, searchQuery: this.searchQuery, currentSource: this.currentSource})
 
-    cacheBuster = Date.now()
     let sourceOptions
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
@@ -157,50 +144,8 @@ class DesktopApp extends LitElement {
     this.legacyArchives = await beaker.datLegacy.list()
   }
 
-  async loadSuggestions () {
-    let allSubscriptions = await beaker.index.query({
-      path: '/subscriptions/*.goto',
-      limit: 100,
-      sort: 'crtime',
-      reverse: true
-    })
-    var currentSubs = new Set(this.sourceOptions.map(source => (new URL(source.href)).origin))
-    var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
-    var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
-      var url = candidate.metadata.href
-      if (!acc.includes(url)) acc.push(url)
-      return acc
-    }, [])
-    suggestedSiteUrls.sort(() => Math.random() - 0.5)
-    var suggestedSites = await Promise.all(suggestedSiteUrls.map(beaker.index.getSite))
-    if (suggestedSites.length < 12) {
-      let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
-      moreSites = moreSites.filter(site => !currentSubs.has(site.url))
-
-      // HACK
-      // the network index for listSites() currently doesn't pull from index.json
-      // (which is stupid but it's the most efficient option atm)
-      // so we need to call getSite()
-      // -prf
-      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url)))
-      suggestedSites = suggestedSites.concat(moreSites)
-    }
-    suggestedSites.sort(() => Math.random() - 0.5)
-    this.suggestedSites = suggestedSites.slice(0, 12)
-  }
-
   get currentNavAsPathQuery () {
     return PATH_QUERIES[this.currentNav]
-  }
-
-  get currentNavDateTitleRange () {
-    switch (this.currentNav) {
-      case 'pages':
-      case 'bookmarks':
-      case 'blogposts':
-      case 'pages':
-        return 'month'
-    }
   }
 
   get sources () {
@@ -221,31 +166,11 @@ class DesktopApp extends LitElement {
     return !!queryViewEls.find(el => el.isLoading)
   }
 
-  get hidePins () {
-    return Boolean(localStorage.getItem('hide-pins'))
-  }
-  
-  set hidePins (v) {
-    if (v) localStorage.setItem('hide-pins', '1')
-    else localStorage.removeItem('hide-pins')
-    this.requestUpdate()
-  }
-
-  get hideFeed () {
-    return Boolean(localStorage.getItem('hide-feed'))
-  }
-  
-  set hideFeed (v) {
-    if (v) localStorage.setItem('hide-feed', '1')
-    else localStorage.removeItem('hide-feed')
-    this.requestUpdate()
-  }
-
   async setCurrentNav (nav) {
     this.currentNav = nav
     QP.setParams({view: nav})
     await this.requestUpdate()
-    this.shadowRoot.querySelector('.all-view').scrollTop = 0
+    this.shadowRoot.scrollTop = 0
   }
 
   get isIntroActive () {
@@ -271,46 +196,113 @@ class DesktopApp extends LitElement {
   // =
 
   render () {
-    if (this.hideFeed) {
+    var hasSearchQuery = !!this.searchQuery
+    if (hasSearchQuery) {
+      const searchLink = (label, url) => {
+        return html`
+          <a class="search-engine" title=${label} href=${url} data-tooltip=${label}>
+            <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
+          </a>
+        `
+      }
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
           ${this.renderSettingsBtn()}
         </div>
-        <div class="no-feed-view">
-          ${this.renderReleaseNotice()}
-          ${this.renderPins()}
-          ${this.renderIntro()}
-        </div>
+        <beaker-indexer-state></beaker-indexer-state>
+        <header>
+          <div class="search-ctrl">
+            ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+            ${!!this.searchQuery ? html`
+              <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
+            ` : ''}
+            <input @keyup=${this.onKeyupSearch} placeholder="Search privately for people, pages, and sites">
+          </div>
+          ${this.renderContentNav()}
+        </header>
+        ${this.renderReleaseNotice()}
+        <main>
+          <div class="twocol">
+            <div>
+              <div class="alternatives">
+                Try your search on:
+                ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`)}
+                ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
+              </div>
+                <beaker-record-feed
+                  .pathQuery=${this.currentNavAsPathQuery}
+                  .filter=${this.searchQuery}
+                  .sources=${this.sources}
+                  limit="50"
+                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+            </div>
+            <div class="sidebar">
+              <beaker-sites-list
+                listing="all"
+                filter=${this.searchQuery || ''}
+                empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
+                .profile=${this.profile}
+              ></beaker-sites-list>
+            </div>
+          </div>
+        </main>
       `
-    }
-
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div id="topright">
-        ${this.renderSettingsBtn()}
-      </div>
-      <header>
-        <div class="search-ctrl">
-          ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
-          ${!!this.searchQuery ? html`
-            <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
-          ` : ''}
-          <input @keyup=${this.onKeyupSearch} placeholder="Search privately for people, pages, and sites">
-          ${this.renderSourcesCtrl()}
+    } else {
+      return html`
+        <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+        <div id="topright">
+          ${this.renderSettingsBtn()}
         </div>
         <beaker-indexer-state></beaker-indexer-state>
-      </header>
-      ${this.renderReleaseNotice()}
-      <main>
-        <div class="views">
-          ${this.renderCurrentView()}
-        </div>
-      </main>
-    `
+        ${this.renderReleaseNotice()}
+        <main>
+          <div class="onecol">
+            <div class="search-ctrl big">
+              ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+              ${!!this.searchQuery ? html`
+                <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
+              ` : ''}
+              <input @keyup=${this.onKeyupSearch} placeholder="Search privately for people, pages, and sites">
+            </div>
+            ${this.renderPins()}
+            <div>
+              ${this.currentNav === 'legacy-archives' ? html`
+                ${this.renderLegacyArchivesView()}
+              ` : html`
+                ${this.renderIntro()}
+                ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
+                <beaker-record-feed
+                  show-date-titles
+                  date-title-range="month"
+                  force-render-mode="link"
+                  .pathQuery=${PATH_QUERIES.bookmarks}
+                  .sources=${this.sources}
+                  limit="50"
+                  @load-state-updated=${this.onFeedLoadStateUpdated}
+                  @view-thread=${this.onViewThread}
+                  @publish-reply=${this.onPublishReply}
+                  profile-url=${this.profile ? this.profile.url : ''}
+                ></beaker-record-feed>
+              `}
+            </div>
+          </div>
+        </main>
+      `
+    }
   }
 
-  renderLeftSidebar () {
+  renderContentNav () {
     const navItem = (id, label) => html`
       <a
         class="content-nav-item ${id === this.currentNav ? 'current' : ''}"
@@ -318,73 +310,24 @@ class DesktopApp extends LitElement {
       >${label}</a>
     `
     return html`
-      <div class="sidebar sticky">
-        <div>
-          <section class="content-nav">
-            <h3>News</h3>
-            ${navItem('all', html`<span class="fas fa-fw fa-stream"></span> Feed`)}
-          </section>
-          <section class="content-nav">
-            <h3>Content</h3>
-            ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
-            ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blogposts</span>`)}
-            ${navItem('posts', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Posts</span>`)}
-            ${navItem('pages', html`<span class="far fa-fw fa-file"></span> <span class="label">Pages</span>`)}
-            ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> <span class="label">Comments</span>`)}
-          </section>
-          <section class="content-nav">
-            <h3>Sites</h3>
-            ${navItem('my-sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Mine</span>`)}
-            ${navItem('subscriptions', html`<span class="fas fa-fw fa-rss"></span> <span class="label">Subscribed</span>`)}
-            ${navItem('subscribers', html`<span class="fas fa-fw fa-users"></span> <span class="label">Subscribers</span>`)}
-          </section>
-        </div>
+      <div class="content-nav">
+        ${navItem('all', html`<span class="fas fa-fw fa-search"></span> All`)}
+        ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
+        ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blogposts</span>`)}
+        ${navItem('posts', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Status Updates</span>`)}
+        ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> <span class="label">Comments</span>`)}
+        <div class="sep"></div>
+        ${this.renderSourcesCtrl()}
       </div>
     `
   }
 
   renderRightSidebar () {
+    // TODO
     return html`
       <div class="sidebar">
         <div class="sticky">
-          <section class="create-box">
-            <h3>Create New</h3>
-            <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
-              <i class="far fa-fw fa-star"></i> New Bookmark
-            </button>
-            <button class="transparent block" @click=${this.onClickNewPost}>
-              <i class="far fa-fw fa-comment-alt"></i> New Post
-            </button>
-            <button class="transparent block" @click=${e => this.onClickNewPage()}>
-              <i class="far fa-fw fa-file"></i> New Page
-            </button>
-            <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
-              <i class="fas fa-fw fa-blog"></i> New Blogpost
-            </button>
-          </section>
           ${this.renderLegacyArchivesNotice()}
-          ${this.suggestedSites?.length > 0 ? html`
-            <section class="suggested-sites">
-              <h3>Suggested Sites</h3>
-              ${repeat(this.suggestedSites.slice(0, 3), site => html`
-                <div class="site">
-                  <div class="title">
-                    <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
-                  </div>
-                  ${site.graph ? html`
-                    <div class="subscribers">
-                      ${site.graph.counts.network} ${pluralize(site.graph.counts.network, 'subscriber')}
-                    </div>
-                  ` : ''}
-                  ${site.subscribed ? html`
-                    <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
-                  ` : html`
-                    <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
-                  `}
-                </div>
-              `)}
-            </section>
-          ` : ''}
           <section class="quick-links">
             <h3>Beaker</h3>
             <div>
@@ -403,142 +346,6 @@ class DesktopApp extends LitElement {
     `
   }
 
-  renderCurrentView () {
-    var hasSearchQuery = !!this.searchQuery
-    var isSitesView = ['my-sites', 'subscriptions', 'subscribers', 'network-sites'].includes(this.currentNav)
-    if (hasSearchQuery) {
-      const searchLink = (label, url) => {
-        return html`
-          <a class="search-engine" title=${label} href=${url} data-tooltip=${label}>
-            <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
-          </a>
-        `
-      }
-      return html`
-        <div class="all-view">
-          <div class="threecol">
-            <div>
-              ${this.renderLeftSidebar()}
-            </div>
-            <div>
-              <div class="alternatives">
-                Try your search on:
-                ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.searchQuery)}`)}
-                ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-                ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-                ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-                ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-                ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`)}
-                ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
-              </div>
-              ${this.currentNav === 'all' ? html`
-                ${this.renderSites('all')}
-                <h3 class="feed-heading">Links</h3>
-                <beaker-record-feed
-                  .pathQuery=${PATH_QUERIES.search.links}
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  limit="50"
-                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-                  @load-state-updated=${this.onFeedLoadStateUpdated}
-                  @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
-                  profile-url=${this.profile ? this.profile.url : ''}
-                ></beaker-record-feed>
-                <h3 class="feed-heading">Discussion</h3>
-                <beaker-record-feed
-                  .pathQuery=${PATH_QUERIES.search.discussion}
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  limit="50"
-                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-                  @load-state-updated=${this.onFeedLoadStateUpdated}
-                  @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
-                  profile-url=${this.profile ? this.profile.url : ''}
-                ></beaker-record-feed>
-              ` : isSitesView ? html`
-                ${this.renderSites(this.currentNav)}
-              ` : html`
-                <beaker-record-feed
-                  .pathQuery=${this.currentNavAsPathQuery}
-                  .filter=${this.searchQuery}
-                  .sources=${this.sources}
-                  limit="50"
-                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-                  @load-state-updated=${this.onFeedLoadStateUpdated}
-                  @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
-                  profile-url=${this.profile ? this.profile.url : ''}
-                ></beaker-record-feed>
-              `}
-            </div>
-            ${this.renderRightSidebar()}
-          </div>
-        </div>
-      `
-    } else {
-      return html`
-        <div class="all-view">
-          ${this.currentNav === 'all' ? this.renderPins() : ''}
-          <div class="threecol">
-            <div>
-              ${this.renderLeftSidebar()}
-            </div>
-            <div>
-              ${isSitesView ? html`
-                ${this.renderSites(this.currentNav)}
-              ` : this.currentNav === 'legacy-archives' ? html`
-                ${this.renderLegacyArchivesView()}
-              ` : html`
-                ${this.renderIntro()}
-                ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
-                <beaker-record-feed
-                  show-date-titles
-                  date-title-range=${this.currentNavDateTitleRange}
-                  .pathQuery=${this.currentNavAsPathQuery}
-                  .sources=${this.sources}
-                  limit="50"
-                  @load-state-updated=${this.onFeedLoadStateUpdated}
-                  @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
-                  profile-url=${this.profile ? this.profile.url : ''}
-                ></beaker-record-feed>
-              `}
-            </div>
-            ${this.renderRightSidebar()}
-          </div>
-        </div>
-      `
-    }
-  }
-
-  renderSites (id) {
-    var listing = ({
-      all: 'all',
-      'my-sites': 'mine',
-      subscriptions: 'subscribed',
-      subscribers: 'subscribers'
-    })[id]
-    var title = ({
-      all: 'Sites',
-      'my-sites': 'My sites',
-      subscriptions: 'My subscriptions',
-      subscribers: 'Subscribed to me'
-    })[id]
-    var allSearch = !!this.searchQuery && id === 'all'
-    return html`
-      ${title ? html`<h3 class="feed-heading">${title}</h3>` : ''}
-      <beaker-sites-list
-        listing=${listing}
-        filter=${this.searchQuery || ''}
-        .limit=${allSearch ? 6 : undefined}
-        empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-        .profile=${this.profile}
-      ></beaker-sites-list>
-    `
-  }
-
   renderEmptyMessage () {
     if (this.searchQuery) {
       return html`
@@ -554,7 +361,6 @@ class DesktopApp extends LitElement {
       bookmarks: 'far fa-star',
       blogposts: 'fas fa-blog',
       posts: 'far fa-comment-alt',
-      pages: 'far fa-file',
       comments: 'far fa-comments',
       sites: 'fas fa-sitemap'
     })[this.currentNav] || 'fas fa-stream'
@@ -568,7 +374,7 @@ class DesktopApp extends LitElement {
 
   renderSettingsBtn () {
     return html`
-      <a href="#" title="Settings" @click=${this.onClickSettings}><span class="fas fa-fw fa-cog"></span></a>
+      <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
     `
   }
 
@@ -581,7 +387,7 @@ class DesktopApp extends LitElement {
       default: label = this.sourceOptions.find(opt => opt.href === this.currentSource)?.title
     }
     return html`
-      <a class="search-mod-btn" @click=${this.onClickSources}>
+      <a class="sources-ctrl" @click=${this.onClickSources}>
         <span class="label">Source: </span>${label} <span class="fas fa-fw fa-caret-down"></span>
       </a>
     `
@@ -793,26 +599,6 @@ class DesktopApp extends LitElement {
     this.setIntroStepCompleted(step, true)
   }
 
-  onClickSettings (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    var rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
-      x: rect.left,
-      y: rect.bottom,
-      noBorders: true,
-      roomy: true,
-      right: true,
-      style: `padding: 4px 0`,
-      items: [
-        {icon: 'fas fa-cog', label: 'Browser Settings', href: 'beaker://settings/'},
-        '-',
-        {icon: this.hideFeed ? 'far fa-square': 'far fa-check-square', label: 'Show Feed', click: () => { this.hideFeed = !this.hideFeed }},
-        {icon: this.hidePins ? 'far fa-square': 'far fa-check-square', label: 'Show Pinned Bookmarks', click: () => { this.hidePins = !this.hidePins }},
-      ]
-    })
-  }
-
   onClickReleaseNotes (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -878,44 +664,6 @@ class DesktopApp extends LitElement {
     this.shadowRoot.querySelector('.search-ctrl input').value = ''
   }
 
-  onClickNavMore (e) {
-    var rect = e.currentTarget.getClientRects()[0]
-    e.preventDefault()
-    e.stopPropagation()
-    const items = [
-      {icon: 'far fa-comment-alt', label: 'Posts', click: () => this.setCurrentNav('posts') },
-      {icon: 'far fa-file', label: 'Pages', click: () => this.setCurrentNav('pages') },
-      {icon: 'far fa-comments', label: 'Comments', click: () => this.setCurrentNav('comments') }
-    ]
-    contextMenu.create({
-      x: (rect.left + rect.right) / 2,
-      y: rect.bottom,
-      center: true,
-      noBorders: true,
-      roomy: true,
-      rounded: true,
-      style: `padding: 6px 0`,
-      items,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
-    })
-  }
-
-  async onClickNewPost (e) {
-    try {
-      await NewPostPopup.create()
-      toast.create('Post created', '', 10e3)
-      if (this.isIntroActive) {
-        this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-      }
-    } catch (e) {
-      // ignore, user probably cancelled
-      console.log(e)
-      return
-    }
-    this.isEmpty = false
-    this.load({clearCurrent: true})
-  }
-
   async onClickNewBookmark (e, pinned) {
     try {
       await desktop.createLink(await AddLinkPopup.create(), pinned)
@@ -951,32 +699,6 @@ class DesktopApp extends LitElement {
     }
     var choice = await beaker.browser.showContextMenu(items)
     if (fns[choice]) fns[choice]()
-  }
-
-  async onClickNewPage (opts = {}) {
-    try {
-      var res = await NewPagePopup.create(opts)
-      beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
-      if (this.isIntroActive) {
-        this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-      }
-    } catch (e) {
-      // ignore
-      console.log(e)
-    }
-  }
-
-  async onClickNewBlogpost () {
-    try {
-      var res = await NewPagePopup.create({type: 'blogpost'})
-      beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
-      if (this.isIntroActive) {
-        this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-      }
-    } catch (e) {
-      // ignore
-      console.log(e)
-    }
   }
 
   async onClickEditBookmark (file) {

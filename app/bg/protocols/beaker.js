@@ -21,7 +21,7 @@ const BEAKER_CSP = `
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';
 `.replace(/\n/g, '')
-const BEAKER_DESKTOP_CSP = `
+const BEAKER_APP_CSP = `
   default-src 'self' beaker:;
   img-src beaker: asset: data: blob: hyper: http: https;
   script-src 'self' beaker: hyper: 'unsafe-eval';
@@ -268,7 +268,19 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://desktop' || requestUrl.startsWith('beaker://desktop/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'desktop'), cb, {
-      CSP: BEAKER_DESKTOP_CSP,
+      CSP: BEAKER_APP_CSP,
+      fallbackToIndexHTML: true,
+    })
+  }
+  if (requestUrl === 'beaker://social' || requestUrl.startsWith('beaker://social/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'social'), cb, {
+      CSP: BEAKER_APP_CSP,
+      fallbackToIndexHTML: true,
+    })
+  }
+  if (requestUrl === 'beaker://reader' || requestUrl.startsWith('beaker://reader/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'reader'), cb, {
+      CSP: BEAKER_APP_CSP,
       fallbackToIndexHTML: true,
     })
   }
