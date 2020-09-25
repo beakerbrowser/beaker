@@ -49,13 +49,6 @@ input:focus {
   font-size: 11px;
 }
 
-@media (max-width: 1040px) {
-  #topright {
-    right: 15px;
-    top: 62px;
-  }
-}
-
 .no-feed-view {
   margin: 30vh 0px 0;
 }
@@ -179,7 +172,7 @@ header {
 .pins {
   position: relative;
   display: grid;
-  margin: 30px auto 40px;
+  margin: 30px auto 30px;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   grid-gap: 15px;
   width: 100%;
@@ -295,10 +288,13 @@ h3.feed-heading {
   border-bottom: 1px solid var(--border-color--light);
 }
 
-@media (max-width: 900px) {
-  .pins {
-    display: none;
+@media (max-width: 1000px) {
+  .onecol {
+    padding: 0 20px;
   }
+}
+
+@media (max-width: 900px) {
   .twocol {
     display: block;
   }
