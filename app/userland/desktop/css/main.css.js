@@ -163,8 +163,13 @@ header {
   height: 42px;
 }
 
+.search-ctrl.big input::placeholder {
+  position: relative;
+  top: 0.5px;
+}
+
 .search-ctrl.big .fa-search {
-  top: 14px;
+  top: 15px;
 }
 
 .search-ctrl.big .spinner {
@@ -187,7 +192,7 @@ beaker-indexer-state {
 .pins {
   position: relative;
   display: grid;
-  margin: 30px auto 30px;
+  margin: 30px auto 40px;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   grid-gap: 15px;
   width: 100%;
@@ -277,6 +282,11 @@ beaker-indexer-state {
 .onecol {
   margin: 20vh auto 0;
   max-width: 1000px;
+}
+
+.onecol beaker-record-feed {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .twocol {

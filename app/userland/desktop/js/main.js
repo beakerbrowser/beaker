@@ -53,7 +53,8 @@ const PATH_QUERIES = {
     typeToQuery('page'),
     typeToQuery('microblogpost'),
     typeToQuery('comment')
-  ]
+  ],
+  feed: [typeToQuery('bookmark')]
 }
 
 class DesktopApp extends LitElement {
@@ -217,7 +218,7 @@ class DesktopApp extends LitElement {
             ${!!this.searchQuery ? html`
               <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
             ` : ''}
-            <input @keyup=${this.onKeyupSearch} placeholder="Search privately for people, pages, and sites">
+            <input @keyup=${this.onKeyupSearch} placeholder="Search privately" value=${this.searchQuery}>
           </div>
           ${this.renderContentNav()}
         </header>
@@ -248,12 +249,14 @@ class DesktopApp extends LitElement {
                 ></beaker-record-feed>
             </div>
             <div class="sidebar">
-              <beaker-sites-list
-                listing="all"
-                filter=${this.searchQuery || ''}
-                empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-                .profile=${this.profile}
-              ></beaker-sites-list>
+              ${this.profile ? html`
+                <beaker-sites-list
+                  listing="all"
+                  filter=${this.searchQuery || ''}
+                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
+                  .profile=${this.profile}
+                ></beaker-sites-list>
+              ` : ''}
             </div>
           </div>
         </main>
@@ -273,7 +276,7 @@ class DesktopApp extends LitElement {
               ${!!this.searchQuery ? html`
                 <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
               ` : ''}
-              <input @keyup=${this.onKeyupSearch} placeholder="Search privately for people, pages, and sites">
+              <input @keyup=${this.onKeyupSearch} placeholder="Search privately">
             </div>
             ${this.renderPins()}
             <div>
@@ -283,10 +286,10 @@ class DesktopApp extends LitElement {
                 ${this.renderIntro()}
                 ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
                 <beaker-record-feed
-                  show-date-titles
-                  date-title-range="month"
-                  force-render-mode="link"
-                  .pathQuery=${PATH_QUERIES.bookmarks}
+                  .pathQuery=${PATH_QUERIES.feed}
+                  title="Recent Bookmarks"
+                  force-render-mode="action"
+                  record-class="small"
                   .sources=${this.sources}
                   limit="50"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
@@ -647,15 +650,20 @@ class DesktopApp extends LitElement {
   }
 
   onKeyupSearch (e) {
-    var value = e.currentTarget.value.toLowerCase()
-    if (this.keyupSearchTo) {
-      clearTimeout(this.keyupSearchTo)
-    }
-    this.keyupSearchTo = setTimeout(() => {
-      this.searchQuery = value
+    if (e.code === 'Enter') {
+      this.searchQuery = e.currentTarget.value.toLowerCase()
       QP.setParams({q: this.searchQuery})
-      this.keyupSearchTo = undefined
-    }, 100)
+    }
+    // TODO restore if possible but there are problems with the UI transition
+    // var value = e.currentTarget.value.toLowerCase()
+    // if (this.keyupSearchTo) {
+    //   clearTimeout(this.keyupSearchTo)
+    // }
+    // this.keyupSearchTo = setTimeout(() => {
+    //   this.searchQuery = value
+    //   QP.setParams({q: this.searchQuery})
+    //   this.keyupSearchTo = undefined
+    // }, 100)
   }
 
   onClickClearSearch (e) {

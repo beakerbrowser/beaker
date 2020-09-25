@@ -260,7 +260,8 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
-:host([thread-view]) .record.action {
+:host([thread-view]) .record.action,
+:host(.small) .record.action {
   padding: 8px 14px;
   align-items: baseline;
   color: var(--text-color--light);
@@ -299,6 +300,14 @@ a:hover {
   flex: 0 0 14px;
   margin: 0 5px 0 0;
   top: 2px;
+}
+
+:host(.small) .record.action .thumb {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 0 10px 0 0;
+  top: 5px;
 }
 
 .record.action .thumb img {

@@ -21,6 +21,7 @@ export class RecordFeed extends LitElement {
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
       forceRenderMode: {type: String, attribute: 'force-render-mode'},
+      recordClass: {type: String, attribute: 'record-class'},
       title: {type: String},
       sort: {type: String},
       limit: {type: Number},
@@ -43,6 +44,7 @@ export class RecordFeed extends LitElement {
     this.showDateTitles = false
     this.dateTitleRange = undefined
     this.forceRenderMode = undefined
+    this.recordClass = ''
     this.title = undefined
     this.sort = 'ctime'
     this.limit = undefined
@@ -162,7 +164,7 @@ export class RecordFeed extends LitElement {
   render () {
     if (!this.results) {
       return html`
-        ${this.title ? html`<h2 class="title">${this.title}</h2>` : ''}
+        ${this.title ? html`<h2  class="results-header"><span>${this.title}</span></h2>` : ''}
         <div class="results empty">
           <span class="spinner"></span>
         </div>
@@ -172,7 +174,7 @@ export class RecordFeed extends LitElement {
       if (!this.emptyMessage) return html``
       return html`
         <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-        ${this.title ? html`<h2 class="title">${this.title}</h2>` : ''}
+        ${this.title ? html`<h2  class="results-header"><span>${this.title}</span></h2>` : ''}
         <div class="results empty">
           <span>${this.emptyMessage}</div></span>
         </div>
@@ -180,7 +182,7 @@ export class RecordFeed extends LitElement {
     }
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${this.title ? html`<h2 class="title">${this.title}</h2>` : ''}
+      ${this.title ? html`<h2  class="results-header"><span>${this.title}</span></h2>` : ''}
       ${this.renderResults()}
     `
   }
@@ -223,6 +225,7 @@ export class RecordFeed extends LitElement {
     return html`
       <beaker-record
         .record=${result}
+        class=${this.recordClass}
         render-mode=${renderMode}
         show-context
         constrain-height
@@ -240,6 +243,7 @@ export class RecordFeed extends LitElement {
     return html`
       <beaker-record
         .record=${result}
+        class=${this.recordClass}
         render-mode=${renderMode}
         show-context
         profile-url=${this.profileUrl}

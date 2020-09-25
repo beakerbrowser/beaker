@@ -93,6 +93,10 @@ h2 a:hover {
   margin: 16px 0;
 }
 
+.results beaker-record.small[render-mode="action"] {
+  margin: 4px 0;
+}
+
 .results beaker-record[render-mode="comment"] {
   margin: 10px 0 10px 45px;
 }

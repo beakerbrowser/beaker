@@ -176,7 +176,7 @@ export class SitesList extends LitElement {
   }
 
   isSubscribed (site) {
-    return site.graph.user.isSubscriber
+    return site.graph?.user.isSubscriber
   }
 
   // rendering
