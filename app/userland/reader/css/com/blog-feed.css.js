@@ -8,14 +8,40 @@ ${spinnerCSS}
   display: block;
 }
 
+.nav {
+  display: flex;
+  border-bottom: 1px solid var(--border-color--light);
+  padding: 0 4px;
+}
+
+.nav a {
+  padding: 6px 14px;
+}
+
+.nav a:hover {
+  cursor: pointer;
+  background: var(--bg-color--light);
+}
+
+.nav a.selected {
+  background: var(--bg-color--selected);
+  color: var(--bg-color--default);
+}
+
+.posts {
+  padding: 5px 0;
+}
+
 .post {
   padding: 10px;
-  border-bottom: 1px solid var(--border-color--light);
   font-size: 14px;
-  color: var(--text-color--pretty-light);
   letter-spacing: 0.5px;
   line-height: 1.4;
   cursor: pointer;
+}
+
+.post.read {
+  color: var(--text-color--pretty-light);
 }
 
 .post > * {
@@ -24,17 +50,29 @@ ${spinnerCSS}
   text-overflow: ellipsis;
 }
 
-.post:hover,
-.post.current {
+.post:hover {
   background: var(--bg-color--semi-light);
 }
 
+.post.current {
+  background: var(--bg-color--selected);
+  color: var(--bg-color--default);
+}
+
 .post .title {
-  color: var(--text-color--default);
   font-weight: 500;
   font-size: 15px;
   lettter-spacing: 0px;
   line-height: normal;
+}
+
+.post .signals {
+  padding: 2px 2px 0;
+  font-size: 12px;
+}
+
+.post .signals > span {
+  margin-right: 2px;
 }
 
 .badge {

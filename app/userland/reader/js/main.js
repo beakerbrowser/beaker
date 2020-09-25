@@ -59,7 +59,7 @@ class ReaderApp extends LitElement {
       <nav>
         <div class="brand">
           <h1>Beaker Reader</h1>
-          <button class="tooltip-left" data-tooltip="Compose new blog post">
+          <button class="tooltip-left" data-tooltip="New draft">
             <span class="fas fa-edit"></span>
           </button>
         </div>
