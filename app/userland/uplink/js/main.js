@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
+import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
@@ -9,37 +10,22 @@ import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
 import './com/indexer-state.js'
-import 'beaker://app-stdlib/js/com/post-composer.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
 const PATH_QUERIES = {
-  comments: [typeToQuery('comment')],
-  posts: [typeToQuery('microblogpost')],
-  search: {
-    discussion: [
-      typeToQuery('microblogpost'),
-      typeToQuery('comment')
-    ]
-  },
-  all: [
-    typeToQuery('microblogpost'),
-    typeToQuery('comment'),
-    typeToQuery('subscription')
-  ]
+  search: [typeToQuery('bookmark')],
+  all: [typeToQuery('bookmark')]
 }
 
-class SocialApp extends LitElement {
+class UplinkApp extends LitElement {
   static get properties () {
     return {
       profile: {type: Object},
       suggestedSites: {type: Array},
-      isComposingPost: {type: Boolean},
       searchQuery: {type: String},
-      sourceOptions: {type: Array},
-      currentSource: {type: String},
       isEmpty: {type: Boolean},
       listingSelfState: {type: String},
       isProfileListedInBeakerNetwork: {type: Boolean}
@@ -54,10 +40,7 @@ class SocialApp extends LitElement {
     super()
     this.profile = undefined
     this.suggestedSites = undefined
-    this.isComposingPost = false
     this.searchQuery = ''
-    this.sourceOptions = []
-    this.currentSource = 'all'
     this.isEmpty = false
     this.listingSelfState = undefined
     this.isProfileListedInBeakerNetwork = undefined
@@ -80,7 +63,6 @@ class SocialApp extends LitElement {
 
   configFromQP () {
     this.searchQuery = QP.getParam('q', '')
-    this.currentSource = QP.getParam('source', 'all')
     
     if (this.searchQuery) {
       this.updateComplete.then(() => {
@@ -90,15 +72,10 @@ class SocialApp extends LitElement {
   }
 
   async load ({clearCurrent} = {clearCurrent: false}) {
-    let sourceOptions
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
     }
-    ;[this.profile, sourceOptions] = await Promise.all([
-      addressBook.loadProfile(),
-      beaker.subscriptions.list()
-    ])
-    this.sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(sourceOptions)
+    this.profile = await beaker.browser.getProfile()
     this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     if (this.isProfileListedInBeakerNetwork) {
       this.listingSelfState = 'done'
@@ -113,7 +90,7 @@ class SocialApp extends LitElement {
       sort: 'crtime',
       reverse: true
     })
-    var currentSubs = new Set(this.sourceOptions.map(source => (new URL(source.href)).origin))
+    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (new URL(source.href)).origin))
     var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
     var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
       var url = candidate.metadata.href
@@ -138,18 +115,6 @@ class SocialApp extends LitElement {
     this.suggestedSites = suggestedSites.slice(0, 12)
   }
 
-  get sources () {
-    if (this.currentSource === 'all') {
-      return undefined // all data in the index this.sourceOptions.map(source => source.url)
-    }
-    if (this.currentSource === 'mine') {
-      return ['hyper://private/', this.profile?.url]
-    }
-    if (this.currentSource === 'others') {
-      return this.sourceOptions.slice(2).map(source => source.href)
-    }
-    return [this.currentSource]
-  }
 
   get isLoading () {
     let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-record-feed'))
@@ -198,6 +163,12 @@ class SocialApp extends LitElement {
             ` : ''}
             <input @keyup=${this.onKeyupSearch} placeholder="Search" value=${this.searchQuery}>
           </div>
+          <section class="create">
+            <button class="block" @click=${e => this.onClickEditBookmark(undefined)}>
+              <span class="far fa-fw fa-star"></span>
+              New Bookmark
+            </button>
+          </section>
           ${this.suggestedSites?.length > 0 ? html`
             <section class="suggested-sites">
               <h3>Suggested Sites</h3>
@@ -229,39 +200,26 @@ class SocialApp extends LitElement {
   renderCurrentView () {
     var hasSearchQuery = !!this.searchQuery
     if (hasSearchQuery) {
-      const searchLink = (label, url) => {
-        return html`
-          <a class="search-engine" title=${label} href=${url} data-tooltip=${label}>
-            <img src="beaker://assets/search-engines/${label.toLowerCase()}.png">
-          </a>
-        `
-      }
       return html`
         <div class="twocol">
           <div>
-            <div class="alternatives">
-              Try your search on:
-              ${searchLink('DuckDuckGo', `https://duckduckgo.com?q=${encodeURIComponent(this.searchQuery)}`)}
-              ${searchLink('Google', `https://google.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-              ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-              ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-              ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.searchQuery)}`)}
-              ${searchLink('YouTube', `https://www.youtube.com/results?search_query=${encodeURIComponent(this.searchQuery)}`)}
-              ${searchLink('Wikipedia', `https://en.wikipedia.org/w/index.php?search=${encodeURIComponent(this.searchQuery)}`)}
+            <div class="brand">
+              <h1>
+                <a href="/" title="Beaker Uplink">
+                  Beaker <span class="fas fa-arrow-up"></span>Uplink
+                </a>
+              </h1>
             </div>
-              ${this.renderSites('all')}
-              <h3 class="feed-heading">Discussion</h3>
-              <beaker-record-feed
-                .pathQuery=${PATH_QUERIES.search.discussion}
-                .filter=${this.searchQuery}
-                .sources=${this.sources}
-                limit="50"
-                empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-                @load-state-updated=${this.onFeedLoadStateUpdated}
-                @view-thread=${this.onViewThread}
-                @publish-reply=${this.onPublishReply}
-                profile-url=${this.profile ? this.profile.url : ''}
-              ></beaker-record-feed>
+            <beaker-record-feed
+              .pathQuery=${PATH_QUERIES.search}
+              .filter=${this.searchQuery}
+              limit="50"
+              empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
+              @load-state-updated=${this.onFeedLoadStateUpdated}
+              @view-thread=${this.onViewThread}
+              @publish-reply=${this.onPublishReply}
+              profile-url=${this.profile ? this.profile.url : ''}
+            ></beaker-record-feed>
           </div>
           ${this.renderRightSidebar()}
         </div>
@@ -270,26 +228,19 @@ class SocialApp extends LitElement {
       return html`
         <div class="twocol">
           <div>
-            ${this.renderIntro()}
-            <div class="composer">
-              <img class="thumb" src="asset:thumb:${this.profile?.url}">
-              ${this.isComposingPost ? html`
-                <beaker-post-composer
-                  drive-url=${this.profile?.url || ''}
-                  @publish=${this.onPublishPost}
-                  @cancel=${this.onCancelPost}
-                ></beaker-post-composer>
-              ` : html`
-                <div class="compose-post-prompt" @click=${this.onComposePost}>
-                  What's new?
-                </div>
-              `}
+            <div class="brand">
+              <h1>
+                <a href="/" title="Beaker Uplink">
+                  Beaker <span class="fas fa-arrow-up"></span>Uplink
+                </a>
+              </h1>
             </div>
+            ${this.renderIntro()}
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
               show-date-titles
+              date-title-range="month"
               .pathQuery=${PATH_QUERIES.all}
-              .sources=${this.sources}
               limit="50"
               @load-state-updated=${this.onFeedLoadStateUpdated}
               @view-thread=${this.onViewThread}
@@ -301,32 +252,6 @@ class SocialApp extends LitElement {
         </div>
       `
     }
-  }
-
-  renderSites (id) {
-    var listing = ({
-      all: 'all',
-      'my-sites': 'mine',
-      subscriptions: 'subscribed',
-      subscribers: 'subscribers'
-    })[id]
-    var title = ({
-      all: 'Sites',
-      'my-sites': 'My sites',
-      subscriptions: 'My subscriptions',
-      subscribers: 'Subscribed to me'
-    })[id]
-    var allSearch = !!this.searchQuery && id === 'all'
-    return html`
-      ${title ? html`<h3 class="feed-heading">${title}</h3>` : ''}
-      <beaker-sites-list
-        listing=${listing}
-        filter=${this.searchQuery || ''}
-        .limit=${allSearch ? 6 : undefined}
-        empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
-        .profile=${this.profile}
-      ></beaker-sites-list>
-    `
   }
 
   renderEmptyMessage () {
@@ -343,21 +268,6 @@ class SocialApp extends LitElement {
         <div class="fas fa-stream"></div>
         <div>Subscribe to sites to see what's new</div>
       </div>
-    `
-  }
-
-  renderSourcesCtrl () {
-    var label = ''
-    switch (this.currentSource) {
-      case 'all': label = 'All'; break
-      case 'mine': label = 'My Data'; break
-      case 'others': label = 'Others\' Data'; break
-      default: label = this.sourceOptions.find(opt => opt.href === this.currentSource)?.title
-    }
-    return html`
-      <a class="search-mod-btn" @click=${this.onClickSources}>
-        <span class="label">Source: </span>${label} <span class="fas fa-fw fa-caret-down"></span>
-      </a>
     `
   }
 
@@ -442,17 +352,8 @@ class SocialApp extends LitElement {
             </h4>
             ${!this.isIntroStepCompleted(2) ? html`
               <div class="btn-group">
-                <button class="transparent block" @click=${this.onClickNewPost}>
-                  <i class="far fa-fw fa-comment-alt"></i> New Post
-                </button>
                 <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
                   <i class="far fa-fw fa-star"></i> New Bookmark
-                </button>
-                <button class="transparent block" @click=${e => this.onClickNewPage()}>
-                  <i class="far fa-fw fa-file"></i> New Page
-                </button>
-                <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
-                  <i class="fas fa-fw fa-blog"></i> New Blogpost
                 </button>
               </div>
             ` : ''}
@@ -476,37 +377,11 @@ class SocialApp extends LitElement {
     this.setIntroStepCompleted(step, true)
   }
 
-  onClickSources (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    const fixedClick = (v) => {
-      this.currentSource = v
-      QP.setParams({source: v})
-      this.load()
-    }
-    const items = this.sourceOptions.slice(1).map(({href, title}) => ({
-      icon: false,
-      label: title,
-      click: () => {
-        this.currentSource = href
-        QP.setParams({source: href})
-        this.load()
-      }
-    }))
-    var rect = e.currentTarget.getClientRects()[0]
-    sourcesDropdown.create({x: (rect.left + rect.right) / 2, y: rect.bottom, items, fixedClick})
-  }
-
   onKeyupSearch (e) {
-    var value = e.currentTarget.value.toLowerCase()
-    if (this.keyupSearchTo) {
-      clearTimeout(this.keyupSearchTo)
-    }
-    this.keyupSearchTo = setTimeout(() => {
-      this.searchQuery = value
+    if (e.code === 'Enter') {
+      this.searchQuery = e.currentTarget.value.toLowerCase()
       QP.setParams({q: this.searchQuery})
-      this.keyupSearchTo = undefined
-    }, 100)
+    }
   }
 
   onClickClearSearch (e) {
@@ -522,21 +397,14 @@ class SocialApp extends LitElement {
     })
   }
 
-  onComposePost (e) {
-    this.isComposingPost = true
-  }
-
-  onCancelPost (e) {
-    this.isComposingPost = false
-  }
-
-  onPublishPost (e) {
-    this.isComposingPost = false
-    toast.create('Post published', '', 10e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
+  async onClickEditBookmark (file) {
+    try {
+      await EditBookmarkPopup.create(file)
+      this.load()
+    } catch (e) {
+      // ignore
+      console.log(e)
     }
-    this.load()
   }
 
   onPublishReply (e) {
@@ -584,4 +452,4 @@ class SocialApp extends LitElement {
   }
 }
 
-customElements.define('social-app', SocialApp)
+customElements.define('uplink-app', UplinkApp)

@@ -33,25 +33,11 @@ const DOCS_URL = 'https://docs.beakerbrowser.com'
 const PATH_QUERIES = {
   blogposts: [typeToQuery('blogpost')],
   bookmarks: [typeToQuery('bookmark')],
-  comments: [typeToQuery('comment')],
-  posts: [typeToQuery('microblogpost')],
-  search: {
-    links: [
-      typeToQuery('blogpost'),
-      typeToQuery('bookmark'),
-      typeToQuery('page')
-    ],
-    discussion: [
-      typeToQuery('microblogpost'),
-      typeToQuery('comment')
-    ]
-  },
+  discussion: [typeToQuery('microblogpost'), typeToQuery('comment')],
   all: [
     typeToQuery('blogpost'),
     typeToQuery('bookmark'),
-    typeToQuery('page'),
-    typeToQuery('microblogpost'),
-    typeToQuery('comment')
+    typeToQuery('page')
   ],
   feed: [typeToQuery('bookmark'), typeToQuery('blogpost')]
 }
@@ -287,7 +273,7 @@ class DesktopApp extends LitElement {
                 ${this.renderIntro()}
                 <beaker-record-feed
                   .pathQuery=${PATH_QUERIES.feed}
-                  title="Recent Bookmarks"
+                  title="Recent Activity"
                   force-render-mode="action"
                   record-class="small"
                   .sources=${this.publicSources}
@@ -317,8 +303,7 @@ class DesktopApp extends LitElement {
         ${navItem('all', html`<span class="fas fa-fw fa-search"></span> All`)}
         ${navItem('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
         ${navItem('blogposts', html`<span class="fas fa-fw fa-blog"></span> <span class="label">Blogposts</span>`)}
-        ${navItem('posts', html`<span class="far fa-fw fa-comment-alt"></span> <span class="label">Status Updates</span>`)}
-        ${navItem('comments', html`<span class="far fa-fw fa-comments"></span> <span class="label">Comments</span>`)}
+        ${navItem('discussion', html`<span class="far fa-fw fa-comments"></span> <span class="label">Discussion</span>`)}
         <div class="sep"></div>
         ${this.renderSourcesCtrl()}
       </div>
@@ -654,21 +639,12 @@ class DesktopApp extends LitElement {
       this.searchQuery = e.currentTarget.value.toLowerCase()
       QP.setParams({q: this.searchQuery})
     }
-    // TODO restore if possible but there are problems with the UI transition
-    // var value = e.currentTarget.value.toLowerCase()
-    // if (this.keyupSearchTo) {
-    //   clearTimeout(this.keyupSearchTo)
-    // }
-    // this.keyupSearchTo = setTimeout(() => {
-    //   this.searchQuery = value
-    //   QP.setParams({q: this.searchQuery})
-    //   this.keyupSearchTo = undefined
-    // }, 100)
   }
 
   onClickClearSearch (e) {
     this.searchQuery = ''
-    QP.setParams({q: false})
+    this.currentNav = 'all'
+    QP.setParams({q: false, view: 'all'})
     this.shadowRoot.querySelector('.search-ctrl input').value = ''
   }
 

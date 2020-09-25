@@ -10,6 +10,7 @@ export class EditBookmarkPopup extends BasePopup {
   constructor (bookmark) {
     super()
     this.bookmark = bookmark
+    this.isPublic = this.bookmark ? (this.bookmark?.site?.url !== 'hyper://private') : true
   }
 
   static get styles () {
@@ -33,6 +34,37 @@ export class EditBookmarkPopup extends BasePopup {
       height: auto;
       width: auto;
       margin: 0 10px 0 2px;
+    }
+
+    .viz-selector {
+      margin-bottom: 10px;
+    }
+
+    .viz-selector > span {
+      display: inline-flex;
+      margin-right: 5px;
+    }
+
+    .viz-selector a {
+      border: 1px solid var(--border-color--light);
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+
+    .viz-selector a:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .viz-selector a:last-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .viz-selector a.selected {
+      background: var(--bg-color--selected);
+      border-color: var(--bg-color--selected);
+      color: var(--bg-color--default);
     }
 
     .delete {
@@ -60,7 +92,6 @@ export class EditBookmarkPopup extends BasePopup {
   }
 
   renderBody () {
-    var isPublic = this.bookmark && this.bookmark.site.url !== 'hyper://private'
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <form @submit=${this.onSubmit}>
@@ -71,10 +102,18 @@ export class EditBookmarkPopup extends BasePopup {
           <label for="title-input">Title</label>
           <input required type="text" id="title-input" name="title" value="${this.bookmark?.title || ''}" placeholder="E.g. Beaker Browser" />
 
-          <label class="checkbox" for="public-input" @click=${this.onTogglePublic}>
-            <input type="checkbox" id="public-input" name="public" value="1" ?checked=${isPublic} />
-            Public
-          </label>
+          <label for="public-input">Visibility</label>
+          <div class="viz-selector">
+            <span>
+              <a class="${this.isPublic ? 'selected' : ''}" @click=${this.onTogglePublic}>
+                <span class="fas fa-fw fa-globe-americas"></span> Public
+              </a>
+              <a class="${!this.isPublic ? 'selected' : ''}" @click=${this.onTogglePublic}>
+                <span class="fas fa-fw fa-lock"></span> Private
+              </a>
+            </span>
+            ${this.isPublic ? 'Visible to everybody' : 'Only visible to you'}
+          </div>
 
           <label class="checkbox" for="pinned-input">
             <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
@@ -85,7 +124,7 @@ export class EditBookmarkPopup extends BasePopup {
         <div class="actions">
           ${this.bookmark ? html`<button type="button" class="btn delete" @click=${this.onDelete} tabindex="3">Delete</button>` : ''}
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="1">${isPublic ? 'Publish' : 'Save'}</button>
+          <button type="submit" class="btn primary" tabindex="1">${this.isPublic ? 'Publish' : 'Save'}</button>
         </div>
       </form>
     `
@@ -99,8 +138,8 @@ export class EditBookmarkPopup extends BasePopup {
   // =
 
   onTogglePublic (e) {
-    var isPublic = this.shadowRoot.querySelector('[name="public"]').checked
-    this.shadowRoot.querySelector('button.primary').textContent = isPublic ? 'Publish' : 'Save'
+    this.isPublic = !this.isPublic
+    this.requestUpdate()
   }
 
   async onSubmit (e) {
@@ -111,7 +150,7 @@ export class EditBookmarkPopup extends BasePopup {
       href: e.target.href.value,
       title: e.target.title.value,
       pinned: e.target.pinned.checked,
-      site: e.target.public.checked ? `hyper://${(await beaker.browser.getProfile()).key}` : 'hyper://private'
+      site: this.isPublic ? `hyper://${(await beaker.browser.getProfile()).key}` : 'hyper://private'
     }
     console.log(b)
     if (this.bookmark && b.href !== this.bookmark.href) {

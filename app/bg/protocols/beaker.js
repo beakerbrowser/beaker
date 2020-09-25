@@ -284,6 +284,12 @@ async function beakerProtocol (request, respond) {
       fallbackToIndexHTML: true,
     })
   }
+  if (requestUrl === 'beaker://uplink' || requestUrl.startsWith('beaker://uplink/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'uplink'), cb, {
+      CSP: BEAKER_APP_CSP,
+      fallbackToIndexHTML: true,
+    })
+  }
   if (requestUrl === 'beaker://history' || requestUrl.startsWith('beaker://history/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'history'), cb)
   }
