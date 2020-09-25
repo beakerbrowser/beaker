@@ -8,16 +8,14 @@ import * as bg from './bg-process-rpc'
 const WINDOW_MENU_ENABLED = false
 
 const BASIC_BUILTINS = [
-  {builtin: true, url: 'beaker://about/', hyperOnly: true},
   {builtin: true, url: 'beaker://activity/'},
-  {builtin: true, url: 'beaker://editor/'},
-  {type: 'separator'},
   {builtin: true, url: 'beaker://history/'},
   {builtin: true, url: 'beaker://library/'}
 ]
 const ADVANCED_BUILTINS = [
-  {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
+  {builtin: true, url: 'beaker://editor/'},
   {builtin: true, url: 'beaker://webterm/'},
+  {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
   {builtin: true, url: 'beaker://hypercore-tools/', hyperOnly: true}
 ]
 
