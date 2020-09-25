@@ -353,15 +353,6 @@ export class Record extends LitElement {
     }
     var showContentAfter = res.content && ['microblogpost', 'comment'].includes(rtype)
 
-    var actionTarget = this.actionTarget
-    if (!actionTarget) {
-      if (rtype === 'bookmark') {
-        actionTarget = html`
-          <a href=${res.metadata.href} target="_blank">${res.metadata.title || res.metadata.href}</a>
-        `
-      }
-    }
-
     return html`
       <div
         class=${classMap({
@@ -384,16 +375,24 @@ export class Record extends LitElement {
             <a class="subject" href=${res.metadata.href}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
           ` : rtype === 'vote' ? html`
             <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'}</span>
-            <a class="subject" href=${res.metadata.href}>${actionTarget}</a>
-          ` : rtype === 'bookmark' ? html`
-            <span class="action">bookmarked ${actionTarget}</span>
-          ` : rtype === 'comment' ? html`
-            <span class="action">commented on ${actionTarget}</span>
-          ` : showContentAfter ? html`
-            <span class="action">mentioned ${actionTarget}</span>
+            <a class="subject" href=${res.metadata.href}>${this.actionTarget}</a>
+          ` : this.actionTarget ? html`
+            ${rtype === 'bookmark' ? html`
+              <span class="action">bookmarked ${this.actionTarget}</span>
+            ` : rtype === 'comment' ? html`
+              <span class="action">commented on ${this.actionTarget}</span>
+            ` : showContentAfter ? html`
+              <span class="action">mentioned ${this.actionTarget}</span>
+            ` : html`
+              <span class="action">mentioned ${this.actionTarget} in</span>
+              <a class="subject" href=${res.url}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
+            `}
           ` : html`
-            <span class="action">mentioned ${actionTarget} in</span>
-            <a class="subject" href=${res.url}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
+            ${rtype === 'bookmark' ? html`
+              <span class="action">bookmarked <a href=${res.metadata.href} target="_blank">${res.metadata.title || res.metadata.href}</a></span>
+            ` : rtype === 'blogpost' ? html`
+              <span class="action">published <a href=${res.url} target="_blank">${res.metadata.title || res.path}</a></span>
+            ` : ''}
           `}
           ${res.mergedItems ? html`
             <span>and</span>

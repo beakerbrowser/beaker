@@ -176,19 +176,6 @@ header {
   top: 14px;
 }
 
-beaker-indexer-state {
-  position: fixed;
-  top: 12px;
-  right: calc(50vw - 674px);
-}
-
-@media (max-width: 1415px) {
-  beaker-indexer-state {
-    top: 56px;
-    right: 6px;
-  }
-}
-
 .pins {
   position: relative;
   display: grid;

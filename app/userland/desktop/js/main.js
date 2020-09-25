@@ -13,7 +13,6 @@ import * as desktop from './lib/desktop.js'
 import * as addressBook from './lib/address-book.js'
 import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
-import './com/indexer-state.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
@@ -54,7 +53,7 @@ const PATH_QUERIES = {
     typeToQuery('microblogpost'),
     typeToQuery('comment')
   ],
-  feed: [typeToQuery('bookmark')]
+  feed: [typeToQuery('bookmark'), typeToQuery('blogpost')]
 }
 
 class DesktopApp extends LitElement {
@@ -162,6 +161,10 @@ class DesktopApp extends LitElement {
     return [this.currentSource]
   }
 
+  get publicSources () {
+    return this.sourceOptions.slice(1).map(source => source.href)
+  }
+
   get isLoading () {
     let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-record-feed'))
     return !!queryViewEls.find(el => el.isLoading)
@@ -211,7 +214,6 @@ class DesktopApp extends LitElement {
         <div id="topright">
           ${this.renderSettingsBtn()}
         </div>
-        <beaker-indexer-state></beaker-indexer-state>
         <header>
           <div class="search-ctrl">
             ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
@@ -267,7 +269,6 @@ class DesktopApp extends LitElement {
         <div id="topright">
           ${this.renderSettingsBtn()}
         </div>
-        <beaker-indexer-state></beaker-indexer-state>
         ${this.renderReleaseNotice()}
         <main>
           <div class="onecol">
@@ -284,13 +285,12 @@ class DesktopApp extends LitElement {
                 ${this.renderLegacyArchivesView()}
               ` : html`
                 ${this.renderIntro()}
-                ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
                 <beaker-record-feed
                   .pathQuery=${PATH_QUERIES.feed}
                   title="Recent Bookmarks"
                   force-render-mode="action"
                   record-class="small"
-                  .sources=${this.sources}
+                  .sources=${this.publicSources}
                   limit="50"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
