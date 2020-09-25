@@ -46,50 +46,11 @@ a:hover {
   color: inherit;
 }
 
-.content {
+beaker-record-thread {
+  display: block;
+  position: initial;
   max-width: 90ch;
-  margin: 10px 20px;
+  margin: 10px 20px 30px;
 }
-
-.markdown {
-  line-height: 1.4;
-  letter-spacing: 0.1px;
-  margin-bottom: 30px;
-  font-size: 15px;
-}
-
-.markdown > :first-child {
-  margin-top: 0;
-}
-
-.markdown :-webkit-any(h1, h2, h3, h4, h5) {
-  font-family: arial;
-}
-
-.markdown hr {
-  border: 0;
-  border-top: 1px solid var(--border-color--light);
-  margin: 2em 0;
-}
-
-.markdown blockquote {
-  border-left: 10px solid var(--bg-color--semi-light);
-  margin: 0 0 0.6em;
-  padding: 10px 0px 10px 20px;
-  color: var(--text-color--light);
-}
-
-.markdown blockquote + blockquote {
-  margin-top: -14px;
-}
-
-.markdown blockquote p {
-  margin: 0;
-}
-
-.markdown * {
-  max-width: 100%;
-}
-
 `
 export default cssStr

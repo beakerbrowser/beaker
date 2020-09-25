@@ -67,7 +67,7 @@ class ReaderApp extends LitElement {
       </nav>
       <main>
         ${this.currentPost ? html`
-          <beaker-blogpost-view .post=${this.currentPost}></beaker-blogpost-view>
+          <beaker-blogpost-view .post=${this.currentPost} .profile=${this.profile}></beaker-blogpost-view>
         ` : html`
           <div class="empty">
           </div>
