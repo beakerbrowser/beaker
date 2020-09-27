@@ -41,6 +41,7 @@ export class RecordThread extends LitElement {
     this.networkReplies = undefined
     this.profileUrl = ''
     this.isCommenting = false
+    this.isLoading = false
   }
 
   reset () {
@@ -70,11 +71,13 @@ export class RecordThread extends LitElement {
   }
 
   async load () {
+    this.isLoading = true
     this.reset()
     var record = await this.fetchRecordOrSite(this.recordUrl)
     this.subjectUrl = record?.metadata?.['comment/subject'] || record?.url || this.recordUrl
     /* dont await */ this.loadSubject(record)
     /* dont await */ this.loadComments(record)
+    this.isLoading = false
   }
 
   async loadSubject (record) {
@@ -126,7 +129,7 @@ export class RecordThread extends LitElement {
   }
 
   updated (changedProperties) {
-    if (typeof this.subject === 'undefined') {
+    if (typeof this.subject === 'undefined' && !this.isLoading) {
       this.load()
     } else if (changedProperties.has('recordUrl') && changedProperties.get('recordUrl') != this.recordUrl) {
       this.load()
