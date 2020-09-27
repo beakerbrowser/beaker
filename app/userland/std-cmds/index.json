@@ -181,9 +181,9 @@
       ]
     },
     {
-      "name": "open",
+      "name": "go",
       "help": "Open the target in the browser",
-      "usage": "open [-bn] {path}",
+      "usage": "go [-bn] {path}",
       "autocomplete": "files",
       "options": [
         {
