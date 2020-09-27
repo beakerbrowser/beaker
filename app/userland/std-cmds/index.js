@@ -273,7 +273,7 @@ export async function echo (opts, ...args) {
 
 export async function open (opts = {}, location = '') {
   if (opts.bookmark) {
-    location = `${beaker.hyperdrive.getSystemDrive().url}/bookmarks/${location}`
+    location = `hyper://private/bookmarks/${location}`
     if (!location.endsWith('.goto')) location += '.goto'
   }
   location = this.env.resolve(location)
