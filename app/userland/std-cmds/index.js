@@ -329,6 +329,10 @@ export const env = {
   set (opts, name, value) {
     if (name.startsWith('$')) name = name.slice(1)
     return this.env.set(name, value)
+  },
+  rm (opts, name) {
+    if (name.startsWith('$')) name = name.slice(1)
+    return this.env.set(name, undefined)
   }
 }
 

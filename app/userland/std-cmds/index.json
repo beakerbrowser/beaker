@@ -230,6 +230,11 @@
           "name": "set",
           "help": "Set the value of an environment variable",
           "usage": "env set {name} {value}"
+        },
+        {
+          "name": "rm",
+          "help": "Remove an environment variable",
+          "usage": "env rm {name}"
         }
       ]
     },

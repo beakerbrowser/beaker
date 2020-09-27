@@ -188,6 +188,7 @@ class WebTerm extends LitElement {
     this.commands = {}
     this.commandModules = {}
     this.pageCommands = {}
+    /* dont await */ this.loadEnvVars()
     await this.loadCommands()
     await this.loadBuiltins()
     await this.loadPageCommands()
@@ -289,6 +290,23 @@ class WebTerm extends LitElement {
     `)
     this.pageCommands = this.pageCommands || {}
   }
+  
+  async loadEnvVars () {
+    try {
+      this.envVars = await beaker.hyperdrive.readFile('hyper://private/webterm/env.json', 'json')
+    } catch (err) {
+      if (!err.toString().includes('NotFoundError')) {
+        this.outputError(`Failed to load environment variables`, err)
+      }
+    }
+  }
+  
+  async persistEnvVars () {
+    var envVars = JSON.parse(JSON.stringify(this.envVars))
+    delete envVars['@']
+    delete envVars.cwd
+    await beaker.hyperdrive.writeFile('hyper://private/webterm/env.json', envVars, 'json')
+  }
 
   setCWD (location) {
     var locationParsed
@@ -387,10 +405,13 @@ class WebTerm extends LitElement {
     return this.envVars[key] || ''
   }
 
-  setEnv (key, value) {
+  async setEnv (key, value) {
     if (key === '@') return
     if (key === 'cwd') return
-    this.envVars[key] = value
+    await this.loadEnvVars()
+    if (!value) delete this.envVars[key]
+    else this.envVars[key] = value
+    await this.persistEnvVars()
   }
 
   applySubstitutions (inputParsed) {
