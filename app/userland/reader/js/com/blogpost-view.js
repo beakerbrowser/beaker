@@ -25,7 +25,6 @@ class BlogpostView extends LitElement {
     if (!this.post) {
       return ''
     }
-    console.log(this.post.site.url, this.profile?.url)
     return html`
       <div class="postmeta">
         <a class="thumb" href=${this.post.site.url} target="_blank">

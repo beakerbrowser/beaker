@@ -62,6 +62,7 @@ class BlogFeed extends LitElement {
               <div><span class="badge">draft</span></div>
             ` : html`
               <div class="signals">
+                ${isRead(post.url) ? '' : html`<span class="badge">new post</span>`}
                 <span><span class="far fa-fw fa-comment"></span> ${post.commentCount}</span>
               </div>
             `}
