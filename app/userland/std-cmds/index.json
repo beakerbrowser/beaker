@@ -122,6 +122,23 @@
       ]
     },
     {
+      "name": "mkdrive",
+      "help": "Create a hyperdrive",
+      "usage": "mkdrive [-t/--title title] [-d/--desc description]",
+      "options": [
+        {
+          "name": "title",
+          "abbr": "t",
+          "help": "The drive title"
+        },
+        {
+          "name": "desc",
+          "abbr": "d",
+          "help": "The drive description"
+        }
+      ]
+    },
+    {
       "name": "mkgoto",
       "help": "Create a .goto file",
       "usage": "mkgoto {goto-path} {href} [-t/--title title]",

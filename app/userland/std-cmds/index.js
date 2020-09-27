@@ -219,6 +219,15 @@ export async function meta (opts, location, key = undefined, ...value) {
   }
 }
 
+export async function mkdrive (opts) {
+  var drive = await beaker.hyperdrive.createDrive({
+    title: opts.title,
+    description: opts.description,
+    prompt: false
+  })
+  return drive.url
+}
+
 export async function mkgoto (opts, location, href) {
   if (!location) throw new Error('path is required')
   if (!href) throw new Error('href is required')
