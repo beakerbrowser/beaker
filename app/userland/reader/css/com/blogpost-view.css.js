@@ -19,6 +19,10 @@ a:hover {
 }
 
 .postmeta {
+  position: sticky;
+  top: 20px;
+  z-index: 1;
+  background: var(--bg-color--default);
   width: 180px;
   float: right;
   padding: 20px 10px;
@@ -44,6 +48,12 @@ a:hover {
   font-size: 21px;
   font-weight: bold;
   color: inherit;
+}
+
+.postmeta .edit {
+  margin-top: 5px;
+  cursor: pointer;
+  font-size: 12px;
 }
 
 beaker-record-thread {

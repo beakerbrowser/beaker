@@ -13,21 +13,23 @@ ${spinnerCSS}
 :host {
   display: grid;
   grid-template-columns: 1fr 3fr;
+  max-width: 1300px;
+  margin: 0 auto;
 }
 
 nav, main {
   height: 100vh;
   overflow: auto;
+  border-right: 1px solid var(--border-color--light);
 }
 
 nav {
-  border-right: 1px solid var(--border-color--light);
+  border-left: 1px solid var(--border-color--light);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   border-bottom: 1px solid var(--border-color--light);
   padding: 8px 10px;
   position: sticky;
@@ -37,7 +39,24 @@ nav {
 }
 
 .brand h1 {
-  margin: 0;
+  margin: 0 auto 0 0;
+}
+
+.brand button {
+  margin-left: 2px;
+}
+
+.empty {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0px 50px;
+  font-size: 32px;
+  height: 90vh;
+}
+
+.empty > * {
+  margin: 5px 0;
 }
 `
 export default cssStr

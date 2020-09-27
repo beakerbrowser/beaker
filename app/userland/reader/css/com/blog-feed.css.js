@@ -8,36 +8,20 @@ ${spinnerCSS}
   display: block;
 }
 
-.nav {
-  display: flex;
-  border-bottom: 1px solid var(--border-color--light);
-  padding: 0 4px;
-}
-
-.nav a {
-  padding: 6px 14px;
-}
-
-.nav a:hover {
-  cursor: pointer;
-  background: var(--bg-color--light);
-}
-
-.nav a.selected {
-  background: var(--bg-color--selected);
-  color: var(--bg-color--default);
-}
-
 .posts {
-  padding: 5px 0;
+  padding: 8px 0;
 }
 
 .post {
-  padding: 10px;
+  padding: 6px 12px;
   font-size: 14px;
   letter-spacing: 0.5px;
   line-height: 1.4;
   cursor: pointer;
+}
+
+.post:nth-child(odd) {
+  background: var(--bg-color--light);
 }
 
 .post.read {
