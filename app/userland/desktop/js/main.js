@@ -151,11 +151,6 @@ class DesktopApp extends LitElement {
     return this.sourceOptions.slice(1).map(source => source.href)
   }
 
-  get isLoading () {
-    let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-record-feed'))
-    return !!queryViewEls.find(el => el.isLoading)
-  }
-
   async setCurrentNav (nav) {
     this.currentNav = nav
     QP.setParams({view: nav})
@@ -202,7 +197,7 @@ class DesktopApp extends LitElement {
         </div>
         <header>
           <div class="search-ctrl">
-            ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+            <span class="fas fa-search"></span>
             ${!!this.searchQuery ? html`
               <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
             ` : ''}
@@ -262,7 +257,7 @@ class DesktopApp extends LitElement {
         <main>
           <div class="onecol">
             <div class="search-ctrl big">
-              ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+              <span class="fas fa-search"></span>
               ${!!this.searchQuery ? html`
                 <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
               ` : ''}
