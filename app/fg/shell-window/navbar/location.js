@@ -442,6 +442,7 @@ class NavbarLocation extends LitElement {
   async onKeydownLocation (e) {
     if (e.key === 'Enter') {
       e.preventDefault()
+      this.autocompleteState.queryIdCounter = -1 // cancel any active queries
       bg.views.runLocationBarCmd('choose-selection')
       e.currentTarget.blur()
       return
@@ -467,7 +468,7 @@ class NavbarLocation extends LitElement {
     bg.views.showLocationBarContextMenu('active')
   }
 
-  onAutocompleteResults () {
+  onAutocompleteResults (isPartialResults = false) {
     if (!this.isAutocompleteOpen) {
       let rect = this.getClientRects()[0]
       bg.views.runLocationBarCmd('show', {
@@ -483,7 +484,7 @@ class NavbarLocation extends LitElement {
         results: this.autocompleteState.results
       })
     }
-    if (this.autocompleteState.urlGuess) {
+    if (!isPartialResults && this.autocompleteState.urlGuess) {
       // we have a "URL guess"
       let rangeStart = this.autocompleteState.inputValue.length
       let input = this.shadowRoot.querySelector('input')

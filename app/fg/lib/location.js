@@ -24,6 +24,22 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   var searchEngine = searchEngines.find(se => se.selected) || searchEngines[0]
   var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(ctx.inputValue || '/')
 
+  // optimistically set the input-based results to ensure responsiveness
+  {
+    if (ctx.results) ctx.results = ctx.results.filter(r => !r.search && !r.isGoto)
+    ctx.results = ctx.results || []
+    let gotoResult = { url: vWithProtocol, title: 'Go to ' + (ctx.inputValue || '/'), isGuessingTheScheme, isGoto: true }
+    let searchResult = {
+      search: ctx.inputValue,
+      title: `Search ${searchEngine.name} for "${ctx.inputValue}"`,
+      url: searchEngine.url + vSearch
+    }
+    if (ctx.inputValue.includes(' ')) ctx.results.unshift(searchResult)
+    else if (isProbablyUrl) ctx.results = [gotoResult, searchResult].concat(ctx.results)
+    else ctx.results = [searchResult, gotoResult].concat(ctx.results)
+    onResults(true)
+  }
+  
   var [historyResults, networkResults, bookmarks] = await Promise.all([
     ctx.inputValue ? bg.history.search(ctx.inputValue) : [],
     ctx.inputValue ? bg.index.search(ctx.inputValue, {path: DATA_PATHS, limit: 10, index: 'local', field: 'title'}) : [],
