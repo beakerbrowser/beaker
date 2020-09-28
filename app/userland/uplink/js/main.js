@@ -16,8 +16,8 @@ import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
 const PATH_QUERIES = {
-  search: [typeToQuery('bookmark')],
-  all: [typeToQuery('bookmark')]
+  search: [typeToQuery('bookmark'), typeToQuery('blogpost')],
+  all: [typeToQuery('bookmark'), typeToQuery('blogpost')]
 }
 
 class UplinkApp extends LitElement {
