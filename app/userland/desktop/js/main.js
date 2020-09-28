@@ -250,6 +250,9 @@ class DesktopApp extends LitElement {
         </main>
       `
     } else {
+      const appLink = (url, label) => html`
+        <a href=${url} title=${label}><img src="asset:favicon:${url}"> ${label}</a>
+      `
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
@@ -264,6 +267,14 @@ class DesktopApp extends LitElement {
                 <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
               ` : ''}
               <input @keyup=${this.onKeyupSearch} placeholder="Search privately">
+            </div>
+            <div class="apps">
+              ${appLink('beaker://social', 'Social')}
+              ${appLink('beaker://uplink', 'Uplink')}
+              ${appLink('beaker://reader', 'Reader')}
+              ${appLink('beaker://library', 'Library')}
+              ${appLink('beaker://history', 'History')}
+              ${appLink('beaker://settings', 'Settings')}
             </div>
             ${this.renderPins()}
             <div>

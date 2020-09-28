@@ -149,7 +149,7 @@ header {
 
 .search-ctrl.big {
   height: 42px;
-  margin: 0 0 40px;
+  margin: 0 0 20px;
 }
 
 .search-ctrl.big input {
@@ -167,6 +167,28 @@ header {
 
 .search-ctrl.big .spinner {
   top: 14px;
+}
+
+.apps {
+  margin: 0 6px;
+}
+
+.apps a {
+  display: inline-flex;
+  margin-right: 5px;
+  padding: 5px 10px;
+  background: var(--bg-color--light);
+  border-radius: 4px;
+}
+
+.apps a:hover {
+  background: var(--bg-color--semi-light);
+}
+
+.apps img {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
 }
 
 .pins {
