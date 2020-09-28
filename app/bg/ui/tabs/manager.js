@@ -785,6 +785,9 @@ export function createBg (url, opts = {fromSnapshot: undefined}) {
   if (url && !opts.fromSnapshot) tab.loadURL(url)
   backgroundTabs.push(tab)
   app.emit('custom-background-tabs-update', backgroundTabs)
+  for (let win of BrowserWindow.getAllWindows()) {
+    emitReplaceState(win)
+  }
 }
 
 export async function minimizeToBg (win, tab) {
@@ -835,6 +838,7 @@ export async function restoreBgTabByIndex (win, index) {
   tab.isHidden = false
   tab.browserWindow = win
   setActive(win, tab)
+  emitReplaceState(win)
 }
 
 export async function remove (win, tab) {
@@ -1115,7 +1119,8 @@ export function emitReplaceState (win) {
     tabs: getWindowTabState(win),
     isFullscreen: win.isFullScreen(),
     isShellInterfaceHidden: getAddedWindowSettings(win).isShellInterfaceHidden,
-    isDaemonActive: hyper.daemon.isActive()
+    isDaemonActive: hyper.daemon.isActive(),
+    hasBgTabs: backgroundTabs.length > 0
   }
   emit(win, 'replace-state', state)
   triggerSessionSnapshot(win)

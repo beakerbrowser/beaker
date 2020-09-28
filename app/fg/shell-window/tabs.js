@@ -13,6 +13,7 @@ class ShellWindowTabs extends LitElement {
     return {
       tabs: {type: Array},
       isFullscreen: {type: Boolean, attribute: 'is-fullscreen'},
+      hasBgTabs: {type: Boolean, attribute: 'has-bg-tabs'},
       isBackgroundTrayOpen: {type: Boolean}
     }
   }
@@ -22,6 +23,7 @@ class ShellWindowTabs extends LitElement {
     this.tabs = []
     this.tabsTransitionState = undefined // used for 'close animations'
     this.isFullscreen = false
+    this.hasBgTabs = false
     this.draggedTabIndex = null
     this.isDraggingWindow = false
     this.isBackgroundTrayOpen = false
@@ -156,7 +158,11 @@ class ShellWindowTabs extends LitElement {
   }
 
   get backgroundTrayBtn () {
-    const cls = classMap({'background-tray-btn': true, pressed: this.isBackgroundTrayOpen})
+    const cls = classMap({
+      'background-tray-btn': true,
+      pressed: this.isBackgroundTrayOpen,
+      hidden: !this.hasBgTabs
+    })
     return html`
       <button class=${cls} @click=${this.onClickBackgroundTray}>
         <span class="fas fa-caret-down"></span>
@@ -210,7 +216,7 @@ class ShellWindowTabs extends LitElement {
 
   doMinimizeToBgAnim () {
     var srcEl = this.shadowRoot.querySelector('.tab.current')
-    var dstEl = this.shadowRoot.querySelector('.background-tray-btn')
+    var dstEl = this.shadowRoot.querySelector('.tabs')
     if (!srcEl) return console.warn('Minimize anim aborted; source element not found')
     if (!dstEl) return console.warn('Minimize anim aborted; target element not found')
 
@@ -418,6 +424,10 @@ ${spinnerCSS}
 .background-tray-btn span {
   font-size: 14px;
   line-height: 16px;
+}
+
+.background-tray-btn.hidden {
+  display: none;
 }
 
 .unused-space {

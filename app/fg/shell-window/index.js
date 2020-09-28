@@ -27,6 +27,7 @@ class ShellWindowUI extends LitElement {
       isDaemonActive: {type: Boolean},
       isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean},
+      hasBgTabs: {type: Boolean},
       hasLocationExpanded: {type: Boolean},
       userProfile: {type: Object}
     }
@@ -42,6 +43,7 @@ class ShellWindowUI extends LitElement {
     this.isDaemonActive = true
     this.isShellInterfaceHidden = false
     this.isFullscreen = false
+    this.hasBgTabs = false
     this.hasLocationExpanded = false
     this.activeTabIndex = -1
     this.userProfile = undefined
@@ -73,11 +75,12 @@ class ShellWindowUI extends LitElement {
 
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
-    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isDaemonActive, isShellInterfaceHidden}) => {
+    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isDaemonActive, isShellInterfaceHidden, hasBgTabs}) => {
       this.tabs = tabs
       this.isFullscreen = isFullscreen
       this.isShellInterfaceHidden = isShellInterfaceHidden
       this.isDaemonActive = isDaemonActive
+      this.hasBgTabs = hasBgTabs
       this.stateHasChanged()
     })
     viewEvents.addEventListener('update-state', ({index, state}) => {
@@ -164,7 +167,7 @@ class ShellWindowUI extends LitElement {
     return html`
       ${this.isWindows ? html`<shell-window-win32></shell-window-win32>` : ''}
       ${this.isShellInterfaceHidden ? '' : html`
-        <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen}></shell-window-tabs>
+        <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen} ?has-bg-tabs=${this.hasBgTabs}></shell-window-tabs>
         <shell-window-navbar
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
