@@ -497,21 +497,13 @@ class SocialApp extends LitElement {
   }
 
   onKeyupSearch (e) {
-    var value = e.currentTarget.value.toLowerCase()
-    if (this.keyupSearchTo) {
-      clearTimeout(this.keyupSearchTo)
+    if (e.code === 'Enter') {
+      window.location = `/search?q=${e.currentTarget.value.toLowerCase()}`
     }
-    this.keyupSearchTo = setTimeout(() => {
-      this.searchQuery = value
-      QP.setParams({q: this.searchQuery})
-      this.keyupSearchTo = undefined
-    }, 100)
   }
 
   onClickClearSearch (e) {
-    this.searchQuery = ''
-    QP.setParams({q: false})
-    this.shadowRoot.querySelector('.search-ctrl input').value = ''
+    window.location = '/'
   }
 
   onViewThread (e) {

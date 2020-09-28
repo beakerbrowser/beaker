@@ -140,17 +140,6 @@ main {
   margin-bottom: 20px;
 }
 
-h3.feed-heading {
-  margin: 0;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: #fff;
-  padding: 10px 0;
-  margin: 0 0 10px;
-  border-bottom: 1px solid var(--border-color--light);
-}
-
 @media (max-width: 900px) {
   .twocol {
     display: block;
