@@ -563,7 +563,7 @@ a:hover {
 .record.card .header {
   display: flex;
   align-items: baseline;
-  font-size: 13px;
+  font-size: 14px;
   padding: 8px 12px 6px;
   color: var(--text-color--light);
 }
@@ -583,7 +583,7 @@ a:hover {
 
 .record.card .origin .author {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-color--default);
 }
 
@@ -618,7 +618,7 @@ a:hover {
   word-break: break-word;
   color: var(--text-color--default);
   line-height: 1.3125;
-  font-size: 14px;
+  font-size: 15px;
   letter-spacing: 0.1px;
   padding: 0px 12px;
 }

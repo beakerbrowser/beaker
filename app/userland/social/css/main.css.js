@@ -27,6 +27,7 @@ input:focus {
   display: grid;
   grid-template-columns: 30px 1fr;
   gap: 15px;
+  font-size: 14px;
 }
 
 .composer .thumb {
