@@ -81,6 +81,13 @@ class PostComposer extends LitElement {
       window.require.config({ baseUrl: 'beaker://assets/' })
       window.require(['vs/editor/editor.main'], () => {
         registerSuggestions()
+        var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
+        monaco.editor.defineTheme('custom-dark', {
+          base: 'vs-dark',
+          inherit: true,
+          rules: [{ background: '222233' }],
+          colors: {'editor.background': '#222233'}
+        })
         this.editor = monaco.editor.create(this.shadowRoot.querySelector('.editor'), {
           automaticLayout: true,
           contextmenu: false,
@@ -93,6 +100,7 @@ class PostComposer extends LitElement {
           model: monaco.editor.createModel(this.draftText, 'markdown'),
           renderLineHighlight: 'none',
           roundedSelection: false,
+          theme: isDarkMode ? 'custom-dark' : undefined,
           wordWrap: 'on'
         })
         resolve()

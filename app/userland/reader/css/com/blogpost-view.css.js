@@ -44,6 +44,10 @@ a:hover {
   object-fit: cover;
 }
 
+.postmeta a {
+  color: var(--text-color--link);
+}
+
 .postmeta .author {
   font-size: 21px;
   font-weight: bold;

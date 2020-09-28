@@ -42,6 +42,12 @@ ${spinnerCSS}
   color: var(--bg-color--default);
 }
 
+@media (prefers-color-scheme: dark) {
+  .post.current {
+    color: var(--text-color--default);
+  }
+}
+
 .post .title {
   font-weight: 500;
   font-size: 15px;

@@ -331,6 +331,10 @@ a:hover {
   font-weight: normal;
 }
 
+.record.action .action a {
+  color: var(--text-color--link);
+}
+
 .record.action .date {
   color: inherit;
 }

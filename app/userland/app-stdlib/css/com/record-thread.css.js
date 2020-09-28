@@ -112,6 +112,10 @@ beaker-record {
   margin: 2em 0;
 }
 
+.subject-content .markdown a {
+  color: var(--text-color--markdown-link);
+}
+
 .subject-content .markdown blockquote {
   border-left: 10px solid var(--bg-color--semi-light);
   margin: 0 0 0.6em;

@@ -66,7 +66,7 @@ nav a:hover {
   position: absolute;
   left: 10px;
   top: 8.75px;
-  color: rgba(0, 0, 0, 0.5);
+  color: var(--text-color--light);
 }
 
 .search-container .close-btn {
@@ -82,6 +82,7 @@ nav a:hover {
   padding: 0 10px;
   padding-left: 28px;
   box-sizing: border-box;
+  border-color: var(--border-color--light);
 }
 
 .clear-history {
@@ -100,12 +101,19 @@ nav a:hover {
   margin-left: 5px;
 }
 
+select {
+  background: var(--bg-color--secondary);
+  color: var(--text-color--default);
+  border-color: var(--border-color--light);
+}
+
 .heading {
   position: sticky;
   top: 130px;
   z-index: 1;
   padding: 5px 0;
   margin: 0;
+  color: var(--text-color--light);
   background: var(--bg-color--default);
   border-bottom: 1px solid var(--border-color--light);
   margin-bottom: -1px;
@@ -113,7 +121,6 @@ nav a:hover {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.15px;
-  color: rgba(0, 0, 0, 0.75);
 }
 
 .heading:not(:first-of-type) {
@@ -130,15 +137,15 @@ nav a:hover {
 .row {
   display: flex;
   align-items: center;
-  border: 1px solid #e6e6ea;
+  border: 1px solid var(--border-color--light);
   border-top: 0;
   padding: 0 15px;
   height: 40px;
-  background: #fff;
+  background: var(--bg-color--default);
 }
 
 .row:hover {
-  background: #f9f9fa;
+  background: var(--bg-color--light);
 }
 
 .row .link {
