@@ -259,7 +259,8 @@ LocationBar.styles = [css`
 
 .result .title,
 .result .provenance,
-.result .spacer {
+.result .spacer,
+.origin {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
