@@ -17,7 +17,7 @@ class ShellWindowPanes extends LitElement {
     return css`
     .pane-background {
       position: fixed;
-      background: #fff;
+      background: var(--bg-color--background);
       z-index: 1;
     }
     .pane-border {

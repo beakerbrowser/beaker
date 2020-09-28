@@ -1,4 +1,4 @@
-import {app, BrowserWindow, ipcMain, webContents, dialog} from 'electron'
+import {app, BrowserWindow, ipcMain, webContents, dialog, nativeTheme} from 'electron'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher, { getLastRecordedPositioning } from './session-watcher'
 import jetpack from 'fs-jetpack'
@@ -82,6 +82,16 @@ export async function setup () {
       var runBackground = await settingsDb.get('run_background')
       if (runBackground != 1) {
         app.quit()
+      }
+    }
+  })
+  nativeTheme.on('updated', () => {
+    for (let win of BrowserWindow.getAllWindows()) {
+      win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#ddd')
+      for (let tab of tabManager.getAll(win)) {
+        for (let pane of tab.panes) {
+          pane.browserView.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#ddd')
+        }
       }
     }
   })
@@ -202,7 +212,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     height,
     minWidth,
     minHeight,
-    backgroundColor: '#ddd',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#223' : '#ddd',
     webPreferences: {
       preload: PRELOAD_PATH,
       defaultEncoding: 'utf-8',

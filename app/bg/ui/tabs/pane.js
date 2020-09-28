@@ -1,4 +1,4 @@
-import { app, BrowserView } from 'electron'
+import { app, BrowserView, nativeTheme } from 'electron'
 import errorPage from '../../lib/error-page'
 import path from 'path'
 import { promises as fs } from 'fs'
@@ -122,7 +122,8 @@ export class Pane extends EventEmitter {
         safeDialogs: true
       }
     })
-    this.browserView.setBackgroundColor('#fff')
+    // NOTE doesnt actually work yet, see https://github.com/electron/electron/issues/20447
+    this.browserView.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#ddd')
 
     // webview state
     this.loadingURL = null // URL being loaded, if any
