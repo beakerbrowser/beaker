@@ -363,6 +363,10 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
+:host([as-context]) .record.link {
+  padding: 8px 14px 10px;
+}
+
 .record.link.unread {
   background: var(--bg-color--unread);
   box-shadow: 0 0 0 5px var(--bg-color--unread);
@@ -592,28 +596,17 @@ a:hover {
   color: var(--text-color--result-link);
 }
 
-.record.card .context {
+.card-context {
   position: relative;
   display: block;
   opacity: 0.8;
   background: var(--bg-color--secondary);
   box-sizing: border-box;
-  border-top: 1px solid var(--border-color--light);
-  margin: 12px -2px -2px;
-  border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
-  padding-top: 5px;
-}
-
-.record.card .context::before {
-  content: attr(data-action);
-  position: absolute;
-  left: 12px;
-  top: -10px;
-  background: var(--bg-color--default);
-  padding: 0px 4px 2px;
   border: 1px solid var(--border-color--light);
-  font-size: 11px;
+  border-bottom: 0;
+  margin: 0 0 0 45px;
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
 }
 
 .record.card .content {

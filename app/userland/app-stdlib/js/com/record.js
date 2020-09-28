@@ -168,11 +168,9 @@ export class Record extends LitElement {
     const rtype = getRecordType(res)
 
     var context = undefined
-    var contextAction
     switch (rtype) {
       case 'comment':
         context = res.metadata['comment/parent'] || res.metadata['comment/subject']
-        contextAction = res.metadata['comment/parent'] ? 'reply to' : 'comment on'
         break
     }
 
@@ -188,6 +186,18 @@ export class Record extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       ${res.notification ? this.renderNotification() : ''}
+      ${this.showContext && context ? html`
+        <div class="card-context">
+          <beaker-record
+            record-url=${context}
+            constrain-height
+            noborders
+            nothumb
+            as-context
+            profile-url=${this.profileUrl}
+          ></beaker-record>
+        </div>
+      ` : ''}
       <div
         class=${classMap({
           record: true,
@@ -244,17 +254,6 @@ export class Record extends LitElement {
             ${this.renderVoteCtrl()}
             ${this.renderCommentsCtrl()}
           </div>
-          ${this.showContext && context ? html`
-            <div class="context" data-action=${contextAction}>
-              <beaker-record
-                record-url=${context}
-                constrain-height
-                noborders
-                nothumb
-                profile-url=${this.profileUrl}
-              ></beaker-record>
-            </div>
-          ` : ''}
         </div>
       </div>
     `

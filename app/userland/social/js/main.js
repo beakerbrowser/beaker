@@ -287,7 +287,6 @@ class SocialApp extends LitElement {
             </div>
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
-              show-date-titles
               .pathQuery=${PATH_QUERIES.all}
               .sources=${this.sources}
               limit="50"
