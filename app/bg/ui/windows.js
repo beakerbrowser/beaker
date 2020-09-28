@@ -87,10 +87,10 @@ export async function setup () {
   })
   nativeTheme.on('updated', () => {
     for (let win of BrowserWindow.getAllWindows()) {
-      win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#ddd')
+      win.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#fff')
       for (let tab of tabManager.getAll(win)) {
         for (let pane of tab.panes) {
-          pane.browserView.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#ddd')
+          pane.browserView.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#fff')
         }
       }
     }
@@ -212,7 +212,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     height,
     minWidth,
     minHeight,
-    backgroundColor: nativeTheme.shouldUseDarkColors ? '#223' : '#ddd',
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#223' : '#fff',
     webPreferences: {
       preload: PRELOAD_PATH,
       defaultEncoding: 'utf-8',
