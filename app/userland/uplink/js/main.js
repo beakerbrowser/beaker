@@ -3,18 +3,16 @@ import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directiv
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
-import { pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { pluralize, getOrigin } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import * as QP from './lib/qp.js'
-import * as addressBook from './lib/address-book.js'
-import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
 import './com/indexer-state.js'
 import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
-const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
+const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1}
 const PATH_QUERIES = {
   search: [typeToQuery('bookmark'), typeToQuery('blogpost')],
   all: [typeToQuery('bookmark'), typeToQuery('blogpost')]
@@ -74,9 +72,7 @@ class UplinkApp extends LitElement {
 
   async load ({clearCurrent} = {clearCurrent: false}) {
     this.profile = await beaker.browser.getProfile()
-    if (!this.origins) {
-      this.origins = [this.profile.url].concat((await beaker.subscriptions.list()).map(s => s.href))
-    }
+    this.origins = [this.profile.url].concat((await beaker.subscriptions.list()).map(s => s.href))
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
     }
@@ -94,15 +90,16 @@ class UplinkApp extends LitElement {
       sort: 'crtime',
       reverse: true
     })
-    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (new URL(source.href)).origin))
-    var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
+    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (getOrigin(source.href))))
+    var candidates = allSubscriptions.filter(sub => !currentSubs.has((getOrigin(sub.metadata.href))))
     var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
       var url = candidate.metadata.href
       if (!acc.includes(url)) acc.push(url)
       return acc
     }, [])
     suggestedSiteUrls.sort(() => Math.random() - 0.5)
-    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url)))
+    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url).catch(e => undefined)))
+    suggestedSites = suggestedSites.filter(Boolean)
     if (suggestedSites.length < 12) {
       let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
@@ -112,8 +109,8 @@ class UplinkApp extends LitElement {
       // (which is stupid but it's the most efficient option atm)
       // so we need to call getSite()
       // -prf
-      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url)))
-      suggestedSites = suggestedSites.concat(moreSites)
+      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url).catch(e => undefined)))
+      suggestedSites = suggestedSites.concat(moreSites).filter(Boolean)
     }
     suggestedSites.sort(() => Math.random() - 0.5)
     this.suggestedSites = suggestedSites.slice(0, 12)
@@ -128,7 +125,7 @@ class UplinkApp extends LitElement {
     if (this._isIntroActive === false) {
       return this._isIntroActive
     }
-    var isActive = !this.isIntroStepCompleted(0) || !this.isIntroStepCompleted(1) || !this.isIntroStepCompleted(2)
+    var isActive = !this.isIntroStepCompleted(0) || !this.isIntroStepCompleted(1)
     if (!isActive) this._isIntroActive = false // cache
     return isActive
   }
@@ -194,7 +191,7 @@ class UplinkApp extends LitElement {
               `)}
             </section>
           ` : ''}
-          <beaker-indexer-state></beaker-indexer-state>
+          <beaker-indexer-state @site-first-indexed=${e => this.load({clearCurrent: true})}></beaker-indexer-state>
         </div>
       </div>
     `
@@ -285,6 +282,11 @@ class UplinkApp extends LitElement {
     }
     return html`
       <div class="intro">
+        <div class="explainer">
+          <h3>Welcome to Beaker Uplink!</h3>
+          <p>See recent bookmarks and blogposts in your network.</p>
+          <p>(You know. Like Reddit.)</p>
+        </div>
         <section>
           <a class="icon">
             <span class="${this.isIntroStepCompleted(0) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
@@ -349,24 +351,6 @@ class UplinkApp extends LitElement {
             </p>
           </div>
         </section>
-        <section>
-          <a class="icon">
-            <span class="${this.isIntroStepCompleted(2) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
-          </a>
-          <div>
-            <h4>
-              3. Make your first post
-              ${!this.isIntroStepCompleted(2) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 2)}><small>(skip)</small></a>` : ''}
-            </h4>
-            ${!this.isIntroStepCompleted(2) ? html`
-              <div class="btn-group">
-                <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
-                  <i class="far fa-fw fa-star"></i> New Bookmark
-                </button>
-              </div>
-            ` : ''}
-          </div>
-        </section>
       </div>
     `
   }
@@ -417,9 +401,6 @@ class UplinkApp extends LitElement {
 
   onPublishReply (e) {
     toast.create('Reply published', '', 10e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-    }
     this.load()
   }
 

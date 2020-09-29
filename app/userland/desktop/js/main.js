@@ -28,8 +28,6 @@ const RELEASES = [
   { label: '1.0 - Beta 2', url: 'https://beakerbrowser.com/2020/05/20/beaker-1-0-beta-2.html' },
   { label: '1.0 - Beta 1', url: 'https://beakerbrowser.com/2020/05/14/beaker-1-0-beta.html' }
 ]
-const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
-const DOCS_URL = 'https://docs.beakerbrowser.com'
 const PATH_QUERIES = {
   blogposts: [typeToQuery('blogpost')],
   bookmarks: [typeToQuery('bookmark')],
@@ -52,9 +50,7 @@ class DesktopApp extends LitElement {
       sourceOptions: {type: Array},
       currentSource: {type: String},
       legacyArchives: {type: Array},
-      isEmpty: {type: Boolean},
-      listingSelfState: {type: String},
-      isProfileListedInBeakerNetwork: {type: Boolean}
+      isEmpty: {type: Boolean}
     }
   }
 
@@ -72,8 +68,6 @@ class DesktopApp extends LitElement {
     this.currentSource = 'all'
     this.legacyArchives = []
     this.isEmpty = false
-    this.listingSelfState = undefined
-    this.isProfileListedInBeakerNetwork = undefined
 
     this.configFromQP()
     this.load()
@@ -122,11 +116,6 @@ class DesktopApp extends LitElement {
     ])
     this.sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(sourceOptions)
     console.log(this.pins)
-    this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
-    if (this.isProfileListedInBeakerNetwork) {
-      this.listingSelfState = 'done'
-      this.setIntroStepCompleted(INTRO_STEPS.GET_LISTED, true)
-    }
     this.legacyArchives = await beaker.datLegacy.list()
   }
 
@@ -158,25 +147,6 @@ class DesktopApp extends LitElement {
     this.shadowRoot.scrollTop = 0
   }
 
-  get isIntroActive () {
-    if (this._isIntroActive === false) {
-      return this._isIntroActive
-    }
-    var isActive = !this.isIntroStepCompleted(0) || !this.isIntroStepCompleted(1) || !this.isIntroStepCompleted(2)
-    if (!isActive) this._isIntroActive = false // cache
-    return isActive
-  }
-
-  isIntroStepCompleted (step) {
-    return localStorage.getItem(`introStepCompleted:${step}`) == '1'
-  }
-
-  setIntroStepCompleted (step, v) {
-    this._isIntroActive = undefined
-    localStorage.setItem(`introStepCompleted:${step}`, v ? '1' : undefined)
-    this.requestUpdate()
-  }
-
   // rendering
   // =
 
@@ -201,7 +171,7 @@ class DesktopApp extends LitElement {
             ${!!this.searchQuery ? html`
               <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
             ` : ''}
-            <input @keyup=${this.onKeyupSearch} placeholder="Search privately" value=${this.searchQuery}>
+            <input @keyup=${this.onKeyupSearch} placeholder="Search your sites, bookmarks, posts, and more" value=${this.searchQuery}>
           </div>
           ${this.renderContentNav()}
         </header>
@@ -227,7 +197,6 @@ class DesktopApp extends LitElement {
                   empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
                   profile-url=${this.profile ? this.profile.url : ''}
                 ></beaker-record-feed>
             </div>
@@ -261,7 +230,7 @@ class DesktopApp extends LitElement {
               ${!!this.searchQuery ? html`
                 <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
               ` : ''}
-              <input @keyup=${this.onKeyupSearch} placeholder="Search privately">
+              <input @keyup=${this.onKeyupSearch} placeholder="Search your sites, bookmarks, posts, and more">
             </div>
             <div class="apps">
               ${appLink('beaker://social', 'Social')}
@@ -276,7 +245,6 @@ class DesktopApp extends LitElement {
               ${this.currentNav === 'legacy-archives' ? html`
                 ${this.renderLegacyArchivesView()}
               ` : html`
-                ${this.renderIntro()}
                 <beaker-record-feed
                   .pathQuery=${PATH_QUERIES.feed}
                   title="Recent Activity"
@@ -286,7 +254,6 @@ class DesktopApp extends LitElement {
                   limit="50"
                   @load-state-updated=${this.onFeedLoadStateUpdated}
                   @view-thread=${this.onViewThread}
-                  @publish-reply=${this.onPublishReply}
                   profile-url=${this.profile ? this.profile.url : ''}
                 ></beaker-record-feed>
               `}
@@ -429,107 +396,6 @@ class DesktopApp extends LitElement {
     `
   }
 
-  renderIntro () {
-    if (!this.isIntroActive) {
-      return ''
-    }
-    return html`
-      <div class="intro">
-        <section>
-          <a class="icon" href="${DOCS_URL}/getting-started-with-beaker" target="_blank">
-            <span class="${this.isIntroStepCompleted(0) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
-          </a>
-          <div>
-            <h4>
-              1. Subscribe to sites to see what's happening
-              ${!this.isIntroStepCompleted(0) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 0)}><small>(skip)</small></a>` : ''}
-            </h4>
-            ${!this.suggestedSites ? html`<div><span class="spinner"></span></div>` : ''}
-            ${this.suggestedSites?.length > 0 ? html`
-              <div class="suggested-sites">
-                ${repeat(this.suggestedSites.slice(0, 6), site => html`
-                  <div class="site">
-                    <div class="title">
-                      <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
-                    </div>
-                    <div class="description">
-                      ${site.description}
-                    </div>
-                    ${site.subscribed ? html`
-                      <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
-                    ` : html`
-                      <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
-                    `}
-                    ${site.graph ? html`
-                      <div class="subscribers">
-                        ${site.graph.counts.network} ${pluralize(site.graph.counts.network, 'subscriber')}
-                      </div>
-                    ` : ''}
-                  </div>
-                `)}
-              </div>
-            ` : ''}
-          </div>
-        </section>
-        <section>
-          <a class="icon" href="${DOCS_URL}/getting-started-with-beaker" target="_blank">
-            <span class="${this.isIntroStepCompleted(1) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
-          </a>
-          <div>
-            <h4>
-              2. Get listed
-              ${!this.isIntroStepCompleted(1) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 1)}><small>(skip)</small></a>` : ''}
-            </h4>
-            <p>Add your <a href=${this.profile?.url} target="_blank">personal site</a> to the Beaker Network so people can find you.</p>
-            <p>
-              ${this.listingSelfState === 'no' ? html`
-                <button class="primary" disabled>List my site</button>
-                <button class="transparent" @click=${this.onClickMaybeListMyself}>
-                  <span class="fas fa-fw fa-check"></span> No thanks, I don't want to be listed
-                </button>
-              ` : this.listingSelfState === 'attempting' ? html`
-                <button class="primary" disabled><span class="spinner"></span></button>
-                <button class="transparent" disabled>No thanks, I don't want to be listed</button>
-              ` : this.listingSelfState === 'done' ? html`
-                <button class="transparent" disabled><span class="fas fa-fw fa-check"></span> Site listed</button>
-              ` : html`
-                <button class="primary" @click=${this.onClickListMyself}>List my site</button>
-                <button class="transparent" @click=${this.onClickDontListMyself}>No thanks, I don't want to be listed</button>
-              `}
-            </p>
-          </div>
-        </section>
-        <section>
-          <a class="icon" href="${DOCS_URL}/getting-started-with-beaker" target="_blank">
-            <span class="${this.isIntroStepCompleted(2) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
-          </a>
-          <div>
-            <h4>
-              3. Make your first post
-              ${!this.isIntroStepCompleted(2) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 2)}><small>(skip)</small></a>` : ''}
-            </h4>
-            ${!this.isIntroStepCompleted(2) ? html`
-              <div class="btn-group">
-                <button class="transparent block" @click=${this.onClickNewPost}>
-                  <i class="far fa-fw fa-comment-alt"></i> New Post
-                </button>
-                <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
-                  <i class="far fa-fw fa-star"></i> New Bookmark
-                </button>
-                <button class="transparent block" @click=${e => this.onClickNewPage()}>
-                  <i class="far fa-fw fa-file"></i> New Page
-                </button>
-                <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
-                  <i class="fas fa-fw fa-blog"></i> New Blogpost
-                </button>
-              </div>
-            ` : ''}
-          </div>
-        </section>
-      </div>
-    `
-  }
-
   renderLegacyArchivesNotice () {
     if (this.legacyArchives.length === 0) {
       return ''
@@ -587,10 +453,6 @@ class DesktopApp extends LitElement {
       this.isEmpty = e.detail.isEmpty
     }
     this.requestUpdate()
-  }
-
-  onClickSkipIntroStep (e, step) {
-    this.setIntroStepCompleted(step, true)
   }
 
   onClickReleaseNotes (e) {
@@ -658,9 +520,6 @@ class DesktopApp extends LitElement {
     try {
       await desktop.createLink(await AddLinkPopup.create(), pinned)
       toast.create('Link added', '', 10e3)
-      if (this.isIntroActive) {
-        this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-      }
     } catch (e) {
       // ignore, user probably cancelled
       console.log(e)
@@ -714,14 +573,6 @@ class DesktopApp extends LitElement {
     })
   }
 
-  onPublishReply (e) {
-    toast.create('Reply published', '', 10e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-    }
-    this.load()
-  }
-
   async onClickRemoveLegacyArchive (e, archive) {
     e.preventDefault()
     if (!confirm('Are you sure?')) return
@@ -744,27 +595,6 @@ class DesktopApp extends LitElement {
     setTimeout(() => {
       this.suggestedSites = this.suggestedSites.filter(s => s !== site)
     }, 1e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.SUBSCRIBE, true)
-    }
-  }
-
-  async onClickListMyself (e) {
-    this.listingSelfState = 'attempting'
-    await beaker.browser.addProfileToBeakerNetwork()
-    this.isProfileListedInBeakerNetwork = true
-    this.listingSelfState = 'done'
-    this.setIntroStepCompleted(INTRO_STEPS.GET_LISTED, true)
-  }
-
-  async onClickDontListMyself (e) {
-    this.listingSelfState = 'no'
-    this.setIntroStepCompleted(INTRO_STEPS.GET_LISTED, true)
-  }
-
-  async onClickMaybeListMyself (e) {
-    this.listingSelfState = undefined
-    this.setIntroStepCompleted(INTRO_STEPS.GET_LISTED, false)
   }
 }
 

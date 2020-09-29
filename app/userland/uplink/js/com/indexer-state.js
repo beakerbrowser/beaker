@@ -1,6 +1,7 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import css from '../../css/com/indexer-state.css.js'
+import { emit } from 'beaker://app-stdlib/js/dom.js'
 
 class IndexerState extends LitElement {
   static get styles () {
@@ -16,7 +17,14 @@ class IndexerState extends LitElement {
   async load () {
     this.state = await beaker.index.getState()
     var events = beaker.index.events()
+    var isFirstIndex = {}
     events.addEventListener('site-state-change', siteState => {
+      if (siteState.last_indexed_version === 0) {
+        isFirstIndex[siteState.url] = true
+      } else if (siteState.progress === undefined && isFirstIndex[siteState.url]) {
+        delete isFirstIndex[siteState.url]
+        setTimeout(() => emit(this, 'site-first-indexed'), 1e3) // needs a small delay
+      }
       this.state.sites[siteState.url] = siteState
       this.requestUpdate()
     })

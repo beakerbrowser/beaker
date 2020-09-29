@@ -2,7 +2,7 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
-import { pluralize } from 'beaker://app-stdlib/js/strings.js'
+import { pluralize, getOrigin } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import * as QP from './lib/qp.js'
 import * as addressBook from './lib/address-book.js'
@@ -13,7 +13,7 @@ import 'beaker://app-stdlib/js/com/record-feed.js'
 import 'beaker://app-stdlib/js/com/sites-list.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
-const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
+const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1}
 const PATH_QUERIES = {
   search: {
     discussion: [
@@ -103,15 +103,16 @@ class SocialApp extends LitElement {
       sort: 'crtime',
       reverse: true
     })
-    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (new URL(source.href)).origin))
-    var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
+    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (getOrigin(source.href))))
+    var candidates = allSubscriptions.filter(sub => !currentSubs.has((getOrigin(sub.metadata.href))))
     var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
       var url = candidate.metadata.href
       if (!acc.includes(url)) acc.push(url)
       return acc
     }, [])
     suggestedSiteUrls.sort(() => Math.random() - 0.5)
-    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url)))
+    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url).catch(e => undefined)))
+    suggestedSites = suggestedSites.filter(Boolean)
     if (suggestedSites.length < 12) {
       let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
@@ -121,8 +122,8 @@ class SocialApp extends LitElement {
       // (which is stupid but it's the most efficient option atm)
       // so we need to call getSite()
       // -prf
-      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url)))
-      suggestedSites = suggestedSites.concat(moreSites)
+      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url).catch(e => undefined)))
+      suggestedSites = suggestedSites.concat(moreSites).filter(Boolean)
     }
     suggestedSites.sort(() => Math.random() - 0.5)
     this.suggestedSites = suggestedSites.slice(0, 12)
@@ -137,7 +138,7 @@ class SocialApp extends LitElement {
     if (this._isIntroActive === false) {
       return this._isIntroActive
     }
-    var isActive = !this.isIntroStepCompleted(0) || !this.isIntroStepCompleted(1) || !this.isIntroStepCompleted(2)
+    var isActive = !this.isIntroStepCompleted(0) || !this.isIntroStepCompleted(1)
     if (!isActive) this._isIntroActive = false // cache
     return isActive
   }
@@ -205,7 +206,7 @@ class SocialApp extends LitElement {
               `)}
             </section>
           ` : ''}
-          <beaker-indexer-state></beaker-indexer-state>
+          <beaker-indexer-state @site-first-indexed=${e => this.load()}></beaker-indexer-state>
         </div>
       </div>
     `
@@ -254,7 +255,6 @@ class SocialApp extends LitElement {
       return html`
         <div class="twocol">
           <div>
-            ${this.renderIntro()}
             <div class="composer">
               <img class="thumb" src="asset:thumb:${this.profile?.url}">
               ${this.isComposingPost ? html`
@@ -269,6 +269,7 @@ class SocialApp extends LitElement {
                 </div>
               `}
             </div>
+            ${this.renderIntro()}
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
               .pathQuery=${PATH_QUERIES[location.pathname.slice(1) || 'all']}
@@ -335,6 +336,11 @@ class SocialApp extends LitElement {
     }
     return html`
       <div class="intro">
+        <div class="explainer">
+          <h3>Welcome to Beaker Social!</h3>
+          <p>Share posts on your feed and stay connected with friends.</p>
+          <p>(You know. Like Twitter.)</p>
+        </div>
         <section>
           <a class="icon">
             <span class="${this.isIntroStepCompleted(0) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
@@ -347,7 +353,7 @@ class SocialApp extends LitElement {
             ${!this.suggestedSites ? html`<div><span class="spinner"></span></div>` : ''}
             ${this.suggestedSites?.length > 0 ? html`
               <div class="suggested-sites">
-                ${repeat(this.suggestedSites.slice(0, 6), site => html`
+                ${repeat(this.suggestedSites.slice(0, 4), site => html`
                   <div class="site">
                     <div class="title">
                       <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
@@ -399,33 +405,6 @@ class SocialApp extends LitElement {
             </p>
           </div>
         </section>
-        <section>
-          <a class="icon">
-            <span class="${this.isIntroStepCompleted(2) ? 'fas fa-check-circle' : 'far fa-circle'}"></span>
-          </a>
-          <div>
-            <h4>
-              3. Make your first post
-              ${!this.isIntroStepCompleted(2) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 2)}><small>(skip)</small></a>` : ''}
-            </h4>
-            ${!this.isIntroStepCompleted(2) ? html`
-              <div class="btn-group">
-                <button class="transparent block" @click=${this.onClickNewPost}>
-                  <i class="far fa-fw fa-comment-alt"></i> New Post
-                </button>
-                <button class="transparent block" @click=${e => this.onClickEditBookmark(undefined)}>
-                  <i class="far fa-fw fa-star"></i> New Bookmark
-                </button>
-                <button class="transparent block" @click=${e => this.onClickNewPage()}>
-                  <i class="far fa-fw fa-file"></i> New Page
-                </button>
-                <button class="transparent block" @click=${e => this.onClickNewBlogpost()}>
-                  <i class="fas fa-fw fa-blog"></i> New Blogpost
-                </button>
-              </div>
-            ` : ''}
-          </div>
-        </section>
       </div>
     `
   }
@@ -472,17 +451,11 @@ class SocialApp extends LitElement {
   onPublishPost (e) {
     this.isComposingPost = false
     toast.create('Post published', '', 10e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-    }
     this.load()
   }
 
   onPublishReply (e) {
     toast.create('Reply published', '', 10e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.MAKE_POST, true)
-    }
     this.load()
   }
 

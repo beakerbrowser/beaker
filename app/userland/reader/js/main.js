@@ -1,6 +1,8 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import * as QP from './lib/qp.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
+import { pluralize, getOrigin } from 'beaker://app-stdlib/js/strings.js'
 import css from '../css/main.css.js'
 import './com/indexer-state.js'
 import './com/blog-feed.js'
@@ -11,6 +13,7 @@ class ReaderApp extends LitElement {
   static get properties () {
     return {
       profile: {type: Object},
+      suggestedSites: {type: Array},
       composerMode: {type: Boolean},
       currentPost: {type: Object}
     }
@@ -23,11 +26,14 @@ class ReaderApp extends LitElement {
   constructor () {
     super()
     this.profile = undefined
+    this.suggestedSites = undefined
     this.composerMode = false
     this.currentPost = undefined
 
     this.configFromQP()
-    this.load()
+    this.load().then(() => {
+      this.loadSuggestions()
+    })
 
     window.addEventListener('popstate', (event) => {
       this.configFromQP()
@@ -43,6 +49,39 @@ class ReaderApp extends LitElement {
       this.shadowRoot.querySelector('beaker-blog-feed').load()
     }
     this.profile = await beaker.browser.getProfile()
+  }
+
+  async loadSuggestions () {
+    let allSubscriptions = await beaker.index.query({
+      path: '/subscriptions/*.goto',
+      limit: 100,
+      sort: 'crtime',
+      reverse: true
+    })
+    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (getOrigin(source.href))))
+    var candidates = allSubscriptions.filter(sub => !currentSubs.has((getOrigin(sub.metadata.href))))
+    var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
+      var url = candidate.metadata.href
+      if (!acc.includes(url)) acc.push(url)
+      return acc
+    }, [])
+    suggestedSiteUrls.sort(() => Math.random() - 0.5)
+    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url).catch(e => undefined)))
+    suggestedSites = suggestedSites.filter(Boolean)
+    if (suggestedSites.length < 12) {
+      let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
+      moreSites = moreSites.filter(site => !currentSubs.has(site.url))
+
+      // HACK
+      // the network index for listSites() currently doesn't pull from index.json
+      // (which is stupid but it's the most efficient option atm)
+      // so we need to call getSite()
+      // -prf
+      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url).catch(e => undefined)))
+      suggestedSites = suggestedSites.concat(moreSites).filter(Boolean)
+    }
+    suggestedSites.sort(() => Math.random() - 0.5)
+    this.suggestedSites = suggestedSites.slice(0, 12)
   }
 
   // async setCurrentView (view) {
@@ -81,6 +120,28 @@ class ReaderApp extends LitElement {
           <div class="empty">
             <h2>Beaker Reader</h2>
             <p>Read and publish blog posts on your network</p>
+            ${this.suggestedSites?.length > 0 ? html`
+              <h3>Suggested Sites</h3>
+              <section class="suggested-sites">
+                ${repeat(this.suggestedSites.slice(0, 3), site => html`
+                  <div class="site">
+                    <div class="title">
+                      <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
+                    </div>
+                    ${site.graph ? html`
+                      <div class="subscribers">
+                        ${site.graph.counts.network} ${pluralize(site.graph.counts.network, 'subscriber')}
+                      </div>
+                    ` : ''}
+                    ${site.subscribed ? html`
+                      <button class="block transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
+                    ` : html`
+                      <button class="block" @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
+                    `}
+                  </div>
+                `)}
+              </section>
+            ` : ''}
           </div>
         `}
       </main>
@@ -135,6 +196,21 @@ class ReaderApp extends LitElement {
         ? drafts.map(draft => ({label: draft.metadata.title, click: () => { this.composerMode = true; this.currentPost = draft }}))
         : [{label: html`<em>No drafts</em>`}]
     })
+  }
+
+  async onClickSuggestedSubscribe (e, site) {
+    e.preventDefault()
+    site.subscribed = true
+    this.requestUpdate()
+    await beaker.subscriptions.add({
+      href: site.url,
+      title: site.title,
+      site: this.profile.url
+    })
+    // wait 1s then replace/remove the suggestion
+    setTimeout(() => {
+      this.suggestedSites = this.suggestedSites.filter(s => s !== site)
+    }, 1e3)
   }
 }
 

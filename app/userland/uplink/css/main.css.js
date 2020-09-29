@@ -265,7 +265,15 @@ beaker-sites-list {
 }
 
 .intro {
-  margin-bottom: 10px;
+  margin: 10px auto;
+  max-width: 840px;
+}
+
+.intro .explainer {
+  background: var(--bg-color--light);
+  padding: 10px;
+  font-size: 18px;
+  text-align: center;
 }
 
 .intro h4 {
@@ -273,7 +281,7 @@ beaker-sites-list {
   margin: 22px 0 10px;
 }
 
-.intro p {
+.intro section p {
   font-size: 15px;
 }
 

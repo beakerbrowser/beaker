@@ -158,7 +158,8 @@ header {
 
 .search-ctrl.big input::placeholder {
   position: relative;
-  top: 0.5px;
+  top: 1px;
+  font-size: 13px;
 }
 
 .search-ctrl.big .fa-search {
@@ -422,108 +423,6 @@ h3.feed-heading {
 beaker-record-feed,
 beaker-sites-list {
   margin-bottom: 10px;
-}
-
-.intro {
-  margin-bottom: 10px;
-}
-
-.intro h4 {
-  font-size: 21px;
-  margin: 22px 0 10px;
-}
-
-.intro p {
-  font-size: 15px;
-}
-
-.intro a {
-  color: var(--text-color--link);
-  cursor: pointer;
-}
-
-.intro a:hover {
-  text-decoration: underline;
-}
-
-.intro button {
-  font-size: 15px;
-}
-
-.intro section {
-  display: flex;
-  align-items: flex-start;
-  margin: 0;
-  padding: 0 0 5px;
-  border: 1px solid var(--border-color--default);
-  border-bottom-width: 0;
-}
-
-.intro section:last-child {
-  border-bottom-width: 1px;
-}
-
-.intro .icon {
-  font-size: 32px;
-  width: 80px;
-  height: 70px;
-  text-align: center;
-  line-height: 70px;
-  color: inherit;
-}
-
-.intro .icon .fa-user-plus {
-  font-size: 31px;
-}
-
-.intro .suggested-sites {
-  display: grid;
-  grid-template-columns: repeat(3, 220px);
-  grid-template-rows: auto auto;
-  align-items: baseline;
-  gap: 10px;
-  margin: 30px 2px 30px;
-}
-
-.intro .suggested-sites .site {
-  margin: 0px;
-  padding: 16px;
-  background: var(--bg-color--default);
-  border-radius: 4px;
-  border: 1px solid var(--border-color--light);
-}
-
-.intro .suggested-sites .site .title a {
-  font-size: 16px;
-}
-
-.intro .suggested-sites .site .description {
-  margin: 4px 0 10px;
-}
-
-.intro .suggested-sites .site button {
-  display: block;
-  width: 100%;
-  text-align: center;
-  font-size: 13px;
-}
-
-.intro .suggested-sites .site .subscribers {
-  text-align: center;
-  margin-top: 5px;
-  padding: 4px 0;
-  border-radius: 4px;
-  background: var(--bg-color--light);
-  color: var(--text-color--light);
-}
-
-.intro .btn-group {
-  white-space: nowrap;
-  margin: 10px -12px;
-}
-
-.intro .btn-group button {
-  font-size: 15px;
 }
 
 .legacy-archives {

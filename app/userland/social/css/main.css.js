@@ -247,7 +247,14 @@ beaker-sites-list {
 }
 
 .intro {
-  margin-bottom: 10px;
+  margin: 10px 0;
+}
+
+.intro .explainer {
+  background: var(--bg-color--light);
+  padding: 10px;
+  font-size: 18px;
+  text-align: center;
 }
 
 .intro h4 {
@@ -255,7 +262,7 @@ beaker-sites-list {
   margin: 22px 0 10px;
 }
 
-.intro p {
+.intro section p {
   font-size: 15px;
 }
 
@@ -300,7 +307,7 @@ beaker-sites-list {
 
 .intro .suggested-sites {
   display: grid;
-  grid-template-columns: repeat(3, 220px);
+  grid-template-columns: repeat(2, 220px);
   grid-template-rows: auto auto;
   align-items: baseline;
   gap: 10px;

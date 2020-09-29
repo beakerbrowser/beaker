@@ -58,5 +58,37 @@ nav {
 .empty > * {
   margin: 5px 0;
 }
+
+.empty h3 {
+  font-size: 15px;
+  margin-top: 25px;
+}
+
+.empty .suggested-sites {
+  font-size: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, 200px);
+  gap: 10px;
+}
+
+.empty .suggested-sites .site {
+  background: var(--bg-color--light);
+  border-radius: 4px;
+  padding: 12px 10px 10px;
+  text-align: center;
+}
+
+.empty .suggested-sites .site > * {
+  margin-bottom: 5px;
+}
+
+.empty .suggested-sites .site a {
+  color: var(--text-color--link);
+  font-size: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 `
 export default cssStr
