@@ -39,6 +39,7 @@ class UplinkApp extends LitElement {
   constructor () {
     super()
     this.profile = undefined
+    this.origins = undefined
     this.suggestedSites = undefined
     this.searchQuery = ''
     this.isEmpty = false
@@ -72,10 +73,13 @@ class UplinkApp extends LitElement {
   }
 
   async load ({clearCurrent} = {clearCurrent: false}) {
+    this.profile = await beaker.browser.getProfile()
+    if (!this.origins) {
+      this.origins = [this.profile.url].concat((await beaker.subscriptions.list()).map(s => s.href))
+    }
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
     }
-    this.profile = await beaker.browser.getProfile()
     this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     if (this.isProfileListedInBeakerNetwork) {
       this.listingSelfState = 'done'
@@ -198,6 +202,9 @@ class UplinkApp extends LitElement {
   }
 
   renderCurrentView () {
+    if (!this.origins) {
+      return html``
+    }
     var hasSearchQuery = !!this.searchQuery
     if (hasSearchQuery) {
       return html`
@@ -213,6 +220,7 @@ class UplinkApp extends LitElement {
             <beaker-record-feed
               .pathQuery=${PATH_QUERIES.search}
               .filter=${this.searchQuery}
+              .sources=${this.origins}
               limit="50"
               empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
               @load-state-updated=${this.onFeedLoadStateUpdated}
@@ -241,6 +249,7 @@ class UplinkApp extends LitElement {
               show-date-titles
               date-title-range="month"
               .pathQuery=${PATH_QUERIES.all}
+              .sources=${this.origins}
               limit="50"
               @load-state-updated=${this.onFeedLoadStateUpdated}
               @view-thread=${this.onViewThread}
