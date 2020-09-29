@@ -158,6 +158,7 @@ export class Record extends LitElement {
       case 'comment': return this.renderAsComment()
       case 'action': return this.renderAsAction()
       case 'expanded-link': return this.renderAsExpandedLink()
+      case 'wrapper': return this.renderResultAsWrapper()
       case 'link':
       default:
         return this.renderResultAsLink()
@@ -373,11 +374,11 @@ export class Record extends LitElement {
           ${rtype === 'subscription' ? html`
             <span class="action">subscribed to</span>
             <a class="subject" href=${res.metadata.href}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
-          ` : rtype === 'vote' ? html`
-            <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'}</span>
-            <a class="subject" href=${res.metadata.href}>${this.actionTarget}</a>
           ` : this.actionTarget ? html`
-            ${rtype === 'bookmark' ? html`
+            ${rtype === 'vote' ? html`
+              <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'}</span>
+              <a class="subject" href=${res.metadata.href}>${this.actionTarget}</a>
+            ` : rtype === 'bookmark' ? html`
               <span class="action">bookmarked ${this.actionTarget}</span>
             ` : rtype === 'comment' ? html`
               <span class="action">commented on ${this.actionTarget}</span>
@@ -388,7 +389,10 @@ export class Record extends LitElement {
               <a class="subject" href=${res.url}>${typeof subject === 'string' ? subject : asyncReplace(subject)}</a>
             `}
           ` : html`
-            ${rtype === 'bookmark' ? html`
+            ${rtype === 'vote' ? html`
+              <span class="action">${res.metadata['vote/value'] == -1 ? 'downvoted' : 'upvoted'}</span>
+              <a class="subject" href=${res.metadata.href}>${subject}</a>
+            ` : rtype === 'bookmark' ? html`
               <span class="action">bookmarked <a href=${res.metadata.href} target="_blank">${res.metadata.title || res.metadata.href}</a></span>
             ` : rtype === 'blogpost' ? html`
               <span class="action">published <a href=${res.url} target="_blank">${res.metadata.title || res.path}</a></span>
@@ -558,6 +562,43 @@ export class Record extends LitElement {
     `
   }
 
+  renderResultAsWrapper () {
+    const res = this.record
+    var recordType = getRecordType(res)
+
+    return html`
+      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      ${res.notification ? this.renderNotification() : ''}
+      <div
+        class=${classMap({
+          record: true,
+          wrapper: true,
+          'private': res.url.startsWith('hyper://private'),
+          'is-notification': !!res.notification,
+          unread: res?.notification?.unread
+        })}
+      >
+        <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
+          ${res.url.startsWith('hyper://private') ? html`
+            <span class="sysicon fas fa-lock"></span>
+          ` : html`
+            <img class="favicon" src="asset:thumb:${res.site.url}">
+          `}
+        </a>
+        <div class="container">
+          <beaker-record
+            record-url=${res.metadata.href}
+            constrain-height
+            noborders
+            nothumb
+            as-context
+            profile-url=${this.profileUrl}
+          ></beaker-record>
+        </div>
+      </div>
+    `
+  }
+
   renderThumb (url = undefined) {
     url = url || this.record.url
     if (url && /\.(png|jpe?g|gif)$/.test(url)) {
@@ -607,7 +648,15 @@ export class Record extends LitElement {
     const res = this.record
     var type = getRecordType(res)
     var description = 'linked to'
-    if (res.notification.key === '_link') {
+    if (type === 'vote') {
+      if (res.metadata['vote/value'] == '1') {
+        description = 'upvoted'
+      } else if (res.metadata['vote/value'] == '-1') {
+        description = 'downvoted'
+      } else {
+        description = 'linked to'
+      }
+    } else if (res.notification.key === '_link') {
       if (type === 'microblogpost' || type === 'comment') {
         description = 'mentioned'
       }

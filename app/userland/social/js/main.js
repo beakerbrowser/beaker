@@ -16,8 +16,6 @@ import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const INTRO_STEPS = {SUBSCRIBE: 0, GET_LISTED: 1, MAKE_POST: 2}
 const PATH_QUERIES = {
-  comments: [typeToQuery('comment')],
-  posts: [typeToQuery('microblogpost')],
   search: {
     discussion: [
       typeToQuery('microblogpost'),
@@ -26,8 +24,13 @@ const PATH_QUERIES = {
   },
   all: [
     typeToQuery('microblogpost'),
+    typeToQuery('comment')
+  ],
+  notifications: [
+    typeToQuery('microblogpost'),
     typeToQuery('comment'),
-    typeToQuery('subscription')
+    typeToQuery('subscription'),
+    typeToQuery('vote')
   ]
 }
 
@@ -188,16 +191,23 @@ class SocialApp extends LitElement {
   }
 
   renderRightSidebar () {
+    const navItem = (path, label) => html`
+      <a class=${location.pathname === path ? 'current' : ''} href=${path}>${label}</a>
+    `
     return html`
       <div class="sidebar">
         <div class="sticky">
           <div class="search-ctrl">
-            ${this.isLoading ? html`<span class="spinner"></span>` : html`<span class="fas fa-search"></span>`}
+            <span class="fas fa-search"></span>
             ${!!this.searchQuery ? html`
               <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
             ` : ''}
             <input @keyup=${this.onKeyupSearch} placeholder="Search" value=${this.searchQuery}>
           </div>
+          <section class="nav">
+            ${navItem('/', html`<span class="fas fa-fw fa-stream"></span> Feed`)}
+            ${navItem('/notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`)}
+          </section>
           ${this.suggestedSites?.length > 0 ? html`
             <section class="suggested-sites">
               <h3>Suggested Sites</h3>
@@ -287,8 +297,9 @@ class SocialApp extends LitElement {
             </div>
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
-              .pathQuery=${PATH_QUERIES.all}
+              .pathQuery=${location.pathname === '/notifications' ? PATH_QUERIES.notifications : PATH_QUERIES.all}
               .sources=${this.sources}
+              ?notifications=${location.pathname === '/notifications'}
               limit="50"
               @load-state-updated=${this.onFeedLoadStateUpdated}
               @view-thread=${this.onViewThread}

@@ -25,6 +25,7 @@ export class RecordFeed extends LitElement {
       title: {type: String},
       sort: {type: String},
       limit: {type: Number},
+      notifications: {type: Boolean},
       filter: {type: String},
       sources: {type: Array},
       results: {type: Array},
@@ -49,6 +50,7 @@ export class RecordFeed extends LitElement {
     this.sort = 'ctime'
     this.limit = undefined
     this.filter = undefined
+    this.notifications = undefined
     this.sources = undefined
     this.results = undefined
     this.emptyMessage = undefined
@@ -103,54 +105,37 @@ export class RecordFeed extends LitElement {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     var results = []
-    if (this.pathQuery?.[0] === 'notifications') {
-      if (this.filter) {
-        results = await beaker.index.search(this.filter, {
-          notification: true,
-          limit: this.limit,
-          sort: 'rtime',
-          reverse: true,
-          includeContent: true
-        })
-      } else {
-        results = await beaker.index.query({
-          notification: true,
-          limit: this.limit,
-          sort: 'rtime',
-          reverse: true
-        })
-      }
+    if (this.filter) {
+      results = await beaker.index.search(this.filter, {
+        path: this.pathQuery || DEFAULT_SEARCH_PATH_QUERIES,
+        origin: this.sources,
+        limit: this.limit,
+        sort: 'crtime',
+        reverse: true,
+        includeContent: true
+      })
     } else {
-      if (this.filter) {
-        results = await beaker.index.search(this.filter, {
-          path: this.pathQuery || DEFAULT_SEARCH_PATH_QUERIES,
+      // because we collapse results, we need to run the query until the limit is fulfilled
+      let offset = 0
+      do {
+        console.log({notification: this.notifications})
+        let subresults = await beaker.index.query({
+          path: this.pathQuery,
+          notification: this.notifications,
           origin: this.sources,
           limit: this.limit,
+          offset,
           sort: 'crtime',
-          reverse: true,
-          includeContent: true
+          reverse: true
         })
-      } else {
-        // because we collapse results, we need to run the query until the limit is fulfilled
-        let offset = 0
-        do {
-          let subresults = await beaker.index.query({
-            path: this.pathQuery,
-            origin: this.sources,
-            limit: this.limit,
-            offset,
-            sort: 'crtime',
-            reverse: true
-          })
-          if (subresults.length === 0) break
-          
-          offset += subresults.length
-          if (!this.noMerge) {
-            subresults = subresults.reduce(reduceMultipleActions, [])
-          }
-          results = results.concat(subresults)
-        } while (results.length < this.limit)
-      }
+        if (subresults.length === 0) break
+        
+        offset += subresults.length
+        if (!this.noMerge) {
+          subresults = subresults.reduce(reduceMultipleActions, [])
+        }
+        results = results.concat(subresults)
+      } while (results.length < this.limit)
     }
     console.log(results)
     this.results = results
@@ -221,6 +206,7 @@ export class RecordFeed extends LitElement {
       'comment': 'card',
       'microblogpost': 'card',
       'subscription': 'action',
+      'vote': 'wrapper'
     })[getRecordType(result)] || 'link'
     return html`
       <beaker-record
@@ -276,7 +262,7 @@ function dateHeader (ts, range) {
 function reduceMultipleActions (acc, result) {
   let last = acc[acc.length - 1]
   if (last) {
-    if (last.site.url === result.site.url && getRecordType(result) === 'subscription') {
+    if (last.site.url === result.site.url && getRecordType(result) === 'subscription' && getRecordType(last) === 'subscription') {
       last.mergedItems = last.mergedItems || []
       last.mergedItems.push(result)
       return acc

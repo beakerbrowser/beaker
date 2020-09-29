@@ -156,41 +156,35 @@ main {
   }
 }
 
-.sidebar .quick-links h3 {
+.nav a {
+  display: block;
+  font-size: 16px;
+  padding: 5px;
   margin-bottom: 5px;
 }
 
-.quick-links a {
-  display: inline-flex;
-  align-items: center;
+.nav .fa-fw {
+  display: inline-block;
   font-size: 12px;
-  letter-spacing: 0.5px;
-  padding: 4px 0;
-  color: var(--text-color--default);
-}
-
-.quick-links a:hover {
-  text-decoration: underline;
-}
-
-.quick-links a img {
-  display: block;
-  width: 16px;
-  height: 16px;
+  margin-right: 4px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  object-fit: cover;
-  margin-right: 8px;
+  line-height: 28px;
+  color: var(--text-color--default);
+  background: var(--bg-color--semi-light);
 }
 
-.quick-links a :-webkit-any(.far, .fas) {
-  width: 16px;
-  margin-right: 8px;
-  color: var(--text-color--light);
+.nav a.current {
+  font-weight: 500;
+  color: var(--text-color--markdown-link);
 }
 
-.quick-links a img.favicon {
-  border-radius: 0;
+.nav a.current .fa-fw {
+  color: #fff;
+  background: var(--text-color--markdown-link);
 }
+
 
 .suggested-sites .site {
   margin: 10px 0;

@@ -822,5 +822,53 @@ a:hover {
   padding: 10px 20px;
 }
 
+/** WRAPPER STYLES **/
+
+.record.wrapper {
+  display: flex;
+  align-items: ceflex-startnter;
+  color: var(--text-color--lightish);
+}
+
+.record.wrapper.unread {
+  background: var(--bg-color--unread);
+  box-shadow: 0 0 0 5px var(--bg-color--unread);
+  border-radius: 1px;
+}
+
+.record.wrapper .thumb {
+  display: block;
+  width: 30px;
+  flex: 0 0 30px;
+  height: 30px;
+  background: var(--bg-color--semi-light);
+  border-radius: 50%;
+  margin-right: 14px;
+  position: relative;
+  top: -26px;
+}
+
+:host([nothumb]) .record.wrapper .thumb {
+  display: none;
+}
+
+.record.wrapper.private .thumb {
+  background: var(--bg-color--private-light);
+}
+
+.record.wrapper .thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.record.wrapper .container {
+  flex: 1;
+  background: var(--bg-color--light);
+  border-radius: 4px;
+}
+
+
 `
 export default cssStr
