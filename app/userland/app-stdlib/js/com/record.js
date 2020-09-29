@@ -89,6 +89,7 @@ export class Record extends LitElement {
 
   async loadSignals (force = false) {
     if (this.hasLoadedSignals && !force) return
+    if (this.renderMode === 'action') return
     this.hasLoadedSignals = true
     var [votes, commentCount] = await Promise.all([
       beaker.index.query({
