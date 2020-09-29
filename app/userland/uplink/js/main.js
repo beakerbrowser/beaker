@@ -102,7 +102,7 @@ class UplinkApp extends LitElement {
       return acc
     }, [])
     suggestedSiteUrls.sort(() => Math.random() - 0.5)
-    var suggestedSites = await Promise.all(suggestedSiteUrls.map(url => beaker.index.getSite(url)))
+    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url)))
     if (suggestedSites.length < 12) {
       let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
@@ -118,7 +118,6 @@ class UplinkApp extends LitElement {
     suggestedSites.sort(() => Math.random() - 0.5)
     this.suggestedSites = suggestedSites.slice(0, 12)
   }
-
 
   get isLoading () {
     let queryViewEls = Array.from(this.shadowRoot.querySelectorAll('beaker-record-feed'))

@@ -97,14 +97,13 @@ class SocialApp extends LitElement {
   }
 
   async loadSuggestions () {
-    var sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(await beaker.subscriptions.list())
     let allSubscriptions = await beaker.index.query({
       path: '/subscriptions/*.goto',
       limit: 100,
       sort: 'crtime',
       reverse: true
     })
-    var currentSubs = new Set(sourceOptions.map(source => (new URL(source.href)).origin))
+    var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (new URL(source.href)).origin))
     var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
     var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
       var url = candidate.metadata.href
@@ -112,7 +111,7 @@ class SocialApp extends LitElement {
       return acc
     }, [])
     suggestedSiteUrls.sort(() => Math.random() - 0.5)
-    var suggestedSites = await Promise.all(suggestedSiteUrls.map(url => beaker.index.getSite(url)))
+    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url)))
     if (suggestedSites.length < 12) {
       let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
