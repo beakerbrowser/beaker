@@ -624,11 +624,11 @@ export class Record extends LitElement {
     return html`
       <span class="vote-ctrl">
         <a class="up ${myVote == 1 ? 'pressed' : ''}" data-tooltip="Upvote" @click=${e => this.onToggleVote(e, 1)}>
-          <span class="fas fa-chevron-up"></span>
+          <span class="far fa-thumbs-up"></span>
           <span class="count">${this.upvoteCount}</span>
         </a>
         <a class="down ${myVote == -1 ? 'pressed' : ''}" data-tooltip="Downvote" @click=${e => this.onToggleVote(e, -1)}>
-          <span class="fas fa-chevron-down"></span>
+          <span class="far fa-thumbs-down"></span>
           <span class="count">${this.downvoteCount}</span>
         </a>
       </span>

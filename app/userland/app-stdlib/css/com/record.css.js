@@ -61,20 +61,20 @@ a:hover {
 }
 
 .vote-ctrl :-webkit-any(.far, .fas) {
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .vote-ctrl a {
   display: inline-block;
   padding: 0 4px;
   border-radius: 4px;
-  margin-right: 4px;
+  margin-right: 18px;
   color: var(--text-color--pretty-light);
 }
 
 .vote-ctrl a.pressed {
   font-weight: bold;
-  color: var(--text-color--light);
+  color: var(--text-color--link);
 }
 
 .vote-ctrl a:hover {
@@ -83,7 +83,7 @@ a:hover {
 }
 
 .vote-ctrl .count {
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .comment-ctrl {
