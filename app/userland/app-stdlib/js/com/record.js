@@ -120,10 +120,10 @@ export class Record extends LitElement {
     try {
       let content = this.shadowRoot.querySelector('.content')
       if (this.renderMode === 'card') {
-        return content.clientHeight >= 600 || content.scrollHeight >= 600
+        return content.clientHeight >= 50 || content.scrollHeight >= 50
       }
       if (this.renderMode === 'comment') {
-        return content.clientHeight >= 600 || content.scrollHeight >= 600
+        return content.clientHeight >= 50 || content.scrollHeight >= 50
       }
     } catch {}
     return false

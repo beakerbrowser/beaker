@@ -624,7 +624,7 @@ a:hover {
 }
 
 .record.card.constrain-height .content {
-  max-height: 600px;
+  max-height: 50px;
   overflow: hidden;
 }
 
@@ -776,7 +776,7 @@ a:hover {
 }
 
 .record.comment.constrain-height .content {
-  max-height: 600px;
+  max-height: 50px;
   overflow: hidden;
 }
 

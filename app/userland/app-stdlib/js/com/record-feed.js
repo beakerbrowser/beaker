@@ -228,7 +228,6 @@ export class RecordFeed extends LitElement {
         class=${this.recordClass}
         render-mode=${renderMode}
         show-context
-        constrain-height
         profile-url=${this.profileUrl}
       ></beaker-record>
     `
