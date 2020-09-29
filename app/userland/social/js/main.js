@@ -6,7 +6,6 @@ import { pluralize } from 'beaker://app-stdlib/js/strings.js'
 import { typeToQuery } from 'beaker://app-stdlib/js/records.js'
 import * as QP from './lib/qp.js'
 import * as addressBook from './lib/address-book.js'
-import * as sourcesDropdown from './com/sources-dropdown.js'
 import css from '../css/main.css.js'
 import './com/indexer-state.js'
 import 'beaker://app-stdlib/js/com/post-composer.js'
@@ -22,10 +21,8 @@ const PATH_QUERIES = {
       typeToQuery('comment')
     ]
   },
-  all: [
-    typeToQuery('microblogpost'),
-    typeToQuery('comment')
-  ],
+  all: [typeToQuery('microblogpost')],
+  comments: [typeToQuery('comment')],
   notifications: [
     typeToQuery('microblogpost'),
     typeToQuery('comment'),
@@ -41,8 +38,6 @@ class SocialApp extends LitElement {
       suggestedSites: {type: Array},
       isComposingPost: {type: Boolean},
       searchQuery: {type: String},
-      sourceOptions: {type: Array},
-      currentSource: {type: String},
       isEmpty: {type: Boolean},
       listingSelfState: {type: String},
       isProfileListedInBeakerNetwork: {type: Boolean}
@@ -59,8 +54,6 @@ class SocialApp extends LitElement {
     this.suggestedSites = undefined
     this.isComposingPost = false
     this.searchQuery = ''
-    this.sourceOptions = []
-    this.currentSource = 'all'
     this.isEmpty = false
     this.listingSelfState = undefined
     this.isProfileListedInBeakerNetwork = undefined
@@ -83,7 +76,6 @@ class SocialApp extends LitElement {
 
   configFromQP () {
     this.searchQuery = QP.getParam('q', '')
-    this.currentSource = QP.getParam('source', 'all')
     
     if (this.searchQuery) {
       this.updateComplete.then(() => {
@@ -93,15 +85,10 @@ class SocialApp extends LitElement {
   }
 
   async load ({clearCurrent} = {clearCurrent: false}) {
-    let sourceOptions
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
     }
-    ;[this.profile, sourceOptions] = await Promise.all([
-      addressBook.loadProfile(),
-      beaker.subscriptions.list()
-    ])
-    this.sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(sourceOptions)
+    this.profile = await addressBook.loadProfile()
     this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     if (this.isProfileListedInBeakerNetwork) {
       this.listingSelfState = 'done'
@@ -110,13 +97,14 @@ class SocialApp extends LitElement {
   }
 
   async loadSuggestions () {
+    var sourceOptions = [{href: 'hyper://private/', title: 'My Private Data'}, {href: this.profile.url, title: this.profile.title}].concat(await beaker.subscriptions.list())
     let allSubscriptions = await beaker.index.query({
       path: '/subscriptions/*.goto',
       limit: 100,
       sort: 'crtime',
       reverse: true
     })
-    var currentSubs = new Set(this.sourceOptions.map(source => (new URL(source.href)).origin))
+    var currentSubs = new Set(sourceOptions.map(source => (new URL(source.href)).origin))
     var candidates = allSubscriptions.filter(sub => !currentSubs.has((new URL(sub.metadata.href)).origin))
     var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
       var url = candidate.metadata.href
@@ -139,19 +127,6 @@ class SocialApp extends LitElement {
     }
     suggestedSites.sort(() => Math.random() - 0.5)
     this.suggestedSites = suggestedSites.slice(0, 12)
-  }
-
-  get sources () {
-    if (this.currentSource === 'all') {
-      return undefined // all data in the index this.sourceOptions.map(source => source.url)
-    }
-    if (this.currentSource === 'mine') {
-      return ['hyper://private/', this.profile?.url]
-    }
-    if (this.currentSource === 'others') {
-      return this.sourceOptions.slice(2).map(source => source.href)
-    }
-    return [this.currentSource]
   }
 
   get isLoading () {
@@ -206,6 +181,7 @@ class SocialApp extends LitElement {
           </div>
           <section class="nav">
             ${navItem('/', html`<span class="fas fa-fw fa-stream"></span> Feed`)}
+            ${navItem('/comments', html`<span class="far fa-fw fa-comments"></span> Comments`)}
             ${navItem('/notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`)}
           </section>
           ${this.suggestedSites?.length > 0 ? html`
@@ -264,7 +240,6 @@ class SocialApp extends LitElement {
               <beaker-record-feed
                 .pathQuery=${PATH_QUERIES.search.discussion}
                 .filter=${this.searchQuery}
-                .sources=${this.sources}
                 limit="50"
                 empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
                 @load-state-updated=${this.onFeedLoadStateUpdated}
@@ -297,8 +272,7 @@ class SocialApp extends LitElement {
             </div>
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
-              .pathQuery=${location.pathname === '/notifications' ? PATH_QUERIES.notifications : PATH_QUERIES.all}
-              .sources=${this.sources}
+              .pathQuery=${PATH_QUERIES[location.pathname.slice(1) || 'all']}
               ?notifications=${location.pathname === '/notifications'}
               limit="50"
               @load-state-updated=${this.onFeedLoadStateUpdated}
@@ -353,21 +327,6 @@ class SocialApp extends LitElement {
         <div class="fas fa-stream"></div>
         <div>Subscribe to sites to see what's new</div>
       </div>
-    `
-  }
-
-  renderSourcesCtrl () {
-    var label = ''
-    switch (this.currentSource) {
-      case 'all': label = 'All'; break
-      case 'mine': label = 'My Data'; break
-      case 'others': label = 'Others\' Data'; break
-      default: label = this.sourceOptions.find(opt => opt.href === this.currentSource)?.title
-    }
-    return html`
-      <a class="search-mod-btn" @click=${this.onClickSources}>
-        <span class="label">Source: </span>${label} <span class="fas fa-fw fa-caret-down"></span>
-      </a>
     `
   }
 
@@ -484,27 +443,6 @@ class SocialApp extends LitElement {
 
   onClickSkipIntroStep (e, step) {
     this.setIntroStepCompleted(step, true)
-  }
-
-  onClickSources (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    const fixedClick = (v) => {
-      this.currentSource = v
-      QP.setParams({source: v})
-      this.load()
-    }
-    const items = this.sourceOptions.slice(1).map(({href, title}) => ({
-      icon: false,
-      label: title,
-      click: () => {
-        this.currentSource = href
-        QP.setParams({source: href})
-        this.load()
-      }
-    }))
-    var rect = e.currentTarget.getClientRects()[0]
-    sourcesDropdown.create({x: (rect.left + rect.right) / 2, y: rect.bottom, items, fixedClick})
   }
 
   onKeyupSearch (e) {
