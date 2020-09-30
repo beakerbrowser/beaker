@@ -59,6 +59,7 @@ class ReaderApp extends LitElement {
       reverse: true
     })
     var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (getOrigin(source.href))))
+    currentSubs.add(getOrigin(this.profile.url))
     var candidates = allSubscriptions.filter(sub => !currentSubs.has((getOrigin(sub.metadata.href))))
     var suggestedSiteUrls = candidates.reduce((acc, candidate) => {
       var url = candidate.metadata.href
@@ -67,7 +68,7 @@ class ReaderApp extends LitElement {
     }, [])
     suggestedSiteUrls.sort(() => Math.random() - 0.5)
     var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url).catch(e => undefined)))
-    suggestedSites = suggestedSites.filter(Boolean)
+    suggestedSites = suggestedSites.filter(site => site && site.title)
     if (suggestedSites.length < 12) {
       let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
