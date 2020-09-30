@@ -254,9 +254,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://activity' || requestUrl.startsWith('beaker://activity/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'activity'), cb, {fallbackToIndexHTML: true})
   }
-  if (requestUrl === 'beaker://notifications' || requestUrl.startsWith('beaker://notifications/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'notifications'), cb, {fallbackToIndexHTML: true})
-  }
   if (requestUrl === 'beaker://hypercore-tools' || requestUrl.startsWith('beaker://hypercore-tools/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'hypercore-tools'), cb, {fallbackToIndexHTML: true})
   }

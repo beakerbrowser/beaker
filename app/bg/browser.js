@@ -23,7 +23,6 @@ import { createMenuItem as createContextMenuItem, shouldShowMenuItem as shouldSh
 import * as tabManager from './ui/tabs/manager'
 import { updateSetupState } from './ui/setup-flow'
 import * as modals from './ui/subwindows/modals'
-import * as notifications from './ui/subwindows/notifications'
 import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
 import * as hyperDaemon from './hyper/daemon'
@@ -222,7 +221,6 @@ export const WEBAPI = {
   executeShellWindowCommand,
   updateWindowToolbar,
   toggleSiteInfo,
-  toggleNotifications,
   toggleLiveReloading,
   setWindowDimensions,
   setWindowDragModeEnabled,
@@ -396,17 +394,6 @@ async function toggleSiteInfo (override) {
     siteInfo.hide(win)
   } else {
     siteInfo.toggle(win)
-  }
-}
-
-async function toggleNotifications (override) {
-  var win = findWebContentsParentWindow(this.sender)
-  if (override === true) {
-    notifications.show(win)
-  } else if (override === false) {
-    notifications.hide(win)
-  } else {
-    notifications.toggle(win)
   }
 }
 

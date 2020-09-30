@@ -16,9 +16,7 @@ class ShellWindowNavbar extends LitElement {
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
-      notificationsCount: {type: Number},
       userProfile: {type: Object},
-      isNotificationsMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -32,15 +30,7 @@ class ShellWindowNavbar extends LitElement {
     this.isHolepunchable = true
     this.isDaemonActive = false
     this.userProfile = undefined
-    this.isNotificationsMenuOpen = false
     this.isBrowserMenuOpen = false
-
-    this.notificationsCount = 0
-    const getNotifications = async () => {
-      this.notificationsCount = await bg.index.count({index: ['local', 'network'], notification: {unread: true}})
-    }
-    getNotifications()
-    setInterval(getNotifications, 15e3)
   }
 
   get canGoBack () {
@@ -117,7 +107,6 @@ class ShellWindowNavbar extends LitElement {
         ${this.profileBtn}
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
-        ${this.notificationsMenuBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -234,16 +223,6 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get notificationsMenuBtn () {
-    const cls = classMap({'notifications-menu-btn': true, pressed: this.isNotificationsMenuOpen})
-    return html`
-      <button class=${cls} @click=${this.onClickNotificationsMenu} style="margin: 0px 2px">
-        <span class="far fa-bell"></span>
-        ${this.notificationsCount ? html`<span class="count">${this.notificationsCount}</span>` : ''}
-      </button>
-    `
-  }
-
   get profileBtn () {
     if (!this.userProfile) return html``
     return html`
@@ -313,16 +292,6 @@ class ShellWindowNavbar extends LitElement {
 
   onClickUserProfile (e) {
     bg.views.createTab(this.userProfile.url, {setActive: true})
-  }
-
-  async onClickNotificationsMenu (e) {
-    if (Date.now() - (this.lastMenuClick||0) < 100) {
-      return
-    }
-    this.isPressed = true
-    await bg.views.toggleNotifications()
-    this.isPressed = false
-    this.lastMenuClick = Date.now()
   }
 
   async onClickBrowserMenu (e) {
@@ -402,21 +371,6 @@ svg.icon.refresh {
   color: #fff;
   font-weight: bold;
   padding: 0 3px;
-}
-
-.notifications-menu-btn {
-  position: relative;
-}
-
-.notifications-menu-btn .count {
-  position: absolute;
-  font-size: 8px;
-  right: 4px;
-  bottom: 4px;
-  background: var(--bg-color--notification-count);
-  color: var(--text-color--notification-count);
-  padding: 2px 3px 1px;
-  border-radius: 4px;
 }
 
 .browser-menu-btn {

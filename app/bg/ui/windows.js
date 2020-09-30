@@ -18,7 +18,6 @@ import * as locationBarSubwindow from './subwindows/location-bar'
 import * as promptsSubwindow from './subwindows/prompts'
 import * as permPromptSubwindow from './subwindows/perm-prompt'
 import * as modalsSubwindow from './subwindows/modals'
-import * as notificationsSubwindow from './subwindows/notifications'
 import * as overlaySubwindow from './subwindows/overlay'
 import * as siteInfoSubwindow from './subwindows/site-info'
 import * as tabSwitcherSubwindow from './subwindows/tab-switcher'
@@ -34,7 +33,6 @@ const IS_LINUX = process.platform === 'linux'
 const subwindows = {
   locationBar: locationBarSubwindow,
   menu: shellMenusSubwindow,
-  notifications: notificationsSubwindow,
   prompts: promptsSubwindow,
   permPrompt: permPromptSubwindow,
   modals: modalsSubwindow,
