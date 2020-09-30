@@ -314,7 +314,6 @@ export class RecordThread extends LitElement {
               .record=${reply}
               render-mode=${mode}
               thread-view
-              constrain-height
               action-target=${this.actionTarget}
               profile-url=${this.profileUrl}
               @publish-reply=${this.onPublishReply}

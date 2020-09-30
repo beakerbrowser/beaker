@@ -185,6 +185,15 @@ main {
   background: var(--text-color--markdown-link);
 }
 
+.nav sup {
+  font-weight: bold;
+  color: #fff;
+  background: var(--text-color--markdown-link);
+  border-radius: 4px;
+  padding: 1px 4px 2px;
+  font-size: 9px;
+  font-weight: bold;
+}
 
 .suggested-sites .site {
   margin: 10px 0;

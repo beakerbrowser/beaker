@@ -108,7 +108,7 @@ a:hover {
   padding: 5px 4px 4px 48px;
   margin-right: 19px;
   font-size: 14px;
-  color: var(--text-color--light);
+  color: var(--text-color--default);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -838,14 +838,13 @@ a:hover {
 
 .record.wrapper .thumb {
   display: block;
-  width: 30px;
-  flex: 0 0 30px;
-  height: 30px;
+  width: 20px;
+  flex: 0 0 20px;
+  height: 20px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
-  margin-right: 14px;
-  position: relative;
-  top: -26px;
+  margin-right: 16px;
+  margin-left: 10px;
 }
 
 :host([nothumb]) .record.wrapper .thumb {
@@ -865,8 +864,14 @@ a:hover {
 
 .record.wrapper .container {
   flex: 1;
-  background: var(--bg-color--light);
-  border-radius: 4px;
+}
+
+.record.wrapper .notification {
+  padding: 0 0 5px;
+}
+
+.record.wrapper .subject {
+  color: var(--text-color--light);
 }
 
 

@@ -107,6 +107,16 @@ h2 a:hover {
   margin-top: 24px;
 }
 
+.results beaker-record[render-mode="wrapper"] {
+  margin: 18px 0;
+}
+.results beaker-record:not([render-mode="wrapper"]) + beaker-record[render-mode="wrapper"] {
+  margin-top: 18px;
+}
+.results beaker-record[render-mode="wrapper"] + beaker-record:not([render-mode="wrapper"]) {
+  margin-top: 18px;
+}
+
 .empty {
   font-size: 16px;
   letter-spacing: 0.7px;

@@ -118,7 +118,6 @@ export class RecordFeed extends LitElement {
       // because we collapse results, we need to run the query until the limit is fulfilled
       let offset = 0
       do {
-        console.log({notification: this.notifications})
         let subresults = await beaker.index.query({
           path: this.pathQuery,
           notification: this.notifications,

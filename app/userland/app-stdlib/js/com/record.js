@@ -568,7 +568,6 @@ export class Record extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${res.notification ? this.renderNotification() : ''}
       <div
         class=${classMap({
           record: true,
@@ -586,14 +585,10 @@ export class Record extends LitElement {
           `}
         </a>
         <div class="container">
-          <beaker-record
-            record-url=${res.metadata.href}
-            constrain-height
-            noborders
-            nothumb
-            as-context
-            profile-url=${this.profileUrl}
-          ></beaker-record>
+          ${res.notification ? this.renderNotification() : ''}
+          <a class="subject" href=${res.metadata.href} @click=${this.onViewWrapperThread}>
+            ${asyncReplace(loadAndSimpleRender(res.metadata.href))}
+          </a>
         </div>
       </div>
     `
@@ -714,6 +709,15 @@ export class Record extends LitElement {
     }
   }
 
+  async onViewWrapperThread (e) {
+    if (!this.viewContentOnClick && e.button === 0 && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault()
+      e.stopPropagation()
+      let record = await beaker.index.get(this.record.metadata.href)
+      emit(this, 'view-thread', {detail: {record}})
+    }
+  }
+
   onClickReadMore () {
     this.constrainHeight = false
     this.showReadMore = false
@@ -816,6 +820,32 @@ async function* getNotificationSubjectStream (url, profileUrl) {
     }
   } else {
     yield await getNotificationSubject(url)
+  }
+}
+
+var _loadAndSimpleRenderCache = {}
+async function* loadAndSimpleRender (url) {
+  if (_loadAndSimpleRenderCache[url]) {
+    yield _loadAndSimpleRenderCache[url]
+    return
+  }
+  yield html`Loading...`
+  try {
+    let st = await beaker.hyperdrive.stat(url)
+    if (st.metadata.title) {
+      _loadAndSimpleRenderCache[url] = st.metadata.title
+      yield st.metadata.title
+      return
+    }
+    if (url.endsWith('.md')) {
+      let content = await beaker.hyperdrive.readFile(url)
+      _loadAndSimpleRenderCache[url] = shorten(removeMarkdown(content), 200)
+      yield _loadAndSimpleRenderCache[url]
+      return
+    }
+  } catch {}
+  for await (let v of fancyUrlAsync(url)) {
+    yield v
   }
 }
 

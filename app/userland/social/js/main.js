@@ -35,6 +35,7 @@ class SocialApp extends LitElement {
   static get properties () {
     return {
       profile: {type: Object},
+      unreadNotificationCount: {type: Number},
       suggestedSites: {type: Array},
       isComposingPost: {type: Boolean},
       searchQuery: {type: String},
@@ -51,6 +52,7 @@ class SocialApp extends LitElement {
   constructor () {
     super()
     this.profile = undefined
+    this.unreadNotificationCount = 0
     this.suggestedSites = undefined
     this.isComposingPost = false
     this.searchQuery = ''
@@ -62,6 +64,8 @@ class SocialApp extends LitElement {
     this.load().then(() => {
       this.loadSuggestions()
     })
+
+    setInterval(this.checkNotifications.bind(this), 5e3)
 
     window.addEventListener('popstate', (event) => {
       this.configFromQP()
@@ -85,14 +89,30 @@ class SocialApp extends LitElement {
   }
 
   async load ({clearCurrent} = {clearCurrent: false}) {
+    this.profile = await addressBook.loadProfile()
+    this.checkNotifications()
     if (this.shadowRoot.querySelector('beaker-record-feed')) {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
     }
-    this.profile = await addressBook.loadProfile()
+    if (location.pathname === '/notifications') {
+      setTimeout(() => beaker.index.clearNotifications(), 5e3)
+    }
     this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     if (this.isProfileListedInBeakerNetwork) {
       this.listingSelfState = 'done'
       this.setIntroStepCompleted(INTRO_STEPS.GET_LISTED, true)
+    }
+  }
+
+  async checkNotifications () {
+    this.unreadNotificationCount = await beaker.index.count({
+      index: ['local', 'network'],
+      notification: {unread: true}
+    })
+    if (this.unreadNotificationCount > 0) {
+      document.title = `Beaker Social (${this.unreadNotificationCount})`
+    } else {
+      document.title = `Beaker Social`
     }
   }
 
@@ -170,6 +190,7 @@ class SocialApp extends LitElement {
     const navItem = (path, label) => html`
       <a class=${location.pathname === path ? 'current' : ''} href=${path}>${label}</a>
     `
+    let n = this.unreadNotificationCount > 0 ? html` <sup>${this.unreadNotificationCount}</sup>` : ''
     return html`
       <div class="sidebar">
         <div class="sticky">
@@ -183,7 +204,7 @@ class SocialApp extends LitElement {
           <section class="nav">
             ${navItem('/', html`<span class="fas fa-fw fa-stream"></span> Feed`)}
             ${navItem('/comments', html`<span class="far fa-fw fa-comments"></span> Comments`)}
-            ${navItem('/notifications', html`<span class="far fa-fw fa-bell"></span> Notifications`)}
+            ${navItem('/notifications', html`<span class="far fa-fw fa-bell"></span> Notifications${n}`)}
           </section>
           ${this.suggestedSites?.length > 0 ? html`
             <section class="suggested-sites">
@@ -214,6 +235,7 @@ class SocialApp extends LitElement {
   }
 
   renderCurrentView () {
+    if (!this.profile) return ''
     var hasSearchQuery = !!this.searchQuery
     if (hasSearchQuery) {
       const searchLink = (label, url) => {
