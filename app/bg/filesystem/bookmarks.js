@@ -15,12 +15,22 @@ import * as profileDb from '../dbs/profile-data-db'
  * @returns {Promise<Object>}
  */
 export async function list () {
-  var results = await indexer.query({
-    path: '/bookmarks/*.goto',
-    origin: ['hyper://private', filesystem.getProfileUrl()]
-  })
+  var {records} = await indexer.gql(`
+    records (
+      paths: ["/bookmarks/*.goto"]
+      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
+    ) {
+      url
+      metadata
+      site {
+        url
+        title
+        description
+      }
+    }
+  `)
   var pins = await pinsAPI.getCurrent()
-  return results.map(r => massageBookmark(r, pins))
+  return records.map(r => massageBookmark(r, pins))
 }
 
 /**
@@ -29,15 +39,25 @@ export async function list () {
  */
 export async function get (href) {
   href = normalizeUrl(href)
-  var results = await indexer.query({
-    path: '/bookmarks/*.goto',
-    origin: ['hyper://private', filesystem.getProfileUrl()],
-    links: href,
-    limit: 1
-  })
-  if (results[0]) {
+  var {records} = await indexer.gql(`
+    records (
+      paths: ["/bookmarks/*.goto"]
+      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
+      links: {url: "${href}"}
+      limit: 1
+    ) {
+      url
+      metadata
+      site {
+        url
+        title
+        description
+      }
+    }
+  `)
+  if (records[0]) {
     var pins = await pinsAPI.getCurrent()
-    return massageBookmark(results[0], pins)
+    return massageBookmark(records[0], pins)
   }
 }
 

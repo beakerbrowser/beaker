@@ -15,10 +15,6 @@ export class Record extends LitElement {
     return {
       record: {type: Object},
       loadRecordUrl: {type: String, attribute: 'record-url'},
-      myVote: {type: Object},
-      upvoteCount: {type: Number},
-      downvoteCount: {type: Number},
-      commentCount: {type: Number},
       renderMode: {type: String, attribute: 'render-mode'},
       showContext: {type: Boolean, attribute: 'show-context'},
       constrainHeight: {type: Boolean, attribute: 'constrain-height'},
@@ -38,10 +34,6 @@ export class Record extends LitElement {
     super()
     this.record = undefined
     this.loadRecordUrl = undefined
-    this.myVote = undefined
-    this.upvoteCount = 0
-    this.downvoteCount = 0
-    this.commentCount = 0
     this.renderMode = undefined
     this.showContext = false
     this.constrainHeight = false
@@ -74,37 +66,65 @@ export class Record extends LitElement {
     }
     if ((!this.record && this.loadRecordUrl) || changedProperties.has('loadRecordUrl') && changedProperties.get('loadRecordUrl') != this.recordUrl) {
       this.load()
-    } else if (this.record && !this.hasLoadedSignals) {
-      this.loadSignals()
     }
   }
 
   async load () {
-    this.record = await beaker.index.get(this.loadRecordUrl)
+    let {record} = await beaker.index.gql(`
+      record (url: "${this.loadRecordUrl}") {
+        type
+        path
+        url
+        ctime
+        mtime
+        rtime
+        metadata
+        index
+        matches
+        content
+        site {
+          url
+          title
+        }
+        votes: backlinks(paths: ["/votes/*.goto"]) {
+          url
+          metadata
+          site { url title }
+        }
+        commentCount: backlinkCount(paths: ["/comments/*.md"])
+      }
+    `)
+    this.record = record
     if (!this.renderMode) {
       this.renderMode = getPreferredRenderMode(this.record)
       this.setAttribute('render-mode', this.renderMode)
     }
   }
 
-  async loadSignals (force = false) {
-    if (this.hasLoadedSignals && !force) return
-    if (this.renderMode === 'action') return
-    this.hasLoadedSignals = true
-    var [votes, commentCount] = await Promise.all([
-      beaker.index.query({
-        path: '/votes/*.goto',
-        links: this.loadRecordUrl || this.record.url,
-      }),
-      beaker.index.count({
-        path: '/comments/*.md',
-        links: this.loadRecordUrl || this.record.url,
-      })
-    ])
-    this.myVote = votes.find(v => isSameOrigin(v.site.url, this.profileUrl) || isSameOrigin(v.site.url, 'hyper://private'))
-    this.upvoteCount = (new Set(votes.filter(v => v.metadata['vote/value'] == 1).map(v => v.site.url))).size
-    this.downvoteCount = (new Set(votes.filter(v => v.metadata['vote/value'] == -1).map(v => v.site.url))).size
-    this.commentCount = commentCount
+  async reloadSignals () {
+    let {votes, commentCount} = await beaker.index.gql(`
+      votes: records(paths: ["/votes/*.goto"] links: {url: "${this.record.url}"}) {
+        url
+        metadata
+        site { url title }
+      }
+      commentCount: recordCount(paths: ["/comments/*.md"] links: {url: "${this.record.url}"})
+    `)
+    this.record.votes = votes
+    this.record.commentCount = commentCount
+    this.requestUpdate()
+  }
+
+  get myVote () {
+    return this.record?.votes.find(v => isSameOrigin(v.site.url, this.profileUrl) || isSameOrigin(v.site.url, 'hyper://private'))
+  }
+
+  get upvoteCount () {
+    return (new Set(this.record?.votes.filter(v => v.metadata['vote/value'] == 1).map(v => v.site.url))).size
+  }
+
+  get downvoteCount () {
+    return (new Set(this.record?.votes.filter(v => v.metadata['vote/value'] == -1).map(v => v.site.url))).size    
   }
 
   async whenContentLoaded () {
@@ -634,7 +654,7 @@ export class Record extends LitElement {
     return html`
       <a class="comment-ctrl" @click=${this.onViewThread}>
         <span class="far fa-comment"></span>
-        ${this.commentCount}
+        ${this.record?.commentCount}
       </a>
     `
   }
@@ -651,19 +671,19 @@ export class Record extends LitElement {
       } else {
         description = 'linked to'
       }
-    } else if (res.notification.key === '_link') {
+    } else if (res.notification.source === 'content') {
       if (type === 'microblogpost' || type === 'comment') {
         description = 'mentioned'
       }
-    } else if (res.notification.key === 'href') {
+    } else if (res.notification.source === 'metadata:href') {
       if (type === 'bookmark') {
         description = 'bookmarked'
       } else if (type === 'subscription') {
         description = 'subscribed to'
       }
-    } else if (res.notification.key === 'comment/subject') {
+    } else if (res.notification.source === 'metadata:comment/subject') {
       description = 'commented on'
-    } else if (res.notification.key === 'comment/parent') {
+    } else if (res.notification.source === 'metadata:comment/parent') {
       description = 'replied to'
     }
     var where = ({
@@ -713,7 +733,30 @@ export class Record extends LitElement {
     if (!this.viewContentOnClick && e.button === 0 && !e.metaKey && !e.ctrlKey) {
       e.preventDefault()
       e.stopPropagation()
-      let record = await beaker.index.get(this.record.metadata.href)
+      let {record} = await beaker.index.gql(`
+        record (url: "${this.record.metadata.href}") {
+          type
+          path
+          url
+          ctime
+          mtime
+          rtime
+          metadata
+          index
+          matches
+          content
+          site {
+            url
+            title
+          }
+          votes: backlinks(paths: ["/votes/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
+        }
+      `)
       emit(this, 'view-thread', {detail: {record}})
     }
   }
@@ -774,15 +817,15 @@ export class Record extends LitElement {
         }
       })
     }
-    this.loadSignals(true)
+    this.reloadSignals()
   }
 }
 
 customElements.define('beaker-record', Record)
 
 function renderMatchText (result, key) {
-  if (!result.index.matches) return undefined
-  var match = result.index.matches.find(m => m.key === key)
+  if (!result.matches) return undefined
+  var match = result.matches.find(m => m.key === key)
   if (!match) return undefined
   return unsafeHTML(makeSafe(removeMarkdown(match.value, {keepHtml: true})).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>'))
 }
@@ -797,11 +840,16 @@ async function getNotificationSubject (url) {
     return _notificationSubjectCache[url]
   }
   try {
-    let item = await beaker.index.get(url)
-    if (item.metadata.title) {
-      return `"${item.metadata.title}"`
+    let {record} = await beaker.index.gql(`
+      record (url: "${url}") {
+        path
+        metadata
+      }
+    `)
+    if (record.metadata.title) {
+      return `"${record.metadata.title}"`
     }
-    switch (getRecordType(item)) {
+    switch (getRecordType(record)) {
       case 'comment': return 'your comment'
       case 'page': return 'your page'
       case 'blogpost': return 'your blog post'

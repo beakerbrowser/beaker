@@ -42,6 +42,7 @@ exports.up = async function (knex) {
     table.foreign('record_rowid').references('rowid').inTable('records').onDelete('CASCADE')
   })
   await knex.schema.createTable('records_notification', table => {
+    // DEPRECATED- now uses records_links
     table.integer('record_rowid').unsigned().notNullable()
     table.string('notification_key').notNullable()
     table.string('notification_subject_origin').notNullable()

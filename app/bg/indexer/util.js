@@ -254,7 +254,7 @@ export async function loadSite (db, origin, opts) {
 
 /**
  * @param {Object} opts
- * @param {String|String[]} [opts.path]
+ * @param {String[]} [opts.paths]
  * @param {Object} [permissions]
  * @param {EnumeratedSessionPerm[]} [permissions.query]
  */
@@ -263,9 +263,9 @@ export function checkShouldExcludePrivate (opts, permissions) {
   if (permissions?.query) {
     shouldExcludePrivate = true
     // only include private if the query 100% matches permissions
-    if (opts?.path) {
+    if (opts?.paths) {
       shouldExcludePrivate = false
-      for (let path of toArray(opts.path)) {
+      for (let path of toArray(opts.paths)) {
         let pathSpec = parseSimplePathSpec(path)
         let match = permissions.query.find(perm => (
           perm.prefix === pathSpec.prefix && 
@@ -293,15 +293,6 @@ export function parseUrl (url, base = undefined) {
     path: pathname + search + hash,
     pathname
   }
-}
-
-const IS_URL_RE = /^[\S]*:\/\/[\S]*$/
-/**
- * @param {String} v 
- * @returns {Boolean}
- */
-export function isUrl (v) {
-  return IS_URL_RE.test(v)
 }
 
 export function toArray (v) {

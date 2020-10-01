@@ -61,10 +61,42 @@ export class RecordThread extends LitElement {
     } catch {}
     try {
       if (isSite) {
-        v = await beaker.index.getSite(url)
+        let {site} = await beaker.index.gql(`
+          site(url: "${url}") {
+            url
+            title
+            description
+            writable
+          }
+        `)
+        v = site
         v.isSite = true
       } else {
-        v = await beaker.index.get(url)
+        let {record} = await beaker.index.gql(`
+          record (url: "${url}") {
+            type
+            path
+            url
+            ctime
+            mtime
+            rtime
+            metadata
+            index
+            matches
+            content
+            site {
+              url
+              title
+            }
+            votes: backlinks(paths: ["/votes/*.goto"]) {
+              url
+              metadata
+              site { url title }
+            }
+            commentCount: backlinkCount(paths: ["/comments/*.md"])
+          }
+        `)
+        v = record
       }
     } catch {}
     return v
@@ -99,12 +131,35 @@ export class RecordThread extends LitElement {
 
   async loadComments (record) {
     // local first
-    var replies = await beaker.index.query({
-      index: 'local',
-      links: stripUrlHash(this.subjectUrl),
-      sort: 'crtime',
-      reverse: true
-    })
+    let {replies} = await beaker.index.gql(`
+      replies: records (
+        links: {url: "${stripUrlHash(this.subjectUrl)}"}
+        indexes: ["local"]
+        sort: crtime,
+        reverse: true
+      ) {
+        type
+        path
+        url
+        ctime
+        mtime
+        rtime
+        metadata
+        index
+        matches
+        content
+        site {
+          url
+          title
+        }
+        votes: backlinks(paths: ["/votes/*.goto"]) {
+          url
+          metadata
+          site { url title }
+        }
+        commentCount: backlinkCount(paths: ["/comments/*.md"])
+      }
+    `)
     this.commentCount = replies.filter(r => getRecordType(r) === 'comment').length
     this.relatedItemCount = replies.length - this.commentCount
     this.replies = toThreadTree(replies)
@@ -113,12 +168,35 @@ export class RecordThread extends LitElement {
     emit(this, 'load')
 
     // then try network
-    var networkReplies = await beaker.index.query({
-      index: 'network',
-      links: stripUrlHash(this.subjectUrl),
-      sort: 'crtime',
-      reverse: true
-    })
+    var {networkReplies} = await beaker.index.gql(`
+      networkReplies: records (
+        links: {url: "${stripUrlHash(this.subjectUrl)}"}
+        indexes: ["network"]
+        sort: crtime,
+        reverse: true
+      ) {
+        type
+        path
+        url
+        ctime
+        mtime
+        rtime
+        metadata
+        index
+        matches
+        content
+        site {
+          url
+          title
+        }
+        votes: backlinks(paths: ["/votes/*.goto"]) {
+          url
+          metadata
+          site { url title }
+        }
+        commentCount: backlinkCount(paths: ["/comments/*.md"])
+      }
+    `)
     networkReplies = networkReplies.filter(reply => 
       !reply.path.startsWith('/votes/') // filter out votes
       && !replies.find(reply2 => reply.url === reply2.url) // filter out in-network items

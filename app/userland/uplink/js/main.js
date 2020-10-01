@@ -84,12 +84,22 @@ class UplinkApp extends LitElement {
   }
 
   async loadSuggestions () {
-    let allSubscriptions = await beaker.index.query({
-      path: '/subscriptions/*.goto',
-      limit: 100,
-      sort: 'crtime',
-      reverse: true
-    })
+    const getSite = async (url) => {
+      let {site} = await beaker.index.gql(`
+        site(url: "${url}") {
+          url
+          title
+          description
+          subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+        }
+      `)
+      return site
+    }
+    let {allSubscriptions} = await beaker.index.gql(`
+      allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: crtime reverse: true) {
+        metadata
+      }
+    `)
     var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (getOrigin(source.href))))
     currentSubs.add(getOrigin(this.profile.url))
     var candidates = allSubscriptions.filter(sub => !currentSubs.has((getOrigin(sub.metadata.href))))
@@ -99,10 +109,12 @@ class UplinkApp extends LitElement {
       return acc
     }, [])
     suggestedSiteUrls.sort(() => Math.random() - 0.5)
-    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => beaker.index.getSite(url).catch(e => undefined)))
+    var suggestedSites = await Promise.all(suggestedSiteUrls.slice(0, 12).map(url => getSite(url).catch(e => undefined)))
     suggestedSites = suggestedSites.filter(site => site && site.title)
     if (suggestedSites.length < 12) {
-      let moreSites = await beaker.index.listSites({index: 'network', limit: 12})
+      let {moreSites} = await beaker.index.gql(`
+        moreSites: sites(indexes: ["network"] limit: 12) { url }
+      `)
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
 
       // HACK
@@ -110,7 +122,7 @@ class UplinkApp extends LitElement {
       // (which is stupid but it's the most efficient option atm)
       // so we need to call getSite()
       // -prf
-      moreSites = await Promise.all(moreSites.map(s => beaker.index.getSite(s.url).catch(e => undefined)))
+      moreSites = await Promise.all(moreSites.map(s => getSite(s.url).catch(e => undefined)))
       suggestedSites = suggestedSites.concat(moreSites).filter(Boolean)
     }
     suggestedSites.sort(() => Math.random() - 0.5)
@@ -178,11 +190,9 @@ class UplinkApp extends LitElement {
                   <div class="title">
                     <a href=${site.url} title=${site.title} target="_blank">${site.title}</a>
                   </div>
-                  ${site.graph ? html`
-                    <div class="subscribers">
-                      ${site.graph.counts.network} ${pluralize(site.graph.counts.network, 'subscriber')}
-                    </div>
-                  ` : ''}
+                  <div class="subscribers">
+                    ${site.subCount} ${pluralize(site.subCount, 'subscriber')}
+                  </div>
                   ${site.subscribed ? html`
                     <button class="transparent" disabled><span class="fas fa-check"></span> Subscribed</button>
                   ` : html`
@@ -313,11 +323,9 @@ class UplinkApp extends LitElement {
                     ` : html`
                       <button @click=${e => this.onClickSuggestedSubscribe(e, site)}>Subscribe</button>
                     `}
-                    ${site.graph ? html`
-                      <div class="subscribers">
-                        ${site.graph.counts.network} ${pluralize(site.graph.counts.network, 'subscriber')}
-                      </div>
-                    ` : ''}
+                    <div class="subscribers">
+                      ${site.subCount} ${pluralize(site.subCount, 'subscriber')}
+                    </div>
                   </div>
                 `)}
               </div>

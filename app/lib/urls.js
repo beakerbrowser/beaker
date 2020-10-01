@@ -5,6 +5,7 @@ import { slugify } from './strings'
 export const isDatHashRegex = /^[a-z0-9]{64}/i
 const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 const isPath = /^\//
+const URL_RE = /^[\S]+:\/\/[\S]+$/i
 
 // helper to determine what the user may be inputting into the locaiton bar
 export function examineLocationInput (v) {
@@ -125,6 +126,14 @@ export function normalizeUrl (url, base = undefined) {
   } catch {
     return url
   }
+}
+
+/**
+ * @param {String} url 
+ * @returns {Boolean}
+ */
+export function isUrlLike (url) {
+  return typeof url === 'string' && URL_RE.test(url)
 }
 
 /**

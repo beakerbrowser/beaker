@@ -1,5 +1,5 @@
 import { PermissionsError } from 'beaker-error-constants'
-import { normalizeOrigin, normalizeUrl } from '../../lib/urls'
+import { normalizeOrigin, normalizeUrl, isUrlLike } from '../../lib/urls'
 import { joinPath, parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
 import {
   toArray,
@@ -12,9 +12,10 @@ import { METADATA_KEYS } from './const'
  * @typedef {import('./const').SiteDescription} SiteDescription
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
+ * @typedef {import('./const').RangeQuery} RangeQuery
+ * @typedef {import('./const').LinkQuery} LinkQuery
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
- * @typedef {import('./const').NotificationQuery} NotificationQuery
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  */
 
@@ -63,30 +64,30 @@ export async function listSites (db, opts) {
 /**
  * @param {Object} db
  * @param {Object} opts
- * @param {String|String[]} [opts.origin]
- * @param {String|String[]} [opts.path]
- * @param {String} [opts.links]
- * @param {Boolean|NotificationQuery} [opts.notification]
- * @param {String|String[]} [opts.index] - 'local' or 'network'
+ * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.paths]
+ * @param {LinkQuery} [opts.links]
+ * @param {RangeQuery} [opts.before]
+ * @param {RangeQuery} [opts.after]
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
  * @param {Boolean} [opts.reverse]
  * @param {Object} [internal]
  * @param {Object} [internal.permissions]
- * @param {Number} [internal.notificationRtime]
  * @param {EnumeratedSessionPerm[]} [internal.permissions.query]
  * @returns {Promise<{records: RecordDescription[], missedOrigins: String[]}>}
  */
-export async function query (db, opts, {permissions, notificationRtime} = {}) {
+export async function query (db, opts, {permissions} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
-  var sep = `[>${Math.random()}<]`
+  var sep = `[>${(Math.random()*100)|0}<]`
   var query = db('sites')
     .innerJoin('records', 'sites.rowid', 'records.site_rowid')
     .leftJoin('records_data', function() {
       this.on('records.rowid', '=', 'records_data.record_rowid').onNotNull('records_data.value')
     })
+    .leftJoin('records_links', 'records.rowid', 'records_links.record_rowid')
     .select(
       'origin',
       'path',
@@ -97,7 +98,10 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
       'rtime',
       'title as siteTitle',
       db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(records_data.value, '${sep}') as data_values`)
+      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
+      db.raw(`group_concat(records_links.href_origin, '${sep}') as links_href_origins`),
+      db.raw(`group_concat(records_links.href_path, '${sep}') as links_href_paths`),
+      db.raw(`group_concat(records_links.source, '${sep}') as links_sources`)
     )
     .where({is_indexed: 1})
     .groupBy('records.rowid')
@@ -107,72 +111,60 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     query = query.limit(opts.limit)
   }
 
-  if (opts.sort === 'crtime') {
+  if (opts.sort === 'crtime' || opts.before?.key === 'crtime' || opts.after?.key === 'crtime') {
     query = query.select(db.raw(`CASE rtime WHEN rtime < ctime THEN rtime ELSE ctime END AS crtime`))
-  } else if (opts.sort === 'mrtime') {
+  } 
+  if (opts.sort === 'mrtime' || opts.before?.key === 'mrtime' || opts.after?.key === 'mrtime') {
     query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
   }
 
-  if (opts?.origin) {
-    if (Array.isArray(opts.origin)) {
-      let origins = opts.origin = opts.origin.map(origin => normalizeOrigin(origin))
-      if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
-        throw new PermissionsError()
-      }
-      query = query.whereIn('origin', origins)
-    } else {
-      let origin = opts.origin = normalizeOrigin(opts.origin)
-      if (shouldExcludePrivate && origin === 'hyper://private') {
-        throw new PermissionsError()
-      }
-      query = query.where({origin})
+  if (opts.origins) {
+    if (shouldExcludePrivate && opts.origins.find(origin => origin === 'hyper://private')) {
+      throw new PermissionsError()
     }
+    query = query.whereIn('origin', opts.origins)
   } else {
     if (shouldExcludePrivate) {
       query = query.whereNot({origin: 'hyper://private'})
     }
     query = query.whereRaw(`sites.is_index_target = ?`, [1])
   }
-  if (opts?.path) {
-    if (Array.isArray(opts.path)) {
-      query = query.where(function () {
-        let chain = this.where(parseSimplePathSpec(opts.path[0]))
-        for (let i = 1; i < opts.path.length; i++) {
-          chain = chain.orWhere(parseSimplePathSpec(opts.path[i]))
-        }
-      })
-    } else {
-      query = query.where(parseSimplePathSpec(opts.path))
+  if (opts.paths) {
+    query = query.where(function () {
+      let chain = this.where(parseSimplePathSpec(opts.paths[0]))
+      for (let i = 1; i < opts.paths.length; i++) {
+        chain = chain.orWhere(parseSimplePathSpec(opts.paths[i]))
+      }
+    })
+  }
+  if (opts.links) {
+    if (opts.links.origin) {
+      query = query.where('records_links.href_origin', opts.links.origin)
+    }
+    if (opts.links.paths) {
+      if (opts.links.paths.every(str => !str.includes('*'))) {
+        query = query.whereIn('records_links.href_path', opts.links.paths)
+      } else {
+        query = query.where(function () {
+          let chain = this.whereRaw(`records_links.href_path GLOB ?`, [opts.links.paths[0]])
+          for (let i = 1; i < opts.links.paths.length; i++) {
+            chain = chain.orWhereRaw(`records_links.href_path GLOB ?`, [opts.links.paths[i]])
+          }
+        })
+      }
     }
   }
-  if (typeof opts?.links === 'string') {
-    query = query.joinRaw(
-      `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [normalizeUrl(opts.links)]
-    )
+  if (opts.before) {
+    query = query.where(opts.before.key, opts.before.inclusive ? '<=' : '<', opts.before.value)
   }
-  if (opts?.notification) {
-    query = query
-      .select(
-        'notification_key',
-        'notification_subject_origin',
-        'notification_subject_path',
-      )
-      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (opts.notification.unread) {
-      query = query.whereRaw(`rtime > ?`, [notificationRtime])
-    }
+  if (opts.after) {
+    query = query.where(opts.after.key, opts.after.inclusive ? '>=' : '>', opts.after.value)
   }
 
   var sitesQuery
-  if (opts?.origin && !opts?.links && !opts?.notification) {
+  if (opts.origins) {
     // fetch info on whether each given site has been indexed
-    sitesQuery = db('sites').select('origin').where({is_indexed: 1})
-    if (Array.isArray(opts.origin)) {
-      sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
-    } else {
-      sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
-    }
+    sitesQuery = db('sites').select('origin').where({is_indexed: 1}).whereIn('origin', opts.origins)
   }
 
   var [rows, siteStates] = await Promise.all([
@@ -187,36 +179,39 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
       url: row.origin + row.path,
       ctime: row.ctime,
       mtime: row.mtime,
+      rtime: row.rtime,
       metadata: {},
-      index: {
-        id: 'local',
-        rtime: row.rtime,
-        links: [],
-      },
+      links: [],
       content: undefined,
-      site: {
-        url: row.origin,
-        title: row.siteTitle || toNiceUrl(row.origin)
-      },
-      notification: undefined
+      index: 'local'
     }
-    var dataKeys = (row.data_keys || '').split(sep)
-    var dataValues = (row.data_values || '').split(sep)
-    for (let i = 0; i < dataKeys.length; i++) {
-      let key = dataKeys[i]
-      if (key === METADATA_KEYS.content) {
-        record.content = dataValues[i]
-      } else if (key === METADATA_KEYS.link) {
-        record.index.links.push(dataValues[i])
-      } else {
-        record.metadata[key] = dataValues[i]
+    if (!!row.data_keys) {
+      var dataKeys = (row.data_keys || '').split(sep)
+      var dataValues = (row.data_values || '').split(sep)
+      for (let i = 0; i < dataKeys.length; i++) {
+        let key = dataKeys[i]
+        if (key === METADATA_KEYS.content) {
+          record.content = dataValues[i]
+        } else {
+          record.metadata[key] = dataValues[i]
+        }
       }
     }
-    if (opts?.notification) {
-      record.notification = {
-        key: row.notification_key,
-        subject: joinPath(row.notification_subject_origin, row.notification_subject_path),
-        unread: row.rtime > notificationRtime
+    if (!!row.links_sources) {
+      var linkOrigins = (row.links_href_origins || '').split(sep)
+      var linkPaths = (row.links_href_paths || '').split(sep)
+      var linkSources = (row.links_sources || '').split(sep)
+      for (let i = 0; i < linkOrigins.length; i++) {
+        let link = {
+          source: linkSources[i],
+          url: linkOrigins[i] + linkPaths[i],
+          origin: linkOrigins[i],
+          path: linkPaths[i]
+        }
+        // the aggregation will get duplicates so we have to dedup here
+        if (!record.links.find(l2 => l2.source === link.source && l2.url === link.url)) {
+          record.links.push(link)
+        }
       }
     }
     return record
@@ -227,22 +222,24 @@ export async function query (db, opts, {permissions, notificationRtime} = {}) {
     // siteStates is a list of sites that are indexed
     // set-diff the desired origins against it
     missedOrigins = []
-    for (let origin of toArray(opts.origin)) {
+    for (let origin of opts.origins) {
       if (!siteStates.find(state => state.origin === origin)) {
         missedOrigins.push(origin)
       }
     }
   }
+
   return {records, missedOrigins}
 }
 
 /**
  * @param {Object} db
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.origin]
- * @param {String|Array<String>} [opts.path]
- * @param {String} [opts.links]
- * @param {Boolean|NotificationQuery} [opts.notification]
+ * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.paths]
+ * @param {LinkQuery} [opts.links]
+ * @param {RangeQuery} [opts.before]
+ * @param {RangeQuery} [opts.after]
  * @param {Object} [internal]
  * @param {Object} [internal.permissions]
  * @param {Number} [internal.notificationRtime]
@@ -261,61 +258,61 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
     .where({'sites.is_indexed': 1})
     .groupBy('origin')
 
-  if (opts?.origin) {
-    if (Array.isArray(opts.origin)) {
-      let origins = opts.origin = opts.origin.map(origin => normalizeOrigin(origin))
-      if (shouldExcludePrivate && origins.find(origin => origin === 'hyper://private')) {
-        throw new PermissionsError()
-      }
-      query = query.whereIn('origin', origins)
-    } else {
-      let origin = opts.origin = normalizeOrigin(opts.origin)
-      if (shouldExcludePrivate && origin === 'hyper://private') {
-        throw new PermissionsError()
-      }
-      query = query.where({origin})
+  if (opts.before?.key === 'crtime' || opts.after?.key === 'crtime') {
+    query = query.select(db.raw(`CASE rtime WHEN rtime < ctime THEN rtime ELSE ctime END AS crtime`))
+  } 
+  if (opts.before?.key === 'mrtime' || opts.after?.key === 'mrtime') {
+    query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
+  }
+
+  if (opts.origins) {
+    if (shouldExcludePrivate && opts.origins.find(origin => origin === 'hyper://private')) {
+      throw new PermissionsError()
     }
+    query = query.whereIn('origin', opts.origins)
   } else {
     if (shouldExcludePrivate) {
       query = query.whereNot({origin: 'hyper://private'})
     }
     query = query.whereRaw(`sites.is_index_target = ?`, [1])
   }
-  if (opts?.path) {
-    if (Array.isArray(opts.path)) {
-      query = query.where(function () {
-        let chain = this.where(parseSimplePathSpec(opts.path[0]))
-        for (let i = 1; i < opts.path.length; i++) {
-          chain = chain.orWhere(parseSimplePathSpec(opts.path[i]))
-        }
-      })
-    } else {
-      query = query.where(parseSimplePathSpec(opts.path))
+  if (opts.paths) {
+    query = query.where(function () {
+      let chain = this.where(parseSimplePathSpec(opts.paths[0]))
+      for (let i = 1; i < opts.paths.length; i++) {
+        chain = chain.orWhere(parseSimplePathSpec(opts.paths[i]))
+      }
+    })
+  }
+  if (opts.links) {
+    query = query.leftJoin('records_links', 'records.rowid', 'records_links.record_rowid')
+    if (opts.links.origin) {
+      query = query.where('records_links.href_origin', opts.links.origin)
+    }
+    if (opts.links.paths) {
+      if (opts.links.paths.every(str => !str.includes('*'))) {
+        query = query.whereIn('records_links.href_path', opts.links.paths)
+      } else {
+        query = query.where(function () {
+          let chain = this.whereRaw(`records_links.href_path GLOB ?`, [opts.links.paths[0]])
+          for (let i = 1; i < opts.links.paths.length; i++) {
+            chain = chain.orWhereRaw(`records_links.href_path GLOB ?`, [opts.links.paths[i]])
+          }
+        })
+      }
     }
   }
-  if (typeof opts?.links === 'string') {
-    query = query.joinRaw(
-      `INNER JOIN records_data as link ON link.record_rowid = records.rowid AND link.value = ?`,
-      [normalizeUrl(opts.links)]
-    )
+  if (opts.before) {
+    query = query.where(opts.before.key, opts.before.inclusive ? '<=' : '<', opts.before.value)
   }
-  if (opts?.notification) {
-    query = query
-      .innerJoin('records_notification', 'records.rowid', 'records_notification.record_rowid')
-    if (opts.notification?.unread) {
-      query = query.whereRaw(`records.rtime > ?`, [notificationRtime])
-    }
+  if (opts.after) {
+    query = query.where(opts.after.key, opts.after.inclusive ? '>=' : '>', opts.after.value)
   }
 
   var sitesQuery
-  if (opts?.origin && !opts?.links && !opts?.notification) {
+  if (opts.origins) {
     // fetch info on whether each given site has been indexed
-    sitesQuery = db('sites').select('origin').where({is_indexed: 1})
-    if (Array.isArray(opts.origin)) {
-      sitesQuery = sitesQuery.whereIn('origin', opts.origin.map(origin => normalizeOrigin(origin)))
-    } else {
-      sitesQuery = sitesQuery.where({origin: normalizeOrigin(opts.origin)})
-    }
+    sitesQuery = db('sites').select('origin').where({is_indexed: 1}).whereIn('origin', opts.origins.map(origin => normalizeOrigin(origin)))
   }
 
   var [rows, siteStates] = await Promise.all([
@@ -331,7 +328,7 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
     // siteStates is a list of sites that are indexed
     // set-diff the desired origins against it
     missedOrigins = []
-    for (let origin of toArray(opts.origin)) {
+    for (let origin of opts.origins) {
       if (!siteStates.find(state => state.origin === origin)) {
         missedOrigins.push(origin)
       }

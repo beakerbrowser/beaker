@@ -46,7 +46,10 @@ class PostComposer extends LitElement {
       this.profile = await beaker.hyperdrive.getInfo(this.driveUrl)
     } else {
       let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
-      this.profile = await beaker.index.getSite(addressBook?.profiles?.[0]?.key)
+      let {profile} = await beaker.index.gql(`
+        profile: site(url: "${addressBook?.profiles?.[0]?.key}") { url title }
+      `)
+      this.profile = profile
     }
     this.requestUpdate()
   }

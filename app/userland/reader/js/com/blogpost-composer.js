@@ -270,7 +270,21 @@ class BlogpostComposer extends LitElement {
     
     var url = await this.writePost(false)
     if (!this.post) {
-      this.post = await beaker.index.get(url)
+      var {post} = await beaker.index.gql(`
+        post: record (url: "${url}") {
+          path
+          url
+          ctime
+          mtime
+          rtime
+          metadata
+          site {
+            url
+            title
+          }
+        }
+      `)
+      this.post = post
     }
 
     toast.create('Draft saved')

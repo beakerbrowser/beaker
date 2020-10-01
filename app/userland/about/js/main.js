@@ -92,7 +92,6 @@ class AboutApp extends LitElement {
   async load (url) {
     if (!this.profile) {
       this.profile = await beaker.browser.getProfile()
-      this.profile.url = `hyper://${this.profile.key}`
     }
 
     url = (new URL(url)).origin
@@ -110,7 +109,8 @@ class AboutApp extends LitElement {
 
     if (url) {
       if (this.url.startsWith('hyper://')) {
-        this.siteInfo = await beaker.index.getSite(this.url).catch(e => undefined)
+        this.siteInfo = await this.fetchSiteInfo()
+        console.log(this.siteInfo)
       } 
       
       if (!this.siteInfo) {
@@ -120,30 +120,47 @@ class AboutApp extends LitElement {
         }
       }
       this.requestUpdate()
-
-      let counts = Object.fromEntries(
-        await Promise.all(
-          Object.entries({
-            bookmark: PATH_QUERIES.bookmarks,
-            blogpost: PATH_QUERIES.blogposts,
-            page: PATH_QUERIES.pages,
-            microblogpost: PATH_QUERIES.microblogposts,
-            comment: PATH_QUERIES.comments,
-            subscription: PATH_QUERIES.subscriptions
-          }).map(([key, path]) => (
-            beaker.index.count({
-              path,
-              origin: this.siteInfo.url
-            }).then(count => ([key, count]))
-          ))
-        )        
-      )
       
-      this.contentCounts = counts
+      this.contentCounts = await beaker.index.gql(`
+        bookmark: recordCount(paths: ["${PATH_QUERIES.bookmarks.join('", "')}"] origins: ["${this.siteInfo.url}"])
+        blogpost: recordCount(paths: ["${PATH_QUERIES.blogposts.join('", "')}"] origins: ["${this.siteInfo.url}"])
+        page: recordCount(paths: ["${PATH_QUERIES.pages.join('", "')}"] origins: ["${this.siteInfo.url}"])
+        microblogpost: recordCount(paths: ["${PATH_QUERIES.microblogposts.join('", "')}"] origins: ["${this.siteInfo.url}"])
+        comment: recordCount(paths: ["${PATH_QUERIES.comments.join('", "')}"] origins: ["${this.siteInfo.url}"])
+        subscription: recordCount(paths: ["${PATH_QUERIES.subscriptions.join('", "')}"] origins: ["${this.siteInfo.url}"])
+      `)
     }
     
     this.isLoading = false
     this.requestUpdate()
+  }
+
+  async fetchSiteInfo () {
+    let {site} = await beaker.index.gql(`
+      site(url: "${this.url}") {
+        url
+        title
+        description
+        writable
+        isSubscribedByUser: backlinksCount(
+          origins: ["${this.profile.url}"]
+          paths: ["/subscriptions/*.goto"]
+        )
+        isSubscriberToUser: recordCount(
+          links: {origin: "${this.profile.url}"}
+          paths: ["/subscriptions/*.goto"]
+        )
+        subscribers: backlinks(paths: ["/subscriptions/*.goto"]) {
+          site {
+            url
+            title
+            description
+            writable
+          }
+        }
+      }
+    `).catch(e => undefined)
+     return site
   }
 
   setView (view) {
@@ -245,7 +262,7 @@ class AboutApp extends LitElement {
         site: this.profile.url
       })
     }
-    this.siteInfo = await beaker.index.getSite(this.siteInfo.url)
+    this.siteInfo = await this.fetchSiteInfo()
   }
 
   async onEditProperties () {

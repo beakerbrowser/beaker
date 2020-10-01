@@ -1,5 +1,6 @@
 export default {
   clearAllData: 'promise',
+  gql: 'promise',
   getSite: 'promise',
   listSites: 'promise',
   get: 'promise',

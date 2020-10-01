@@ -53,31 +53,50 @@ class DriveViewApp extends LitElement {
     }
 
     let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
-    this.profile = await beaker.index.getSite(addressBook?.profiles?.[0]?.key)
+    let {profile} = await beaker.index.gql(`
+      profile: site(url: "${addressBook?.profiles?.[0]?.key}") {
+        url
+        title
+      }
+    `)
+    this.profile = profile
     
-    beaker.index.getSite(window.location.origin).then(info => {
+    this.fetchSiteInfo().then(info => {
       this.info = info
       console.log(this.info)
       this.requestUpdate()
     })
-    this.contentCounts = Object.fromEntries(
-      await Promise.all(
-        Object.entries({
-          bookmark: PATH_QUERIES.bookmarks,
-          blogpost: PATH_QUERIES.blogposts,
-          page: PATH_QUERIES.pages,
-          microblogpost: PATH_QUERIES.microblogposts,
-          comment: PATH_QUERIES.comments,
-          subscription: PATH_QUERIES.subscriptions
-        }).map(([key, path]) => (
-          beaker.index.count({
-            path,
-            origin: window.location.origin
-          }).then(count => ([key, count]))
-        ))
-      )
-    )
+    this.contentCounts = await beaker.index.gql(`
+      bookmark: recordCount(paths: ["${PATH_QUERIES.bookmarks.join('", "')}"] origins: ["${window.location.origin}"])
+      blogpost: recordCount(paths: ["${PATH_QUERIES.blogposts.join('", "')}"] origins: ["${window.location.origin}"])
+      page: recordCount(paths: ["${PATH_QUERIES.pages.join('", "')}"] origins: ["${window.location.origin}"])
+      microblogpost: recordCount(paths: ["${PATH_QUERIES.microblogposts.join('", "')}"] origins: ["${window.location.origin}"])
+      comment: recordCount(paths: ["${PATH_QUERIES.comments.join('", "')}"] origins: ["${window.location.origin}"])
+      subscription: recordCount(paths: ["${PATH_QUERIES.subscriptions.join('", "')}"] origins: ["${window.location.origin}"])
+    `)
     this.requestUpdate()
+  }
+
+
+  async fetchSiteInfo () {
+    let res = await beaker.index.gql(`
+      site(url: "${window.location.origin}") {
+        url
+        title
+        description
+        writable
+        isSubscribedByUser: backlinkCount(
+          origins: ["${this.profile.url}"]
+          paths: ["/subscriptions/*.goto"]
+        )
+        isSubscriberToUser: recordCount(
+          links: {origin: "${this.profile.url}"}
+          paths: ["/subscriptions/*.goto"]
+        )
+        subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+      }
+    `).catch(e => undefined)
+    return res?.site
   }
 
   get isDirectory () {
@@ -85,7 +104,7 @@ class DriveViewApp extends LitElement {
   }
 
   get isSubscriber () {
-    return this.info?.graph?.user?.isSubscriber
+    return this.info.isSubscribedByUser === 1
   }
 
   get isSystem () {
@@ -108,7 +127,7 @@ class DriveViewApp extends LitElement {
         </a>
       `
     }
-    const showSubs = !(isSameOrigin(this.info.origin, 'hyper://private') || this.info.writable && !this.info?.graph?.counts?.network)
+    const showSubs = !(isSameOrigin(this.info.url, 'hyper://private') || this.info.writable && !this.info?.subCount)
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
       <div class="content">
@@ -130,7 +149,7 @@ class DriveViewApp extends LitElement {
           <div class="description">${this.info.description || ''}</div>
           ${!showSubs ? '' : html`
             <div class="known-subscribers">
-              ${this.info?.graph?.user?.isSubscribedTo ? html`
+              ${this.info?.isSubscriberToUser ? html`
                 <span class="subscribed-to-you"><span>Subscribed to you</span></span>
               `: ''}
               <a
@@ -138,8 +157,8 @@ class DriveViewApp extends LitElement {
                 class="tooltip-left"
                 @click=${this.onClickShowSubscribers}
               >
-                <strong>${this.info?.graph?.counts?.network}</strong>
-                ${pluralize(this.info?.graph?.counts?.network || 0, 'subscriber')}
+                <strong>${this.info?.subCount}</strong>
+                ${pluralize(this.info?.subCount || 0, 'subscriber')}
               </a>
             </div>
           `}
@@ -155,7 +174,7 @@ class DriveViewApp extends LitElement {
   renderHeaderButtons () {
     return html`
       <div class="btns">
-        ${isSameOrigin(this.info.origin, 'hyper://private') ? '' : this.info.writable ? html`
+        ${isSameOrigin(this.info.url, 'hyper://private') ? '' : this.info.writable ? html`
           <button class="transparent" @click=${this.onEditProperties}>
             Edit Profile
           </button>
@@ -184,7 +203,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.all}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             limit="50"
@@ -197,7 +216,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.microblogposts}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             limit="50"
@@ -210,7 +229,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.blogposts}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             limit="50"
@@ -223,7 +242,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.pages}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             limit="50"
@@ -236,7 +255,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.bookmarks}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             limit="50"
@@ -249,7 +268,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.comments}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             limit="50"
@@ -262,7 +281,7 @@ class DriveViewApp extends LitElement {
         return html`
           <beaker-record-feed
             .pathQuery=${PATH_QUERIES.subscriptions}
-            .sources=${[this.info.origin]}
+            .sources=${[this.info.url]}
             show-date-titles
             date-title-range="month"
             no-merge
@@ -309,17 +328,14 @@ class DriveViewApp extends LitElement {
   }
 
   async onToggleSubscribe () {
-    if (!this.info.graph) return // cant operate :|
-    if (this.info.graph.user.isSubscriber) {
-      this.info.graph.user.isSubscriber = false
-      this.info.graph.counts.network--
-      this.info.graph.counts.local--
+    if (this.info.isSubscribedByUser) {
+      this.info.isSubscribedByUser = 0
+      this.info.subCount--
       this.requestUpdate()
       await beaker.subscriptions.remove(this.info.url)
     } else {
-      this.info.graph.user.isSubscriber = true
-      this.info.graph.counts.network++
-      this.info.graph.counts.local++
+      this.info.isSubscribedByUser = 1
+      this.info.subCount++
       this.requestUpdate()
       await beaker.subscriptions.add({
         href: this.info.url,
@@ -327,11 +343,11 @@ class DriveViewApp extends LitElement {
         site: this.profile.url
       })
     }
-    this.info = await beaker.index.getSite(this.info.url)
+    this.info = await this.fetchSiteInfo()
   }
 
   async onEditProperties () {
-    await beaker.shell.drivePropertiesDialog(this.info.origin)
+    await beaker.shell.drivePropertiesDialog(this.info.url)
     location.reload()
   }
 

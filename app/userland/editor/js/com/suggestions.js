@@ -29,16 +29,18 @@ export class MarkdownSuggestions {
     if (term.length === 1) {
       return null
     }
-    const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
-      path: [
-        '/blog/*.md',
-        '/pages/*.md'
-      ],
-      limit: 10,
-      sort: 'rank',
-      reverse: true,
-      field: 'title'
-    }))
+    const {queryResults} = await this.searchDebouncer(() => beaker.index.gql(`
+      queryResults: records(
+        search: "${term}",
+        paths: ["/blog/*.md"],
+        limit: 10
+      ) {
+        url
+        path
+        metadata
+        site { title }
+      }
+    `))
     const suggestions = queryResults.map(s => {
       var type = 'blogpost'
       if (s.path.startsWith('/pages/')) type = 'page'
@@ -57,20 +59,16 @@ export class MarkdownSuggestions {
   }
 
   async completePeopleSuggestions (term, match, value) {
-    const queryResults = await this.searchDebouncer(() => beaker.index.search(term, {
-      path: '/subscriptions/*.goto',
-      origin: `hyper://${this.profile?.key}`,
-      limit: 10,
-      sort: 'rank',
-      reverse: true
-    }))
+    const {queryResults} = await this.searchDebouncer(() => beaker.index.gql(`
+      queryResults: sites(search: "${term}", limit: 10) { url, title }
+    `))
     const suggestions = queryResults.map(s => {
       return {
         kind: 7, // "Interface"
-        label: s.metadata.title,
+        label: s.title,
         range: match.range,
         filterText: value,
-        insertText: `[@${s.metadata.title}](${s.metadata.href})`
+        insertText: `[@${s.title}](${s.url})`
       }
     })
 

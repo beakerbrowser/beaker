@@ -13,11 +13,21 @@ import { URL } from 'url'
  * @returns {Promise<Object>}
  */
 export async function list () {
-  var results = await indexer.query({
-    path: '/subscriptions/*.goto',
-    origin: ['hyper://private', filesystem.getProfileUrl()]
-  })
-  return results.map(massageSubscription)
+  var {records} = await indexer.gql(`
+    records (
+      paths: ["/subscriptions/*.goto"]
+      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
+    ) {
+      url
+      metadata
+      site {
+        url
+        title
+        description
+      }
+    }
+  `)
+  return records.map(massageSubscription)
 }
 
 /**
@@ -26,14 +36,24 @@ export async function list () {
  */
 export async function get (href) {
   href = normalizeUrl(href)
-  var results = await indexer.query({
-    path: '/subscriptions/*.goto',
-    origin: ['hyper://private', filesystem.getProfileUrl()],
-    links: href,
-    limit: 1
-  })
-  if (results[0]) {
-    return massageSubscription(results[0])
+  var {records} = await indexer.gql(`
+    records (
+      paths: ["/subscriptions/*.goto"]
+      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
+      links: {url: "${href}"}
+      limit: 1
+    ) {
+      url
+      metadata
+      site {
+        url
+        title
+        description
+      }
+    }
+  `)
+  if (records[0]) {
+    return massageSubscription(records[0])
   }
 }
 
@@ -43,15 +63,26 @@ export async function get (href) {
  */
 export async function listNetworkFor (href) {
   href = normalizeUrl(href)
-  var results = await indexer.query({
-    path: '/subscriptions/*.goto',
-    links: href,
-    index: ['local', 'network']
-  })
+  var {records} = await indexer.gql(`
+    records (
+      paths: ["/subscriptions/*.goto"]
+      links: {url: "${href}"}
+      indexes: ["local", "network"]
+    ) {
+      url
+      metadata
+      index
+      site {
+        url
+        title
+        description
+      }
+    }
+  `)
   var profileUrl = filesystem.getProfileUrl()
   // only trust the users' subs from the local index, which will be more up-to-date
-  results = results.filter(r => !(isSameOrigin(r.site.url, profileUrl) && r.index.id !== 'local'))
-  return results.map(massageSubscription)
+  records = records.filter(r => !(isSameOrigin(r.site.url, profileUrl) && r.index !== 'local'))
+  return records.map(massageSubscription)
 }
 
 /**

@@ -6,7 +6,6 @@ export const READ_TIMEOUT = 5e3
 export const READ_DIFF_TIMEOUT = 30e3
 export const METADATA_KEYS = {
   content: '_content',
-  link: '_link',
   href: 'href',
   parent: 'comment/parent',
   subject: 'comment/subject',
@@ -39,20 +38,22 @@ export const METADATA_KEYS = {
  * @prop {String} title
  * @prop {String} description
  * @prop {Boolean} writable
- * @prop {SiteDescriptionGraph} graph
- * @prop {Object} index
- * @prop {String} index.id
- * 
- * @typedef {Object} SiteDescriptionGraph
- * @typedef {Object} user
- * @typedef {Boolean} user.isSubscriber
- * @typedef {Boolean} user.isSubscribedTo
- * @typedef {Object<String, Number>} counts - map of {indexId: Number}, eg {'local': 5, 'network': 15}
+ * @prop {String} index
  *   
  * @typedef {Object} ParsedUrl
  * @prop {String} origin
  * @prop {String} path
  * @prop {String} pathname
+ * 
+ * @typedef {Object} RangeQuery
+ * @prop {String} key
+ * @prop {Number} value
+ * @prop {Boolean} inclusive
+ * 
+ * @typedef {Object} LinkQuery
+ * @prop {String} url
+ * @prop {String} origin
+ * @prop {String[]} paths
  * 
  * @typedef {Object} RecordUpdate
  * @prop {Boolean} remove
@@ -67,24 +68,12 @@ export const METADATA_KEYS = {
  * @prop {String} url
  * @prop {Number} ctime
  * @prop {Number} mtime
+ * @prop {Number} rtime
  * @prop {Object} metadata
- * @prop {Object} site
- * @prop {String} site.url
- * @prop {String} site.title
- * @prop {Object} index
- * @prop {String} index.id
- * @prop {Number} index.rtime
- * @prop {String[]} index.links
- * @prop {Object[]} [index.matches]
+ * @prop {String} index
+ * @prop {String[]} links
+ * @prop {Object[]} [matches]
  * @prop {String} [content]
- * @prop {Object} [notification]
- * @prop {String} [notification.key]
- * @prop {String} [notification.subject]
- * @prop {Boolean} [notification.unread]
- * 
- * @typedef {Object} NotificationQuery
- * @prop {String} subject
- * @prop {Boolean} unread
  * 
  * @typedef {Object} HyperbeeBacklink
  * @prop {String} key

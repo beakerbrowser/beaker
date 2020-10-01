@@ -14,6 +14,10 @@ export default {
     }
     return indexer.clearAllData()
   },
+  
+  async gql (args) {
+    return indexer.gql(args)
+  },
 
   getSite (url) {
     return indexer.getSite(url)

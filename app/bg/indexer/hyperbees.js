@@ -19,7 +19,6 @@ const BEAKER_NETWORK_INDEX_KEY = '1332bcbf73d119399518adf3c4d5c9dbcf9d91d5d3a6c9
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
- * @typedef {import('./const').NotificationQuery} NotificationQuery
  * @typedef {import('./const').HyperbeeBacklink} HyperbeeBacklink
  */
 
@@ -105,18 +104,16 @@ export async function getSite (url) {
       title: indexJson.title || toNiceUrl(origin),
       description: indexJson.description || '',
       writable: false,
-      index: {id: 'network'},
-      graph: undefined
+      index: 'network'
     }
   }
 }
 
 /**
  * @param {Object} opts
- * @param {String|String[]} [opts.origin]
- * @param {String|String[]} [opts.path]
+ * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.paths]
  * @param {String} [opts.links]
- * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {String|String[]} [opts.index] - 'local' or 'network'
  * @param {String} [opts.sort]
  * @param {Number} [opts.offset]
@@ -130,9 +127,9 @@ export async function getSite (url) {
 export async function query (opts, {existingResults, notificationRtime} = {}) {
   if (isDisabled) return {records: [], missedOrigins: undefined}
 
-  var pathQuery = opts.path ? toArray(opts.path).map(parseSimplePathSpec) : undefined
-  if (opts.origin) {
-    opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
+  var pathQuery = opts.paths ? toArray(opts.paths).map(parseSimplePathSpec) : undefined
+  if (opts.origins) {
+    opts.origins = toArray(opts.origins).map(origin => normalizeOrigin(origin))
   }
 
   var entries
@@ -149,6 +146,7 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
       backlinksOpts
     ))
   } else if (opts.notification) {
+    // TODO
     let backlinksOpts = {crtime: false, mrtime: false}
     if (opts.sort === 'mtime' || opts.sort === 'mrtime') {
       backlinksOpts.mrtime = true
@@ -194,8 +192,8 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
         return false
       }
     }
-    if (opts.origin) {
-      if (!opts.origin.includes(normalizeOrigin(url))) {
+    if (opts.origins) {
+      if (!opts.origins.includes(normalizeOrigin(url))) {
         return false
       }
     }
@@ -229,8 +227,8 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
 
 /**
  * @param {Object} [opts]
- * @param {String|Array<String>} [opts.origin]
- * @param {String|Array<String>} [opts.path]
+ * @param {Array<String>} [opts.origins]
+ * @param {Array<String>} [opts.paths]
  * @param {String} [opts.links]
  * @param {Boolean|NotificationQuery} [opts.notification]
  * @param {Object} internal
@@ -241,9 +239,9 @@ export async function query (opts, {existingResults, notificationRtime} = {}) {
 export async function count (opts, {existingResultOrigins, notificationRtime} = {}) {
   if (isDisabled) return {count: 0, missedOrigins: undefined}
   
-  var pathQuery = opts.path ? toArray(opts.path).map(parseSimplePathSpec) : undefined
-  if (opts.origin) {
-    opts.origin = toArray(opts.origin).map(origin => normalizeOrigin(origin))
+  var pathQuery = opts.paths ? toArray(opts.paths).map(parseSimplePathSpec) : undefined
+  if (opts.origins) {
+    opts.origins = toArray(opts.origins).map(origin => normalizeOrigin(origin))
   }
 
   var entries
@@ -283,8 +281,8 @@ export async function count (opts, {existingResultOrigins, notificationRtime} = 
         return false
       }
     }
-    if (opts.origin) {
-      if (!opts.origin.includes(normalizeOrigin(url))) {
+    if (opts.origins) {
+      if (!opts.origins.includes(normalizeOrigin(url))) {
         return false
       }
     }
@@ -370,11 +368,7 @@ export async function addProfileToBeakerNetwork () {
  */
 async function backlinkToRecord (backlink, notificationRtime = undefined) {
   var urlp = parseUrl(backlink.value.source)
-  var [site, content] = await Promise.all([
-    fullGetSite(backlink.value.drive, {cacheOnly: true}),
-    // ^ use fullGetSite() since that'll hit the sqlite first, which is faster than hyperbee
-    backlink.value.content ? beakerNetworkIndex.db.get(backlink.value.content) : undefined
-  ])
+  var content = backlink.value.content ? await beakerNetworkIndex.db.get(backlink.value.content) : undefined
   var notification = undefined
   if (typeof notificationRtime !== 'undefined') {
     // try to detect the link
@@ -399,18 +393,11 @@ async function backlinkToRecord (backlink, notificationRtime = undefined) {
     url: backlink.value.source,
     ctime: backlink.value.crtime,
     mtime: backlink.value.mrtime,
+    rtime: backlink.value.rtime,
     metadata: backlink.value.metadata,
-    index: {
-      id: 'network',
-      rtime: backlink.value.rtime,
-      links: []
-    },
-    site: {
-      url: backlink.value.drive,
-      title: site.title || toNiceUrl(urlp.origin)
-    },
+    index: 'network',
+    links: [],
     content: content ? content.value : undefined,
-    notification
   }
 }
 
@@ -434,8 +421,7 @@ async function fetchFullSitesList () {
         title: user.title || toNiceUrl(user.driveUrl),
         description: user.description || '',
         writable: Boolean((await getMeta(user.driveUrl, {noDefault: true}))?.writable),
-        index: {id: 'network'},
-        graph: undefined
+        index: 'network'
       })
     }
 

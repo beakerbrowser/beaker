@@ -105,37 +105,49 @@ export class RecordFeed extends LitElement {
     emit(this, 'load-state-updated')
     this.abortController = new AbortController()
     var results = []
-    if (this.filter) {
-      results = await beaker.index.search(this.filter, {
-        path: this.pathQuery || DEFAULT_SEARCH_PATH_QUERIES,
-        origin: this.sources,
-        limit: this.limit,
-        sort: 'crtime',
-        reverse: true,
-        includeContent: true
-      })
-    } else {
-      // because we collapse results, we need to run the query until the limit is fulfilled
-      let offset = 0
-      do {
-        let subresults = await beaker.index.query({
-          path: this.pathQuery,
-          notification: this.notifications,
-          origin: this.sources,
-          limit: this.limit,
-          offset,
-          sort: 'crtime',
+    // because we collapse results, we need to run the query until the limit is fulfilled
+    let offset = 0
+    do {
+      let {subresults} = await beaker.index.gql(`
+        subresults: records (
+          paths: ["${this.pathQuery.join('", "')}"]
+          ${this.sources ? `origins: ["${this.sources.join('", "')}"]` : ''}
+          ${this.filter ? `search: "${this.filter}"` : ''}
+          ${this.limit ? `limit: ${this.limit}` : ''}
+          offset: ${offset}
+          sort: crtime,
           reverse: true
-        })
-        if (subresults.length === 0) break
-        
-        offset += subresults.length
-        if (!this.noMerge) {
-          subresults = subresults.reduce(reduceMultipleActions, [])
+        ) {
+          type
+          path
+          url
+          ctime
+          mtime
+          rtime
+          metadata
+          index
+          matches
+          content
+          site {
+            url
+            title
+          }
+          votes: backlinks(paths: ["/votes/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        results = results.concat(subresults)
-      } while (results.length < this.limit)
-    }
+      `)
+      if (subresults.length === 0) break
+      
+      offset += subresults.length
+      if (!this.noMerge) {
+        subresults = subresults.reduce(reduceMultipleActions, [])
+      }
+      results = results.concat(subresults)
+    } while (results.length < this.limit)
     console.log(results)
     this.results = results
     this.activeQuery = undefined

@@ -26,21 +26,22 @@ class BlogFeed extends LitElement {
   }
 
   async load () {
-    this.posts = (await beaker.index.query({
-      path: '/blog/*.md',
-      index: 'local',
-      order: 'crtime',
-      reverse: true,
-      limit: 100
-    })).filter(p => p.site.url !== 'hyper://private')
-    for (let post of this.posts) {
-      let commentCount = await beaker.index.count({
-        path: '/comments/*.md',
-        links: post.url,
-      })
-      post.commentCount = commentCount
-      this.requestUpdate()
-    }
+    let {posts} = await beaker.index.gql(`
+      posts: records (paths: ["/blog/*.md"] sort: crtime reverse: true limit: 100) {
+        path
+        url
+        ctime
+        mtime
+        rtime
+        metadata
+        site {
+          url
+          title
+        }
+        commentCount: backlinkCount(paths: ["/comments/*.md"])
+      }
+    `)
+    this.posts = posts.filter(p => p.site.url !== 'hyper://private')
   }
 
   render () {
