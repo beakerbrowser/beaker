@@ -405,6 +405,7 @@ export async function get (url, {permissions, includeLinks, includeContent} = {}
 /**
  * @param {Object} [opts]
  * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
  * @param {LinkQuery} [opts.links]
  * @param {String[]} [opts.indexes] - 'local', 'network', url of a specific hyperbee index
@@ -424,6 +425,7 @@ export async function get (url, {permissions, includeLinks, includeContent} = {}
 export async function query (opts, {includeContent, includeLinks, permissions} = {}) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.origins = validation.arrayOfOrigins('origins', opts.origins)
+  opts.excludeOrigins = validation.arrayOfOrigins('excludeOrigins', opts.excludeOrigins)
   opts.paths = validation.arrayOfStrings('paths', opts.paths)
   opts.links = validation.linkQuery('links', opts.links)
   opts.indexes = validation.arrayOfStrings('indexes', opts.indexes) || ['local']
@@ -522,6 +524,7 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
 /**
  * @param {Object} [opts]
  * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
  * @param {LinkQuery} [opts.links]
  * @param {String[]} [opts.indexes] - 'local' or 'network'
@@ -534,6 +537,7 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
 export async function count (opts, permissions) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.origins = validation.arrayOfOrigins('origins', opts.origins)
+  opts.excludeOrigins = validation.arrayOfOrigins('excludeOrigins', opts.excludeOrigins)
   opts.paths = validation.arrayOfStrings('paths', opts.paths)
   opts.links = validation.linkQuery('links', opts.links)
   opts.indexes = validation.arrayOfStrings('indexes', opts.indexes) || ['local']

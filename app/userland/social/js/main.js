@@ -59,6 +59,7 @@ class SocialApp extends LitElement {
     this.isEmpty = false
     this.listingSelfState = undefined
     this.isProfileListedInBeakerNetwork = undefined
+    this.notificationsClearTime = +localStorage.getItem('notificationsClearTime') || 1
 
     this.configFromQP()
     this.load().then(() => {
@@ -95,7 +96,9 @@ class SocialApp extends LitElement {
       this.shadowRoot.querySelector('beaker-record-feed').load({clearCurrent})
     }
     if (location.pathname === '/notifications') {
-      setTimeout(() => beaker.index.clearNotifications(), 5e3)
+      this.notificationsClearTime = Date.now()
+      localStorage.setItem('notificationsClearTime', '' + this.notificationsClearTime)
+      setTimeout(() => {this.unreadNotificationCount = 0}, 2e3)
     }
     this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     if (this.isProfileListedInBeakerNetwork) {
@@ -105,10 +108,16 @@ class SocialApp extends LitElement {
   }
 
   async checkNotifications () {
-    this.unreadNotificationCount = await beaker.index.count({
-      index: ['local', 'network'],
-      notification: {unread: true}
-    })
+    var {count} = await beaker.index.gql(`
+      count: recordCount(
+        paths: ["/microblog/*.md", "/comments/*.md", "/subscriptions/*.goto", "/votes/*.goto"]
+        links: {origin: "${this.profile.url}"}
+        excludeOrigins: ["${this.profile.url}"]
+        indexes: ["local", "network"],
+        after: {key: crtime, value: ${this.notificationsClearTime}}
+      )
+    `)
+    this.unreadNotificationCount = count
     if (this.unreadNotificationCount > 0) {
       document.title = `Beaker Social (${this.unreadNotificationCount})`
     } else {
@@ -306,7 +315,7 @@ class SocialApp extends LitElement {
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
               .pathQuery=${PATH_QUERIES[location.pathname.slice(1) || 'all']}
-              ?notifications=${location.pathname === '/notifications'}
+              .notifications=${location.pathname === '/notifications' ? {unreadSince: this.notificationsClearTime} : undefined}
               limit="50"
               @load-state-updated=${this.onFeedLoadStateUpdated}
               @view-thread=${this.onViewThread}

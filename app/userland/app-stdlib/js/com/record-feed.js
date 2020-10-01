@@ -1,6 +1,7 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import { getRecordType, typeToQuery } from '../records.js'
+import { isSameOrigin } from '../strings.js'
 import css from '../../css/com/record-feed.css.js'
 import { emit } from '../dom.js'
 
@@ -25,7 +26,7 @@ export class RecordFeed extends LitElement {
       title: {type: String},
       sort: {type: String},
       limit: {type: Number},
-      notifications: {type: Boolean},
+      notifications: {type: Object},
       filter: {type: String},
       sources: {type: Array},
       results: {type: Array},
@@ -114,6 +115,10 @@ export class RecordFeed extends LitElement {
           ${this.sources ? `origins: ["${this.sources.join('", "')}"]` : ''}
           ${this.filter ? `search: "${this.filter}"` : ''}
           ${this.limit ? `limit: ${this.limit}` : ''}
+          ${this.notifications ? `
+            links: {origin: "${this.profileUrl}"}
+            excludeOrigins: ["${this.profileUrl}"]
+          ` : ''}
           offset: ${offset}
           sort: crtime,
           reverse: true
@@ -128,6 +133,12 @@ export class RecordFeed extends LitElement {
           index
           matches
           content
+          ${this.notifications ? `
+          links {
+            source
+            url
+          }
+          ` : ''}
           site {
             url
             title
@@ -222,6 +233,8 @@ export class RecordFeed extends LitElement {
     return html`
       <beaker-record
         .record=${result}
+        ?is-notification=${!!this.notifications}
+        ?is-unread=${result.ctime > this.notifications?.unreadSince}
         class=${this.recordClass}
         render-mode=${renderMode}
         show-context

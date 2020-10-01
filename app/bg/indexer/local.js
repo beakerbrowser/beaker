@@ -65,6 +65,7 @@ export async function listSites (db, opts) {
  * @param {Object} db
  * @param {Object} opts
  * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
  * @param {LinkQuery} [opts.links]
  * @param {RangeQuery} [opts.before]
@@ -128,6 +129,9 @@ export async function query (db, opts, {permissions} = {}) {
       query = query.whereNot({origin: 'hyper://private'})
     }
     query = query.whereRaw(`sites.is_index_target = ?`, [1])
+  }
+  if (opts.excludeOrigins) {
+    query = query.whereNotIn('origin', opts.excludeOrigins)
   }
   if (opts.paths) {
     query = query.where(function () {
@@ -236,6 +240,7 @@ export async function query (db, opts, {permissions} = {}) {
  * @param {Object} db
  * @param {Object} [opts]
  * @param {String[]} [opts.origins]
+ * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
  * @param {LinkQuery} [opts.links]
  * @param {RangeQuery} [opts.before]
@@ -275,6 +280,9 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
       query = query.whereNot({origin: 'hyper://private'})
     }
     query = query.whereRaw(`sites.is_index_target = ?`, [1])
+  }
+  if (opts.excludeOrigins) {
+    query = query.whereNotIn('origin', opts.excludeOrigins)
   }
   if (opts.paths) {
     query = query.where(function () {

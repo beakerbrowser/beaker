@@ -16,6 +16,8 @@ export class Record extends LitElement {
       record: {type: Object},
       loadRecordUrl: {type: String, attribute: 'record-url'},
       renderMode: {type: String, attribute: 'render-mode'},
+      isNotification: {type: Boolean, attribute: 'is-notification'},
+      isUnread: {type: Boolean, attribute: 'is-unread'},
       showContext: {type: Boolean, attribute: 'show-context'},
       constrainHeight: {type: Boolean, attribute: 'constrain-height'},
       profileUrl: {type: String, attribute: 'profile-url'},
@@ -35,6 +37,8 @@ export class Record extends LitElement {
     this.record = undefined
     this.loadRecordUrl = undefined
     this.renderMode = undefined
+    this.isNotification = false
+    this.isUnread = false
     this.showContext = false
     this.constrainHeight = false
     this.profileUrl = undefined
@@ -207,7 +211,7 @@ export class Record extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${res.notification ? this.renderNotification() : ''}
+      ${this.isNotification ? this.renderNotification() : ''}
       ${this.showContext && context ? html`
         <div class="card-context">
           <beaker-record
@@ -226,8 +230,8 @@ export class Record extends LitElement {
           card: true,
           'private': res.url.startsWith('hyper://private'),
           'constrain-height': this.constrainHeight,
-          'is-notification': !!res.notification,
-          unread: res?.notification?.unread
+          'is-notification': this.isNotification,
+          unread: this.isUnread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -293,15 +297,15 @@ export class Record extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${res.notification ? this.renderNotification() : ''}
+      ${this.isNotification ? this.renderNotification() : ''}
       <div
         class=${classMap({
           record: true,
           comment: true,
           'private': res.url.startsWith('hyper://private'),
           'constrain-height': this.constrainHeight,
-          'is-notification': !!res.notification,
-          unread: res?.notification?.unread
+          'is-notification': this.isNotification,
+          unread: this.isUnread
         })}
       >
         <div class="header">
@@ -380,8 +384,8 @@ export class Record extends LitElement {
           record: true,
           action: true,
           'private': res.url.startsWith('hyper://private'),
-          'is-notification': !!res.notification,
-          unread: res?.notification?.unread
+          'is-notification': this.isNotification,
+          unread: this.isUnread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -535,14 +539,14 @@ export class Record extends LitElement {
 
     return html`
       <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
-      ${res.notification ? this.renderNotification() : ''}
+      ${this.isNotification ? this.renderNotification() : ''}
       <div
         class=${classMap({
           record: true,
           link: true,
           'private': res.url.startsWith('hyper://private'),
-          'is-notification': !!res.notification,
-          unread: res?.notification?.unread
+          'is-notification': this.isNotification,
+          unread: this.isUnread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -593,8 +597,8 @@ export class Record extends LitElement {
           record: true,
           wrapper: true,
           'private': res.url.startsWith('hyper://private'),
-          'is-notification': !!res.notification,
-          unread: res?.notification?.unread
+          'is-notification': this.isNotification,
+          unread: this.isUnread
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
@@ -605,7 +609,7 @@ export class Record extends LitElement {
           `}
         </a>
         <div class="container">
-          ${res.notification ? this.renderNotification() : ''}
+          ${this.isNotification ? this.renderNotification() : ''}
           <a class="subject" href=${res.metadata.href} @click=${this.onViewWrapperThread}>
             ${asyncReplace(loadAndSimpleRender(res.metadata.href))}
           </a>
@@ -661,6 +665,7 @@ export class Record extends LitElement {
 
   renderNotification () {
     const res = this.record
+    const link = res.links.find(l => l.url.startsWith(this.profileUrl))
     var type = getRecordType(res)
     var description = 'linked to'
     if (type === 'vote') {
@@ -671,19 +676,19 @@ export class Record extends LitElement {
       } else {
         description = 'linked to'
       }
-    } else if (res.notification.source === 'content') {
+    } else if (link.source === 'content') {
       if (type === 'microblogpost' || type === 'comment') {
         description = 'mentioned'
       }
-    } else if (res.notification.source === 'metadata:href') {
+    } else if (link.source === 'metadata:href') {
       if (type === 'bookmark') {
         description = 'bookmarked'
       } else if (type === 'subscription') {
         description = 'subscribed to'
       }
-    } else if (res.notification.source === 'metadata:comment/subject') {
+    } else if (link.source === 'metadata:comment/subject') {
       description = 'commented on'
-    } else if (res.notification.source === 'metadata:comment/parent') {
+    } else if (link.source === 'metadata:comment/parent') {
       description = 'replied to'
     }
     var where = ({
@@ -694,8 +699,8 @@ export class Record extends LitElement {
       <div class="notification">
         ${res.site.title}
         ${description}
-        <a href=${res.notification.subject}>
-          ${asyncReplace(getNotificationSubjectStream(res.notification.subject, this.profileUrl))}
+        <a href=${link.url}>
+          ${asyncReplace(getNotificationSubjectStream(link.url, this.profileUrl))}
         </a>
         ${where}
       </div>
