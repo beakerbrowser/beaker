@@ -2,12 +2,6 @@ import { examineLocationInput } from '../../lib/urls'
 import { joinPath } from '../../lib/strings'
 import _uniqWith from 'lodash.uniqwith'
 
-const DATA_PATHS = [
-  '/blog/*.md',
-  '/bookmarks/*.goto',
-  '/pages/*.md'
-]
-
 /**
  * Used by ../shell-window/navbar/location.js
  * Mainly put here to keep that file from growing too large
@@ -40,9 +34,16 @@ export async function queryAutocomplete (bg, ctx, onResults) {
     onResults(true)
   }
   
-  var [historyResults, networkResults, bookmarks] = await Promise.all([
+  var [historyResults, networkQuery, bookmarks] = await Promise.all([
     ctx.inputValue ? bg.history.search(ctx.inputValue) : [],
-    ctx.inputValue ? bg.index.search(ctx.inputValue, {path: DATA_PATHS, limit: 10, index: 'local', field: 'title'}) : [],
+    ctx.inputValue ? bg.index.gql(`
+      records(search: "${ctx.inputValue}", paths: ["/bookmarks/*.goto"], limit: 10) {
+        url
+        path
+        metadata
+        site { title }
+      }
+    `) : undefined,
     ctx.bookmarksFetch
   ])
 
@@ -51,11 +52,16 @@ export async function queryAutocomplete (bg, ctx, onResults) {
 
   // decorate results with bolded regions
   var searchTerms = ctx.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
-  networkResults = networkResults.map(networkResultToItem).filter(Boolean)
+  var searchTermsRe = new RegExp(`(${searchTerms.join('|')})`, 'gi')
+  var networkResults = networkQuery.records.map(record => networkResultToItem(record, searchTermsRe)).filter(Boolean)
   historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
   if (ctx.inputValue) {
-    finalResults = networkResults.concat(historyResults)
+    if (historyResults.length > 5 && networkResults.length > 5) {
+      finalResults = networkResults.slice(0, 5).concat(historyResults.slice(0, 5))
+    } else {
+      finalResults = networkResults.concat(historyResults)   
+    }
     finalResults = _uniqWith(finalResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
     finalResults = finalResults.slice(0, 10) // apply limit
   } else {
@@ -110,28 +116,15 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   onResults()
 }
 
-function networkResultToItem (record) {
+function networkResultToItem (record, termsRe) {
   if (record.path.startsWith('/bookmarks/')) {
     if (!record.metadata.href) return
+    let title = record.metadata.title || record.metadata.href || ''
     return {
       url: record.metadata.href,
-      title: record.metadata.title || record.metadata.href,
-      titleDecorated: record.index.matches.find(m => m.key === 'title')?.value.split(/\<\/?b\>/g) || [record.metadata.title || record.metadata.href],
+      title,
+      titleDecorated: title.split(termsRe),
       origin: {icon: 'far fa-star', label: `Bookmarked by ${record.site.title}`}
-    }
-  } else if (record.path.startsWith('/blog/')) {
-    return {
-      url: record.url,
-      title: record.metadata.title || record.url,
-      titleDecorated: record.index.matches.find(m => m.key === 'title')?.value.split(/\<\/?b\>/g) || [record.metadata.title || record.metadata.href],
-      origin: {icon: 'fas fa-blog', label: `Blogged by ${record.site.title}`}
-    }
-  } else if (record.path.startsWith('/pages/')) {
-    return {
-      url: record.url,
-      title: record.metadata.title || record.url,
-      titleDecorated: record.index.matches.find(m => m.key === 'title')?.value.split(/\<\/?b\>/g) || [record.metadata.title || record.metadata.href],
-      origin: {icon: 'far fa-file', label: `Page by ${record.site.title}`}
     }
   }
 }
