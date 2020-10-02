@@ -245,7 +245,7 @@ export class SitesList extends LitElement {
   }
 
   isSubscribed (site) {
-    return site.graph?.user.isSubscriber
+    return site.isSubscribedByUser
   }
 
   // rendering
@@ -294,15 +294,15 @@ export class SitesList extends LitElement {
               Fork of <a href="hyper://${site.forkOf.key}">${toNiceDomain(`hyper://${site.forkOf.key}`)}</a>
             </div>
           ` : ''}
-          ${!isSameOrigin(site.url, 'hyper://private') && (!site.writable || site.graph?.counts.network > 0) ? html`
+          ${!isSameOrigin(site.url, 'hyper://private') && (!site.writable || site.subCount > 0) ? html`
             <div class="known-subscribers">
               <a
                 href="#" 
                 class="tooltip-top"
                 @click=${e => this.onClickShowSubscribers(e, site)}
               >
-                <strong>${site.graph?.counts.network || 0}</strong>
-                ${pluralize(site.graph?.counts.network || 0, 'subscriber')}
+                <strong>${site.subCount}</strong>
+                ${pluralize(site.subCount, 'subscriber')}
               </a>
             </div>
           ` : ''}
@@ -344,17 +344,14 @@ export class SitesList extends LitElement {
   }
 
   async onToggleSubscribe (e, site) {
-    if (!site.graph) return // cant operate :|
     if (this.isSubscribed(site)) {
-      site.graph.user.isSubscriber = false
-      site.graph.counts.network--
-      site.graph.counts.local--
+      site.isSubscribedByUser = false
+      site.subCount--
       this.requestUpdate()
       await beaker.subscriptions.remove(site.url)
     } else {
-      site.graph.user.isSubscriber = true
-      site.graph.counts.network++
-      site.graph.counts.local++
+      site.isSubscribedByUser = true
+      site.subCount++
       this.requestUpdate()
       await beaker.subscriptions.add({
         href: site.url,
