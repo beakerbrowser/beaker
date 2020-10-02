@@ -34,8 +34,7 @@ const PATH_QUERIES = {
   discussion: [typeToQuery('microblogpost'), typeToQuery('comment')],
   all: [
     typeToQuery('blogpost'),
-    typeToQuery('bookmark'),
-    typeToQuery('page')
+    typeToQuery('bookmark')
   ],
   feed: [typeToQuery('bookmark'), typeToQuery('blogpost')]
 }
@@ -506,6 +505,7 @@ class DesktopApp extends LitElement {
     if (e.code === 'Enter') {
       this.searchQuery = e.currentTarget.value.toLowerCase()
       QP.setParams({q: this.searchQuery})
+      window.scrollTo(0,0)
     }
   }
 

@@ -72,7 +72,6 @@ export const METADATA_KEYS = {
  * @prop {Object} metadata
  * @prop {String} index
  * @prop {String[]} links
- * @prop {Object[]} [matches]
  * @prop {String} [content]
  * 
  * @typedef {Object} HyperbeeBacklink

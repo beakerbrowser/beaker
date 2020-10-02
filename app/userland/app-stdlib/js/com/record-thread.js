@@ -82,7 +82,6 @@ export class RecordThread extends LitElement {
             rtime
             metadata
             index
-            matches
             content
             site {
               url
@@ -146,7 +145,6 @@ export class RecordThread extends LitElement {
         rtime
         metadata
         index
-        matches
         content
         site {
           url
@@ -183,7 +181,6 @@ export class RecordThread extends LitElement {
         rtime
         metadata
         index
-        matches
         content
         site {
           url

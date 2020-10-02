@@ -43,7 +43,6 @@ type Record {
   index: String
   links: [Link!]
   linkedSites(indexes: [String]): [Site]
-  matches: Object
   content: String
   backlinks(search: String, origins: [String], excludeOrigins: [String], paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery, sort: Sort, offset: Int, limit: Int, reverse: Boolean): [Record]
   backlinkCount(search: String, origins: [String], excludeOrigins: [String], paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery): Long

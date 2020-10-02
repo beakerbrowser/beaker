@@ -64,6 +64,7 @@ export async function listSites (db, opts) {
 /**
  * @param {Object} db
  * @param {Object} opts
+ * @param {String} [opts.search]
  * @param {String[]} [opts.origins]
  * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
@@ -82,30 +83,19 @@ export async function listSites (db, opts) {
 export async function query (db, opts, {permissions} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
-  var sep = `[>${(Math.random()*100)|0}<]`
-  var query = db('sites')
-    .innerJoin('records', 'sites.rowid', 'records.site_rowid')
-    .leftJoin('records_data', function() {
-      this.on('records.rowid', '=', 'records_data.record_rowid').onNotNull('records_data.value')
-    })
-    .leftJoin('records_links', 'records.rowid', 'records_links.record_rowid')
+  var query = db('records')
     .select(
+      'records.rowid as rowid',
       'origin',
       'path',
       'prefix',
       'extension',
       'ctime',
       'mtime',
-      'rtime',
-      'title as siteTitle',
-      db.raw(`group_concat(records_data.key, '${sep}') as data_keys`),
-      db.raw(`group_concat(records_data.value, '${sep}') as data_values`),
-      db.raw(`group_concat(records_links.href_origin, '${sep}') as links_href_origins`),
-      db.raw(`group_concat(records_links.href_path, '${sep}') as links_href_paths`),
-      db.raw(`group_concat(records_links.source, '${sep}') as links_sources`)
+      'rtime'
     )
+    .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
     .where({is_indexed: 1})
-    .groupBy('records.rowid')
     .offset(opts.offset)
     .orderBy(opts.sort, opts.reverse ? 'desc' : 'asc')
   if (typeof opts.limit === 'number') {
@@ -119,6 +109,13 @@ export async function query (db, opts, {permissions} = {}) {
     query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
   }
 
+  if (opts.search) {
+    query = query
+      .innerJoin('records_data', 'records_data.record_rowid', 'records.rowid')
+      .innerJoin('records_data_fts', 'records_data_fts.rowid', 'records_data.rowid')
+      .whereRaw(`records_data_fts.value MATCH ?`, [`"${opts.search.replace(/["]/g, '""')}" *`])
+      .groupBy('records.rowid')
+  }
   if (opts.origins) {
     if (shouldExcludePrivate && opts.origins.find(origin => origin === 'hyper://private')) {
       throw new PermissionsError()
@@ -142,6 +139,7 @@ export async function query (db, opts, {permissions} = {}) {
     })
   }
   if (opts.links) {
+    query = query.innerJoin('records_links', 'records_links.record_rowid', 'records.rowid')
     if (opts.links.origin) {
       query = query.where('records_links.href_origin', opts.links.origin)
     }
@@ -176,7 +174,7 @@ export async function query (db, opts, {permissions} = {}) {
     sitesQuery
   ])
 
-  var records = rows.map(row => {
+  var records = await Promise.all(rows.map(async (row) => {
     var record = {
       type: 'file',
       path: row.path,
@@ -189,37 +187,27 @@ export async function query (db, opts, {permissions} = {}) {
       content: undefined,
       index: 'local'
     }
-    if (!!row.data_keys) {
-      var dataKeys = (row.data_keys || '').split(sep)
-      var dataValues = (row.data_values || '').split(sep)
-      for (let i = 0; i < dataKeys.length; i++) {
-        let key = dataKeys[i]
-        if (key === METADATA_KEYS.content) {
-          record.content = dataValues[i]
-        } else {
-          record.metadata[key] = dataValues[i]
-        }
+    let [data, links] = await Promise.all([
+      db('records_data').select('key', 'value').where({record_rowid: row.rowid}),
+      db('records_links').select('source', 'href_origin', 'href_path').where({record_rowid: row.rowid})
+    ])
+    for (let {key, value} of data) {
+      if (key === METADATA_KEYS.content) {
+        record.content = value
+      } else {
+        record.metadata[key] = value
       }
     }
-    if (!!row.links_sources) {
-      var linkOrigins = (row.links_href_origins || '').split(sep)
-      var linkPaths = (row.links_href_paths || '').split(sep)
-      var linkSources = (row.links_sources || '').split(sep)
-      for (let i = 0; i < linkOrigins.length; i++) {
-        let link = {
-          source: linkSources[i],
-          url: linkOrigins[i] + linkPaths[i],
-          origin: linkOrigins[i],
-          path: linkPaths[i]
-        }
-        // the aggregation will get duplicates so we have to dedup here
-        if (!record.links.find(l2 => l2.source === link.source && l2.url === link.url)) {
-          record.links.push(link)
-        }
-      }
+    for (let {source, href_origin, href_path} of links) {
+      record.links.push({
+        source: source,
+        url: href_origin + href_path,
+        origin: href_origin,
+        path: href_path
+      })
     }
     return record
-  })
+  }))
 
   var missedOrigins
   if (siteStates) {

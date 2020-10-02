@@ -843,7 +843,7 @@ a:hover {
   height: 20px;
   background: var(--bg-color--semi-light);
   border-radius: 50%;
-  margin-right: 16px;
+  margin-right: 18px;
   margin-left: 10px;
 }
 

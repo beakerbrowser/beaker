@@ -404,6 +404,7 @@ export async function get (url, {permissions, includeLinks, includeContent} = {}
 
 /**
  * @param {Object} [opts]
+ * @param {String} [opts.search]
  * @param {String[]} [opts.origins]
  * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
@@ -424,6 +425,7 @@ export async function get (url, {permissions, includeLinks, includeContent} = {}
  */
 export async function query (opts, {includeContent, includeLinks, permissions} = {}) {
   opts = opts && typeof opts === 'object' ? opts : {}
+  opts.search = validation.string('search', opts.search)
   opts.origins = validation.arrayOfOrigins('origins', opts.origins)
   opts.excludeOrigins = validation.arrayOfOrigins('excludeOrigins', opts.excludeOrigins)
   opts.paths = validation.arrayOfStrings('paths', opts.paths)

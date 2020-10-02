@@ -18,6 +18,7 @@ export class Record extends LitElement {
       renderMode: {type: String, attribute: 'render-mode'},
       isNotification: {type: Boolean, attribute: 'is-notification'},
       isUnread: {type: Boolean, attribute: 'is-unread'},
+      searchTerms: {type: String, attribute: 'search-terms'},
       showContext: {type: Boolean, attribute: 'show-context'},
       constrainHeight: {type: Boolean, attribute: 'constrain-height'},
       profileUrl: {type: String, attribute: 'profile-url'},
@@ -39,6 +40,7 @@ export class Record extends LitElement {
     this.renderMode = undefined
     this.isNotification = false
     this.isUnread = false
+    this.searchTerms = undefined
     this.showContext = false
     this.constrainHeight = false
     this.profileUrl = undefined
@@ -84,7 +86,6 @@ export class Record extends LitElement {
         rtime
         metadata
         index
-        matches
         content
         site {
           url
@@ -269,7 +270,7 @@ export class Record extends LitElement {
             </div>
           </div>
           <div class="content markdown">
-            ${res.content ? (renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))) : ''}
+            ${res.content ? (this.renderMatchText('content') || unsafeHTML(beaker.markdown.toHTML(res.content))) : ''}
           </div>
           ${this.showReadMore ? html`
             <div class="read-more">
@@ -339,7 +340,7 @@ export class Record extends LitElement {
           ` : ''}
         </div>
         <div class="content markdown">
-          ${renderMatchText(res, 'content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
+          ${this.renderMatchText('content') || unsafeHTML(beaker.markdown.toHTML(res.content))}
         </div>
         ${this.showReadMore ? html`
           <div class="read-more">
@@ -469,7 +470,7 @@ export class Record extends LitElement {
           ${this.renderThumb(res)}
         </a>
         <div class="info">
-          <div class="title"><a href=${href}>${renderMatchText(res, 'title') || shorten(title, 150)}</a></div>
+          <div class="title"><a href=${href}>${this.renderMatchText('title') || shorten(title, 150)}</a></div>
           <div class="origin">
             ${isBookmark ? html`
               <span class="origin-note"><span class="far fa-fw fa-star"></span> Bookmarked by</span>
@@ -503,7 +504,7 @@ export class Record extends LitElement {
           </div>
           ${content ? html`
             <div class="excerpt">
-              ${renderMatchText(res, 'content') || shorten(removeMarkdown(removeFirstMdHeader(content)), 300)}
+              ${this.renderMatchText('content') || shorten(removeMarkdown(removeFirstMdHeader(content)), 300)}
             </div>
           ` : ''}
         </div>
@@ -663,6 +664,30 @@ export class Record extends LitElement {
     `
   }
 
+  renderMatchText (key) {
+    if (!this.searchTerms) return undefined
+    let v = key === 'content' ? this.record.content : this.record.metadata[key]
+    if (!v) return undefined
+    let re = new RegExp(`(${this.searchTerms.replace(/([\s]+)/g, '|')})`, 'gi')
+    let text = removeMarkdown(v).replace(re, match => `<b>${match}</b>`)
+
+    // if there were no facet highlights then it was a link url (or similar) that matched
+    // and `removeMarkdown()` has hidden that, which makes the result confusing
+    // so we need to show the markdown syntax if that's the case
+    let start = text.indexOf('<b>')
+    if (start === -1) {
+      text = v.replace(re, match => `<b>${match}</b>`)
+      start = text.indexOf('<b>')
+    }
+
+    // slice to the matched text
+    if (start > 50) text = `...${text.slice(start - 50)}`
+    let end = text.indexOf('</b>')
+    if ((text.length - end) > 200) text = `${text.slice(0, end + 200)}...`
+
+    return unsafeHTML(text)
+  }
+
   renderNotification () {
     const res = this.record
     const link = res.links.find(l => l.url.startsWith(this.profileUrl))
@@ -748,7 +773,6 @@ export class Record extends LitElement {
           rtime
           metadata
           index
-          matches
           content
           site {
             url
@@ -827,13 +851,6 @@ export class Record extends LitElement {
 }
 
 customElements.define('beaker-record', Record)
-
-function renderMatchText (result, key) {
-  if (!result.matches) return undefined
-  var match = result.matches.find(m => m.key === key)
-  if (!match) return undefined
-  return unsafeHTML(makeSafe(removeMarkdown(match.value, {keepHtml: true})).replace(/&lt;b&gt;/g, '<b>').replace(/&lt;\/b&gt;/g, '</b>'))
-}
 
 function removeFirstMdHeader (str = '') {
   return str.replace(/(^#\s.*\r?\n)/, '').trim()

@@ -131,7 +131,6 @@ export class RecordFeed extends LitElement {
           rtime
           metadata
           index
-          matches
           content
           ${this.notifications ? `
           links {
@@ -254,6 +253,7 @@ export class RecordFeed extends LitElement {
         .record=${result}
         class=${this.recordClass}
         render-mode=${renderMode}
+        search-terms=${this.filter}
         show-context
         profile-url=${this.profileUrl}
       ></beaker-record>
