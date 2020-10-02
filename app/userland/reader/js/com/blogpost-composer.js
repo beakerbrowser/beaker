@@ -271,19 +271,21 @@ class BlogpostComposer extends LitElement {
     var url = await this.writePost(false)
     if (!this.post) {
       var {post} = await beaker.index.gql(`
-        post: record (url: "${url}") {
-          path
-          url
-          ctime
-          mtime
-          rtime
-          metadata
-          site {
+        query Post($url: String!) {
+          post: record (url: $url) {
+            path
             url
-            title
+            ctime
+            mtime
+            rtime
+            metadata
+            site {
+              url
+              title
+            }
           }
         }
-      `)
+      `, {url})
       this.post = post
     }
 

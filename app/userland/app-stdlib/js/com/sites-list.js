@@ -100,22 +100,24 @@ export class SitesList extends LitElement {
       sites = sites.filter(s => s.info?.writable)
       sites = await Promise.all(sites.map(async s => {
         let res = await beaker.index.gql(`
-          isSubscribedByUser: backlinkCount(
-            origins: ["${this.profileUrl}"]
-            links: {origin: "${s.url}"}
-            paths: ["/subscriptions/*.goto"]
-          )
-          isSubscriberToUser: recordCount(
-            origins: ["${s.url}"]
-            links: {origin: "${this.profileUrl}"}
-            paths: ["/subscriptions/*.goto"]
-          )
-          subCount: backlinkCount(
-            links: {origin: "${s.url}"}
-            paths: ["/subscriptions/*.goto"]
-            indexes: ["local", "network"]
-          )
-        `)
+          query Graph($origin: String!, $profileUrl: String!) {
+            isSubscribedByUser: backlinkCount(
+              origins: [$profileUrl]
+              links: {origin: $origin}
+              paths: ["/subscriptions/*.goto"]
+            )
+            isSubscriberToUser: recordCount(
+              origins: [$origin]
+              links: {origin: $profileUrl}
+              paths: ["/subscriptions/*.goto"]
+            )
+            subCount: backlinkCount(
+              links: {origin: $origin}
+              paths: ["/subscriptions/*.goto"]
+              indexes: ["local", "network"]
+            )
+          }
+        `, {profileUrl: this.profileUrl, origin: s.url})
         return {
           origin: s.url,
           url: s.url,
@@ -130,92 +132,106 @@ export class SitesList extends LitElement {
       }))
     } else if (this.listing === 'subscribed') {
       let {subs} = await beaker.index.gql(`
-        subs: records(paths: ["/subscriptions/*.goto"], origins: ["${this.profileUrl}"]) {
-          linkedSites {
-            url
-            title
-            description
-            writable
-            isSubscribedByUser: backlinkCount(
-              origins: ["${this.profileUrl}"]
-              paths: ["/subscriptions/*.goto"]
-            )
-            isSubscriberToUser: recordCount(
-              links: {origin: "${this.profileUrl}"}
-              paths: ["/subscriptions/*.goto"]
-            )
-            subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+        query Subscriptions($profileUrl: String!) {
+          subs: records(paths: ["/subscriptions/*.goto"], origins: [$profileUrl]) {
+            linkedSites {
+              url
+              title
+              description
+              writable
+              isSubscribedByUser: backlinkCount(
+                origins: [$profileUrl]
+                paths: ["/subscriptions/*.goto"]
+              )
+              isSubscriberToUser: recordCount(
+                links: {origin: $profileUrl}
+                paths: ["/subscriptions/*.goto"]
+              )
+              subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+            }
           }
         }
-      `)
+      `, {profileUrl: this.profileUrl})
       sites = subs.map(sub => sub.linkedSites[0])
     } else if (this.listing === 'subscribers') {
       let {subs} = await beaker.index.gql(`
-        subs: records(paths: ["/subscriptions/*.goto"], links: {origin: "${this.profileUrl}"}, indexes: ["local", "network"]) {
-          site (cached: true) {
-            url
-            title
-            description
-            writable
-            isSubscribedByUser: backlinkCount(
-              origins: ["${this.profileUrl}"]
-              paths: ["/subscriptions/*.goto"]
-            )
-            isSubscriberToUser: recordCount(
-              links: {origin: "${this.profileUrl}"}
-              paths: ["/subscriptions/*.goto"]
-            )
-            subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+        query Subscribers($profileUrl: String!) {
+          subs: records(paths: ["/subscriptions/*.goto"], links: {origin: $profileUrl}, indexes: ["local", "network"]) {
+            site (cached: true) {
+              url
+              title
+              description
+              writable
+              isSubscribedByUser: backlinkCount(
+                origins: [$profileUrl]
+                paths: ["/subscriptions/*.goto"]
+              )
+              isSubscriberToUser: recordCount(
+                links: {origin: $profileUrl}
+                paths: ["/subscriptions/*.goto"]
+              )
+              subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+            }
           }
         }
-      `)
+      `, {profileUrl: this.profileUrl})
       sites = subs.map(sub => sub.site)
     } else if (this.listing === 'network') {
       isFiltered = true
       let res = await beaker.index.gql(`
-        sites (
-          ${this.filter ? `search: "${this.filter}"` : ''}
-          indexes: ["network"]
-          limit: 15
+        query Sites (
+          $profileUrl: String!
+          ${this.filter ? `$search: String!` : ''}
         ) {
-          url
-          title
-          description
-          writable
-          isSubscribedByUser: backlinkCount(
-            origins: ["${this.profileUrl}"]
-            paths: ["/subscriptions/*.goto"]
-          )
-          isSubscriberToUser: recordCount(
-            links: {origin: "${this.profileUrl}"}
-            paths: ["/subscriptions/*.goto"]
-          )
-          subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+          sites (
+            ${this.filter ? `search: $search"` : ''}
+            indexes: ["network"]
+            limit: 15
+          ) {
+            url
+            title
+            description
+            writable
+            isSubscribedByUser: backlinkCount(
+              origins: [$profileUrl]
+              paths: ["/subscriptions/*.goto"]
+            )
+            isSubscriberToUser: recordCount(
+              links: {origin: $profileUrl}
+              paths: ["/subscriptions/*.goto"]
+            )
+            subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+          }
         }
-      `)
+      `, {profileUrl: this.profileUrl, search: this.filter})
       sites = res.sites
     } else {
       isFiltered = true
       let res = await beaker.index.gql(`
-        sites (
-          ${this.filter ? `search: "${this.filter}"` : ''}
-          indexes: ["local", "network"]
+        query Sites(
+          $profileUrl: String!
+          ${this.filter ? `$search: String!` : ''}
         ) {
-          url
-          title
-          description
-          writable
-          isSubscribedByUser: backlinkCount(
-            origins: ["${this.profileUrl}"]
-            paths: ["/subscriptions/*.goto"]
-          )
-          isSubscriberToUser: recordCount(
-            links: {origin: "${this.profileUrl}"}
-            paths: ["/subscriptions/*.goto"]
-          )
-          subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+          sites (
+            ${this.filter ? `search: $search` : ''}
+            indexes: ["local", "network"]
+          ) {
+            url
+            title
+            description
+            writable
+            isSubscribedByUser: backlinkCount(
+              origins: [$profileUrl]
+              paths: ["/subscriptions/*.goto"]
+            )
+            isSubscriberToUser: recordCount(
+              links: {origin: $profileUrl}
+              paths: ["/subscriptions/*.goto"]
+            )
+            subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+          }
         }
-      `)
+      `, {profileUrl: this.profileUrl, search: this.filter})
       sites = res.sites
     }
 

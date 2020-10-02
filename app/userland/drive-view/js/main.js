@@ -54,11 +54,13 @@ class DriveViewApp extends LitElement {
 
     let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
     let {profile} = await beaker.index.gql(`
-      profile: site(url: "${addressBook?.profiles?.[0]?.key}") {
-        url
-        title
+      query Profile($url: String!) {
+        profile: site(url: $url) {
+          url
+          title
+        }
       }
-    `)
+    `, {url: addressBook?.profiles?.[0]?.key})
     this.profile = profile
     
     this.fetchSiteInfo().then(info => {
@@ -67,35 +69,42 @@ class DriveViewApp extends LitElement {
       this.requestUpdate()
     })
     this.contentCounts = await beaker.index.gql(`
-      bookmark: recordCount(paths: ["${PATH_QUERIES.bookmarks.join('", "')}"] origins: ["${window.location.origin}"])
-      blogpost: recordCount(paths: ["${PATH_QUERIES.blogposts.join('", "')}"] origins: ["${window.location.origin}"])
-      page: recordCount(paths: ["${PATH_QUERIES.pages.join('", "')}"] origins: ["${window.location.origin}"])
-      microblogpost: recordCount(paths: ["${PATH_QUERIES.microblogposts.join('", "')}"] origins: ["${window.location.origin}"])
-      comment: recordCount(paths: ["${PATH_QUERIES.comments.join('", "')}"] origins: ["${window.location.origin}"])
-      subscription: recordCount(paths: ["${PATH_QUERIES.subscriptions.join('", "')}"] origins: ["${window.location.origin}"])
-    `)
+      query Counts ($origin: String!) {
+        bookmark: recordCount(paths: ["${PATH_QUERIES.bookmarks.join('", "')}"] origins: [$origin])
+        blogpost: recordCount(paths: ["${PATH_QUERIES.blogposts.join('", "')}"] origins: [$origin])
+        page: recordCount(paths: ["${PATH_QUERIES.pages.join('", "')}"] origins: [$origin])
+        microblogpost: recordCount(paths: ["${PATH_QUERIES.microblogposts.join('", "')}"] origins: [$origin])
+        comment: recordCount(paths: ["${PATH_QUERIES.comments.join('", "')}"] origins: [$origin])
+        subscription: recordCount(paths: ["${PATH_QUERIES.subscriptions.join('", "')}"] origins: [$origin])
+      }
+    `, {origin: window.location.origin})
     this.requestUpdate()
   }
 
 
   async fetchSiteInfo () {
     let res = await beaker.index.gql(`
-      site(url: "${window.location.origin}") {
-        url
-        title
-        description
-        writable
-        isSubscribedByUser: backlinkCount(
-          origins: ["${this.profile.url}"]
-          paths: ["/subscriptions/*.goto"]
-        )
-        isSubscriberToUser: recordCount(
-          links: {origin: "${this.profile.url}"}
-          paths: ["/subscriptions/*.goto"]
-        )
-        subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+      query Site($url: String!, $profileUrl: String!) {
+        site(url: $url) {
+          url
+          title
+          description
+          writable
+          isSubscribedByUser: backlinkCount(
+            origins: [$profileUrl]
+            paths: ["/subscriptions/*.goto"]
+          )
+          isSubscriberToUser: recordCount(
+            links: {origin: $profileUrl}
+            paths: ["/subscriptions/*.goto"]
+          )
+          subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+        }
       }
-    `).catch(e => undefined)
+    `, {
+      url: window.location.origin,
+      profileUrl: this.profile.url
+    }).catch(e => undefined)
     return res?.site
   }
 

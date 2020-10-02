@@ -14,19 +14,21 @@ import { URL } from 'url'
  */
 export async function list () {
   var {records} = await indexer.gql(`
-    records (
-      paths: ["/subscriptions/*.goto"]
-      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
-    ) {
-      url
-      metadata
-      site {
+    query Subscriptions ($profileUrl: String!) {
+      records (
+        paths: ["/subscriptions/*.goto"]
+        origins: ["hyper://private", $profileUrl]
+      ) {
         url
-        title
-        description
+        metadata
+        site {
+          url
+          title
+          description
+        }
       }
     }
-  `)
+  `, {profileUrl: filesystem.getProfileUrl()})
   return records.map(massageSubscription)
 }
 
@@ -37,21 +39,23 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var {records} = await indexer.gql(`
-    records (
-      paths: ["/subscriptions/*.goto"]
-      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
-      links: {url: "${href}"}
-      limit: 1
-    ) {
-      url
-      metadata
-      site {
+    query Subscription ($profileUrl: String!, $href: String!) {
+      records (
+        paths: ["/subscriptions/*.goto"]
+        origins: ["hyper://private", $profileUrl]
+        links: {url: $href}
+        limit: 1
+      ) {
         url
-        title
-        description
+        metadata
+        site {
+          url
+          title
+          description
+        }
       }
     }
-  `)
+  `, {profileUrl: filesystem.getProfileUrl(), href})
   if (records[0]) {
     return massageSubscription(records[0])
   }
@@ -64,21 +68,23 @@ export async function get (href) {
 export async function listNetworkFor (href) {
   href = normalizeUrl(href)
   var {records} = await indexer.gql(`
-    records (
-      paths: ["/subscriptions/*.goto"]
-      links: {url: "${href}"}
-      indexes: ["local", "network"]
-    ) {
-      url
-      metadata
-      index
-      site {
+    query SubNetwork ($href: String!) {
+      records (
+        paths: ["/subscriptions/*.goto"]
+        links: {url: $href}
+        indexes: ["local", "network"]
+      ) {
         url
-        title
-        description
+        metadata
+        index
+        site {
+          url
+          title
+          description
+        }
       }
     }
-  `)
+  `, {href})
   var profileUrl = filesystem.getProfileUrl()
   // only trust the users' subs from the local index, which will be more up-to-date
   records = records.filter(r => !(isSameOrigin(r.site.url, profileUrl) && r.index !== 'local'))

@@ -54,18 +54,22 @@ class ReaderApp extends LitElement {
   async loadSuggestions () {
     const getSite = async (url) => {
       let {site} = await beaker.index.gql(`
-        site(url: "${url}") {
-          url
-          title
-          description
-          subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+        query Site($url: String!) {
+          site(url: $url) {
+            url
+            title
+            description
+            subCount: backlinkCount(paths: ["/subscriptions/*.goto"] indexes: ["local", "network"])
+          }
         }
-      `)
+      `, {url})
       return site
     }
     let {allSubscriptions} = await beaker.index.gql(`
-      allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: crtime reverse: true) {
-        metadata
+      query {
+        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: crtime reverse: true) {
+          metadata
+        }
       }
     `)
     var currentSubs = new Set((await beaker.subscriptions.list()).map(source => (getOrigin(source.href))))
@@ -81,7 +85,7 @@ class ReaderApp extends LitElement {
     suggestedSites = suggestedSites.filter(site => site && site.title)
     if (suggestedSites.length < 12) {
       let {moreSites} = await beaker.index.gql(`
-        moreSites: sites(indexes: ["network"] limit: 12) { url }
+        query { moreSites: sites(indexes: ["network"] limit: 12) { url } }
       `)
       moreSites = moreSites.filter(site => !currentSubs.has(site.url))
 
@@ -174,20 +178,22 @@ class ReaderApp extends LitElement {
 
   async onComposerPublish (e) {
     var {currentPost} = await beaker.index.gql(`
-      currentPost: record (url: "${e.detail.url}") {
-        path
-        url
-        ctime
-        mtime
-        rtime
-        metadata
-        site {
+      query Post($url: String!) {
+        currentPost: record (url: $url) {
+          path
           url
-          title
+          ctime
+          mtime
+          rtime
+          metadata
+          site {
+            url
+            title
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        commentCount: backlinkCount(paths: ["/comments/*.md"])
       }
-    `)
+    `, {url: e.detail.url})
     this.currentPost = currentPost
     this.composerMode = false
   }
@@ -206,18 +212,20 @@ class ReaderApp extends LitElement {
     var rect = e.currentTarget.getClientRects()[0]
 
     var {drafts} = await beaker.index.gql(`
-      drafts: records (paths: ["/blog/*.md"] origins: ["hyper://private"] sort: crtime reverse: true) {
-        path
-        url
-        ctime
-        mtime
-        rtime
-        metadata
-        site {
+      query {
+        drafts: records (paths: ["/blog/*.md"] origins: ["hyper://private"] sort: crtime reverse: true) {
+          path
           url
-          title
+          ctime
+          mtime
+          rtime
+          metadata
+          site {
+            url
+            title
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        commentCount: backlinkCount(paths: ["/comments/*.md"])
       }
     `)
     contextMenu.create({

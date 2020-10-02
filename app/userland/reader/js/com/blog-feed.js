@@ -27,21 +27,29 @@ class BlogFeed extends LitElement {
 
   async load () {
     let {posts} = await beaker.index.gql(`
-      posts: records (paths: ["/blog/*.md"] sort: crtime reverse: true limit: 100) {
-        path
-        url
-        ctime
-        mtime
-        rtime
-        metadata
-        site {
+      query {
+        posts: records (
+          paths: ["/blog/*.md"]
+          excludeOrigins: ["hyper://private"]
+          sort: crtime
+          reverse: true
+          limit: 100
+        ) {
+          path
           url
-          title
+          ctime
+          mtime
+          rtime
+          metadata
+          site {
+            url
+            title
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        commentCount: backlinkCount(paths: ["/comments/*.md"])
       }
     `)
-    this.posts = posts.filter(p => p.site.url !== 'hyper://private')
+    this.posts = posts
   }
 
   render () {

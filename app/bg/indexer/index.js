@@ -232,10 +232,8 @@ const graphqlRoot = {
   }
 }
 
-const QUERY_STR_RE = /query[\s]*{/i
-export async function gql (query) {
-  if (!QUERY_STR_RE.test(query)) query = `query { ${query} }`
-  var res = await graphql(graphqlSchema, query, graphqlRoot, {ctx: 'todo'})
+export async function gql (query, variables) {
+  var res = await graphql(graphqlSchema, query, graphqlRoot, {ctx: 'todo'}, variables)
   if (res.errors) throw new Error(res.errors[0])
   return res.data
 }

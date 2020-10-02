@@ -37,13 +37,15 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   var [historyResults, networkQuery, bookmarks] = await Promise.all([
     ctx.inputValue ? bg.history.search(ctx.inputValue) : [],
     ctx.inputValue ? bg.index.gql(`
-      records(search: "${ctx.inputValue}", paths: ["/bookmarks/*.goto"], limit: 10) {
-        url
-        path
-        metadata
-        site { title }
+      query Search ($search: String!) {
+        records(search: $search, paths: ["/bookmarks/*.goto"], limit: 10) {
+          url
+          path
+          metadata
+          site { title }
+        }
       }
-    `) : undefined,
+    `, {search: ctx.inputValue}) : undefined,
     ctx.bookmarksFetch
   ])
 

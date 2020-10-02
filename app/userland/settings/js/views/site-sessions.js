@@ -24,14 +24,16 @@ class SiteSessionsView extends LitElement {
     this.sessions = await beaker.browser.listSiteSessions()
     this.sessions.forEach(async sess => {
       let {site, user} = await beaker.index.gql(`
-        site (url: "${sess.siteOrigin}") {
-          title
+        query ($site: String!, $user: String!) {
+          site (url: $site) {
+            title
+          }
+          user: site(url: $user) {
+            url
+            title
+          }
         }
-        user: site(url: "${sess.userUrl}") {
-          url
-          title
-        }
-      `)
+      `, {site: sess.siteOrigin, user: sess.userUrl})
       sess.site = site
       sess.user = user
       this.requestUpdate()

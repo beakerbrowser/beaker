@@ -30,17 +30,19 @@ export class MarkdownSuggestions {
       return null
     }
     const {queryResults} = await this.searchDebouncer(() => beaker.index.gql(`
-      queryResults: records(
-        search: "${term}",
-        paths: ["/blog/*.md"],
-        limit: 10
-      ) {
-        url
-        path
-        metadata
-        site { title }
+      query Search ($search: String!) {
+        queryResults: records(
+          search: $search,
+          paths: ["/blog/*.md"],
+          limit: 10
+        ) {
+          url
+          path
+          metadata
+          site { title }
+        }
       }
-    `))
+    `, {search: term}))
     const suggestions = queryResults.map(s => {
       var type = 'blogpost'
       if (s.path.startsWith('/pages/')) type = 'page'
@@ -60,8 +62,10 @@ export class MarkdownSuggestions {
 
   async completePeopleSuggestions (term, match, value) {
     const {queryResults} = await this.searchDebouncer(() => beaker.index.gql(`
-      queryResults: sites(search: "${term}", limit: 10) { url, title }
-    `))
+      query Search($search: String!) {
+        queryResults: sites(search: $search, limit: 10) { url, title }
+      }
+    `, {search: term}))
     const suggestions = queryResults.map(s => {
       return {
         kind: 7, // "Interface"

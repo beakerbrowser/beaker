@@ -77,28 +77,30 @@ export class Record extends LitElement {
 
   async load () {
     let {record} = await beaker.index.gql(`
-      record (url: "${this.loadRecordUrl}") {
-        type
-        path
-        url
-        ctime
-        mtime
-        rtime
-        metadata
-        index
-        content
-        site {
+      query Record ($url: String!) {
+        record (url: $url) {
+          type
+          path
           url
-          title
-        }
-        votes: backlinks(paths: ["/votes/*.goto"]) {
-          url
+          ctime
+          mtime
+          rtime
           metadata
-          site { url title }
+          index
+          content
+          site {
+            url
+            title
+          }
+          votes: backlinks(paths: ["/votes/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        commentCount: backlinkCount(paths: ["/comments/*.md"])
       }
-    `)
+    `, {url: this.loadRecordUrl})
     this.record = record
     if (!this.renderMode) {
       this.renderMode = getPreferredRenderMode(this.record)
@@ -108,13 +110,15 @@ export class Record extends LitElement {
 
   async reloadSignals () {
     let {votes, commentCount} = await beaker.index.gql(`
-      votes: records(paths: ["/votes/*.goto"] links: {url: "${this.record.url}"}) {
-        url
-        metadata
-        site { url title }
+      query Signals ($href: String!) {
+        votes: records(paths: ["/votes/*.goto"] links: {url: $href}) {
+          url
+          metadata
+          site { url title }
+        }
+        commentCount: recordCount(paths: ["/comments/*.md"] links: {url: $href})
       }
-      commentCount: recordCount(paths: ["/comments/*.md"] links: {url: "${this.record.url}"})
-    `)
+    `, {href: this.record.url})
     this.record.votes = votes
     this.record.commentCount = commentCount
     this.requestUpdate()
@@ -764,28 +768,30 @@ export class Record extends LitElement {
       e.preventDefault()
       e.stopPropagation()
       let {record} = await beaker.index.gql(`
-        record (url: "${this.record.metadata.href}") {
-          type
-          path
-          url
-          ctime
-          mtime
-          rtime
-          metadata
-          index
-          content
-          site {
+        query Record ($url: String!) {
+          record (url: $url) {
+            type
+            path
             url
-            title
-          }
-          votes: backlinks(paths: ["/votes/*.goto"]) {
-            url
+            ctime
+            mtime
+            rtime
             metadata
-            site { url title }
+            index
+            content
+            site {
+              url
+              title
+            }
+            votes: backlinks(paths: ["/votes/*.goto"]) {
+              url
+              metadata
+              site { url title }
+            }
+            commentCount: backlinkCount(paths: ["/comments/*.md"])
           }
-          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-      `)
+      `, {url: this.record.metadata.href})
       emit(this, 'view-thread', {detail: {record}})
     }
   }
@@ -863,11 +869,13 @@ async function getNotificationSubject (url) {
   }
   try {
     let {record} = await beaker.index.gql(`
-      record (url: "${url}") {
-        path
-        metadata
+      query Record($url: String!) {
+        record (url: $url) {
+          path
+          metadata
+        }
       }
-    `)
+    `, {url})
     if (record.metadata.title) {
       return `"${record.metadata.title}"`
     }

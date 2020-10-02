@@ -656,8 +656,10 @@ export class Pane extends EventEmitter {
 
   async fetchBacklinkCount (noEmit = false) {
     let {backlinkCount} = await indexer.gql(`
-      backlinkCount: recordCount(paths: ["/comments/*.md"] links: {url: "${stripUrlHash(this.url)}"})
-    `)
+      query BacklinkCount ($href: String!) {
+        backlinkCount: recordCount(paths: ["/comments/*.md"] links: {url: $href})
+      }
+    `, {href: stripUrlHash(this.url)})
     this.backlinkCount = backlinkCount
     if (!noEmit) {
       this.emitUpdateState()

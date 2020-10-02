@@ -110,46 +110,62 @@ export class RecordFeed extends LitElement {
     let offset = 0
     do {
       let {subresults} = await beaker.index.gql(`
-        subresults: records (
-          paths: ["${this.pathQuery.join('", "')}"]
-          ${this.sources ? `origins: ["${this.sources.join('", "')}"]` : ''}
-          ${this.filter ? `search: "${this.filter}"` : ''}
-          ${this.limit ? `limit: ${this.limit}` : ''}
-          ${this.notifications ? `
-            links: {origin: "${this.profileUrl}"}
-            excludeOrigins: ["${this.profileUrl}"]
-          ` : ''}
-          offset: ${offset}
-          sort: crtime,
-          reverse: true
+        query Feed (
+          $paths: [String]!
+          $offset: Int!
+          ${this.sources ? `$origins: [String]!` : ''}
+          ${this.filter ? `$search: String!` : ''}
+          ${this.limit ? `$limit: Int!` : ''}
+          ${this.notifications ? `$profileUrl: String!` : ''}
         ) {
-          type
-          path
-          url
-          ctime
-          mtime
-          rtime
-          metadata
-          index
-          content
-          ${this.notifications ? `
-          links {
-            source
+          subresults: records (
+            paths: $paths
+            ${this.sources ? `origins: $origins` : ''}
+            ${this.filter ? `search: $search` : ''}
+            ${this.limit ? `limit: $limit` : ''}
+            ${this.notifications ? `
+              links: {origin: $profileUrl}
+              excludeOrigins: [$profileUrl]
+            ` : ''}
+            offset: $offset
+            sort: crtime,
+            reverse: true
+          ) {
+            type
+            path
             url
-          }
-          ` : ''}
-          site {
-            url
-            title
-          }
-          votes: backlinks(paths: ["/votes/*.goto"]) {
-            url
+            ctime
+            mtime
+            rtime
             metadata
-            site { url title }
+            index
+            content
+            ${this.notifications ? `
+            links {
+              source
+              url
+            }
+            ` : ''}
+            site {
+              url
+              title
+            }
+            votes: backlinks(paths: ["/votes/*.goto"]) {
+              url
+              metadata
+              site { url title }
+            }
+            commentCount: backlinkCount(paths: ["/comments/*.md"])
           }
-          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-      `)
+      `, {
+        paths: this.pathQuery,
+        origins: this.sources,
+        search: this.filter,
+        offset,
+        limit: this.limit,
+        profileUrl: this.profileUrl
+      })
       if (subresults.length === 0) break
       
       offset += subresults.length

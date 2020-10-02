@@ -62,39 +62,43 @@ export class RecordThread extends LitElement {
     try {
       if (isSite) {
         let {site} = await beaker.index.gql(`
-          site(url: "${url}") {
-            url
-            title
-            description
-            writable
+          query Site($url: String!) {
+            site(url: $url) {
+              url
+              title
+              description
+              writable
+            }
           }
-        `)
+        `, {url})
         v = site
         v.isSite = true
       } else {
         let {record} = await beaker.index.gql(`
-          record (url: "${url}") {
-            type
-            path
-            url
-            ctime
-            mtime
-            rtime
-            metadata
-            index
-            content
-            site {
+          query Record($url: String!) {
+            record (url: $url) {
+              type
+              path
               url
-              title
-            }
-            votes: backlinks(paths: ["/votes/*.goto"]) {
-              url
+              ctime
+              mtime
+              rtime
               metadata
-              site { url title }
+              index
+              content
+              site {
+                url
+                title
+              }
+              votes: backlinks(paths: ["/votes/*.goto"]) {
+                url
+                metadata
+                site { url title }
+              }
+              commentCount: backlinkCount(paths: ["/comments/*.md"])
             }
-            commentCount: backlinkCount(paths: ["/comments/*.md"])
           }
-        `)
+        `, {url})
         v = record
       }
     } catch {}
@@ -131,33 +135,35 @@ export class RecordThread extends LitElement {
   async loadComments (record) {
     // local first
     let {replies} = await beaker.index.gql(`
-      replies: records (
-        links: {url: "${stripUrlHash(this.subjectUrl)}"}
-        indexes: ["local"]
-        sort: crtime,
-        reverse: true
-      ) {
-        type
-        path
-        url
-        ctime
-        mtime
-        rtime
-        metadata
-        index
-        content
-        site {
+      query Replies ($href: String!) {
+        replies: records (
+          links: {url: $href}
+          indexes: ["local"]
+          sort: crtime,
+          reverse: true
+        ) {
+          type
+          path
           url
-          title
-        }
-        votes: backlinks(paths: ["/votes/*.goto"]) {
-          url
+          ctime
+          mtime
+          rtime
           metadata
-          site { url title }
+          index
+          content
+          site {
+            url
+            title
+          }
+          votes: backlinks(paths: ["/votes/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        commentCount: backlinkCount(paths: ["/comments/*.md"])
       }
-    `)
+    `, {href: stripUrlHash(this.subjectUrl)})
     this.commentCount = replies.filter(r => getRecordType(r) === 'comment').length
     this.relatedItemCount = replies.length - this.commentCount
     this.replies = toThreadTree(replies)
@@ -167,33 +173,35 @@ export class RecordThread extends LitElement {
 
     // then try network
     var {networkReplies} = await beaker.index.gql(`
-      networkReplies: records (
-        links: {url: "${stripUrlHash(this.subjectUrl)}"}
-        indexes: ["network"]
-        sort: crtime,
-        reverse: true
-      ) {
-        type
-        path
-        url
-        ctime
-        mtime
-        rtime
-        metadata
-        index
-        content
-        site {
+      query Replies ($href: String!) {
+        networkReplies: records (
+          links: {url: $href}
+          indexes: ["network"]
+          sort: crtime,
+          reverse: true
+        ) {
+          type
+          path
           url
-          title
-        }
-        votes: backlinks(paths: ["/votes/*.goto"]) {
-          url
+          ctime
+          mtime
+          rtime
           metadata
-          site { url title }
+          index
+          content
+          site {
+            url
+            title
+          }
+          votes: backlinks(paths: ["/votes/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
+          commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
-        commentCount: backlinkCount(paths: ["/comments/*.md"])
       }
-    `)
+    `, {href: stripUrlHash(this.subjectUrl)})
     networkReplies = networkReplies.filter(reply => 
       !reply.path.startsWith('/votes/') // filter out votes
       && !replies.find(reply2 => reply.url === reply2.url) // filter out in-network items

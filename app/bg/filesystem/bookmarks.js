@@ -16,19 +16,21 @@ import * as profileDb from '../dbs/profile-data-db'
  */
 export async function list () {
   var {records} = await indexer.gql(`
-    records (
-      paths: ["/bookmarks/*.goto"]
-      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
-    ) {
-      url
-      metadata
-      site {
+    query Bookmarks ($profileUrl: String!) {
+      records (
+        paths: ["/bookmarks/*.goto"]
+        origins: ["hyper://private", $profileUrl]
+      ) {
         url
-        title
-        description
+        metadata
+        site {
+          url
+          title
+          description
+        }
       }
     }
-  `)
+  `, {profileUrl: filesystem.getProfileUrl()})
   var pins = await pinsAPI.getCurrent()
   return records.map(r => massageBookmark(r, pins))
 }
@@ -40,21 +42,23 @@ export async function list () {
 export async function get (href) {
   href = normalizeUrl(href)
   var {records} = await indexer.gql(`
-    records (
-      paths: ["/bookmarks/*.goto"]
-      origins: ["hyper://private", "${filesystem.getProfileUrl()}"]
-      links: {url: "${href}"}
-      limit: 1
-    ) {
-      url
-      metadata
-      site {
+    query Bookmark ($profileUrl: String!, $href: String!) {
+      records (
+        paths: ["/bookmarks/*.goto"]
+        origins: ["hyper://private", $profileUrl]
+        links: {url: $href}
+        limit: 1
+      ) {
         url
-        title
-        description
+        metadata
+        site {
+          url
+          title
+          description
+        }
       }
     }
-  `)
+  `, {profileUrl: filesystem.getProfileUrl(), href})
   if (records[0]) {
     var pins = await pinsAPI.getCurrent()
     return massageBookmark(records[0], pins)
