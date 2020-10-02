@@ -60,6 +60,7 @@ class SocialApp extends LitElement {
     this.listingSelfState = undefined
     this.isProfileListedInBeakerNetwork = undefined
     this.notificationsClearTime = +localStorage.getItem('notificationsClearTime') || 1
+    this.cachedNotificationsClearTime = this.notificationsClearTime
 
     this.configFromQP()
     this.load().then(() => {
@@ -315,7 +316,7 @@ class SocialApp extends LitElement {
             ${this.isEmpty && !this.isIntroActive ? this.renderEmptyMessage() : ''}
             <beaker-record-feed
               .pathQuery=${PATH_QUERIES[location.pathname.slice(1) || 'all']}
-              .notifications=${location.pathname === '/notifications' ? {unreadSince: this.notificationsClearTime} : undefined}
+              .notifications=${location.pathname === '/notifications' ? {unreadSince: this.cachedNotificationsClearTime} : undefined}
               limit="50"
               @load-state-updated=${this.onFeedLoadStateUpdated}
               @view-thread=${this.onViewThread}
