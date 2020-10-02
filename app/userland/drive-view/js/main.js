@@ -1,7 +1,6 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { ViewThreadPopup } from 'beaker://app-stdlib/js/com/popups/view-thread.js'
 import { SitesListPopup } from 'beaker://app-stdlib/js/com/popups/sites-list.js'
-import { NewPagePopup } from 'beaker://app-stdlib/js/com/popups/new-page.js'
 import { NewPostPopup } from 'beaker://app-stdlib/js/com/popups/new-post.js'
 import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { shorten, pluralize, isSameOrigin } from 'beaker://app-stdlib/js/strings.js'
@@ -16,7 +15,6 @@ const NAV_ITEMS = [
   {type: undefined, path: '/', icon: 'fas fa-home', label: 'Home'},
   {type: 'bookmark', path: '/bookmarks/', icon: 'far fa-star', label: 'Bookmarks'},
   {type: 'blogpost', path: '/blog/', icon: 'fas fa-blog', label: 'Blog'},
-  {type: 'page', path: '/pages/', icon: 'far fa-file', label: 'Pages'},
   {type: 'microblogpost', path: '/microblog/', icon: 'far fa-comment-alt', label: 'Posts'},
   {type: 'comment', path: '/comments/', icon: 'far fa-comments', label: 'Comments'},
   {type: 'subscription', path: '/subscriptions/', icon: 'fas fa-rss', label: 'Subscriptions'}
@@ -24,7 +22,6 @@ const NAV_ITEMS = [
 const PATH_QUERIES = {
   bookmarks: [typeToQuery('bookmark')],
   blogposts: [typeToQuery('blogpost')],
-  pages: [typeToQuery('page')],
   microblogposts: [typeToQuery('microblogpost')],
   comments: [typeToQuery('comment')],
   subscriptions: [typeToQuery('subscription')]
@@ -72,7 +69,6 @@ class DriveViewApp extends LitElement {
       query Counts ($origin: String!) {
         bookmark: recordCount(paths: ["${PATH_QUERIES.bookmarks.join('", "')}"] origins: [$origin])
         blogpost: recordCount(paths: ["${PATH_QUERIES.blogposts.join('", "')}"] origins: [$origin])
-        page: recordCount(paths: ["${PATH_QUERIES.pages.join('", "')}"] origins: [$origin])
         microblogpost: recordCount(paths: ["${PATH_QUERIES.microblogposts.join('", "')}"] origins: [$origin])
         comment: recordCount(paths: ["${PATH_QUERIES.comments.join('", "')}"] origins: [$origin])
         subscription: recordCount(paths: ["${PATH_QUERIES.subscriptions.join('", "')}"] origins: [$origin])
@@ -247,19 +243,6 @@ class DriveViewApp extends LitElement {
             @load-state-updated=${this.onFeedLoadStateUpdated}
           ></beaker-record-feed>
         `
-      case '/pages/':
-        return html`
-          <beaker-record-feed
-            .pathQuery=${PATH_QUERIES.pages}
-            .sources=${[this.info.url]}
-            show-date-titles
-            date-title-range="month"
-            limit="50"
-            profile-url=${this.profile.url}
-            @view-thread=${this.onViewThread}
-            @load-state-updated=${this.onFeedLoadStateUpdated}
-          ></beaker-record-feed>
-        `
       case '/bookmarks/':
         return html`
           <beaker-record-feed
@@ -365,8 +348,7 @@ class DriveViewApp extends LitElement {
     e.stopPropagation()
     var rect = e.currentTarget.getClientRects()[0]
     const items = [
-      {icon: 'far fa-comment', label: 'New Post', click: this.onClickNewPost},
-      {icon: 'far fa-file', label: 'New Page', click: this.onClickNewPage}
+      {icon: 'far fa-comment', label: 'New Post', click: this.onClickNewPost}
     ]
     if (!this.isSystem) {
       items.unshift('-')
@@ -383,16 +365,6 @@ class DriveViewApp extends LitElement {
       style: `padding: 6px 0`,
       items
     })
-  }
-
-  async onClickNewPage () {
-    try {
-      var res = await NewPagePopup.create({driveUrl: location.origin})
-      window.location = res.url
-    } catch (e) {
-      // ignore
-      console.log(e)
-    }
   }
 
   async onClickNewPost () {
