@@ -55,7 +55,7 @@ export const METADATA_KEYS = {
  * @prop {String} origin
  * @prop {String[]} paths
  * 
- * @typedef {Object} RecordLinks
+ * @typedef {Object} RecordLink
  * @prop {String} source
  * @prop {String} url
  * @prop {String} origin
@@ -77,7 +77,7 @@ export const METADATA_KEYS = {
  * @prop {Number} rtime
  * @prop {Object} metadata
  * @prop {String} index
- * @prop {String[]} links
+ * @prop {RecordLink[]} links
  * @prop {String} [content]
  * 
  * @typedef {Object} HyperbeeRecord

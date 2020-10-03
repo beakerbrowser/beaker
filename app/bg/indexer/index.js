@@ -153,14 +153,17 @@ class GraphQLRecord extends GraphQLBase {
   async backlinks (args, ctx, ast) {
     let records = await query(Object.assign({links: {url: this.url}}, args), {
       includeContent: queryAstWants(ast, 'content'),
-      includeLinks: queryAstWants(ast, 'links')
+      includeLinks: queryAstWants(ast, 'links'),
+      permissions: ctx.permissions
     })
     return records.map(record => new GraphQLRecord(record))
   }
 
   // backlinkCount(paths: [String], indexes: [String]): Long
   async backlinkCount (args, ctx) {
-    return count(Object.assign({links: {url: this.url}}, args))
+    return count(Object.assign({links: {url: this.url}}, args), {
+      permissions: ctx.permissions
+    })
   }
 }
 
@@ -169,19 +172,23 @@ class GraphQLSite extends GraphQLBase {
   async backlinks (args, ctx, ast) {
     let records = await query(Object.assign({links: {origin: this.url}}, args), {
       includeContent: queryAstWants(ast, 'content'),
-      includeLinks: queryAstWants(ast, 'links')
+      includeLinks: queryAstWants(ast, 'links'),
+      permissions: ctx.permissions
     })
     return records.map(record => new GraphQLRecord(record))
   }
 
   // backlinkCount(paths: [String], indexes: [String]): [Record]
   async backlinkCount (args, ctx) {
-    return count(Object.assign({links: {origin: this.url}}, args))
+    return count(Object.assign({links: {origin: this.url}}, args), {
+      permissions: ctx.permissions
+    })
   }
   
   // records(search: String, paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery, sort: Sort, offset: Int, limit: Int, reverse: Boolean): [Record]
   async records (args, ctx, ast) {
     var records = await query(Object.assign({origins: [this.url]}, args), {
+      permissions: ctx.permissions,
       includeContent: queryAstWants(ast, 'content'),
       includeLinks: queryAstWants(ast, 'links')
     })
@@ -190,7 +197,9 @@ class GraphQLSite extends GraphQLBase {
   
   // recordCount(search: String, paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery): [Record]
   async recordCount (args, ctx) {
-    return count(Object.assign({origins: [this.url]}, args))
+    return count(Object.assign({origins: [this.url]}, args), {
+      permissions: ctx.permissions
+    })
   }
 }
 
@@ -198,6 +207,7 @@ const graphqlRoot = {
   // record(url: String!): Record
   async record (args, ctx, ast) {
     var record = await get(args.url, {
+      permissions: ctx.permissions,
       includeContent: queryAstWants(ast, 'content'),
       includeLinks: queryAstWants(ast, 'links')
     })
@@ -207,6 +217,7 @@ const graphqlRoot = {
   // records(search: String, origins: [String], paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery, sort: Sort, offset: Int, limit: Int, reverse: Boolean): [Record]
   async records (args, ctx, ast) {
     var records = await query(args, {
+      permissions: ctx.permissions,
       includeContent: queryAstWants(ast, 'content'),
       includeLinks: queryAstWants(ast, 'links')
     })
@@ -215,7 +226,7 @@ const graphqlRoot = {
   
   // recordCount(search: String, origins: [String], paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery): CountResponse
   async recordCount (args, ctx) {
-    return count(args)
+    return count(args, {permissions: ctx.permissions})
   },
 
   // site(url: String!, cached: Boolean): Site
@@ -231,8 +242,8 @@ const graphqlRoot = {
   }
 }
 
-export async function gql (query, variables) {
-  var res = await graphql(graphqlSchema, query, graphqlRoot, {ctx: 'todo'}, variables)
+export async function gql (query, variables, permissions) {
+  var res = await graphql(graphqlSchema, query, graphqlRoot, {permissions}, variables)
   if (res.errors) throw new Error(res.errors[0])
   return res.data
 }
@@ -529,11 +540,12 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
  * @param {String[]} [opts.indexes] - 'local' or 'network'
  * @param {RangeQuery} [opts.before]
  * @param {RangeQuery} [opts.after]
- * @param {Object} [permissions]
- * @param {EnumeratedSessionPerm[]} [permissions.query]
+ * @param {Object} [etc]
+ * @param {Object} [etc.permissions]
+ * @param {EnumeratedSessionPerm[]} [etc.permissions.query]
  * @returns {Promise<Number>}
  */
-export async function count (opts, permissions) {
+export async function count (opts, {permissions}) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.origins = validation.arrayOfOrigins('origins', opts.origins)
   opts.excludeOrigins = validation.arrayOfOrigins('excludeOrigins', opts.excludeOrigins)
@@ -1118,17 +1130,14 @@ async function getLiveRecord (url, {includeLinks, includeContent} = {}) {
       ctime: +stat.ctime,
       mtime: +stat.mtime,
       rtime: Date.now(),
-      metadata: {},
+      metadata: stat.metadata,
       index: 'live',
-      links: [],
+      links: getMetadataLinks(stat.metadata, urlp.origin),
       content: undefined,
     }
-    for (let k in stat.metadata) {
-      record.metadata[k] = stat.metadata[k]
-    }
-    if (includeLinks && includeContent && record.path.endsWith('.md')) {
+    if ((includeLinks || includeContent) && record.path.endsWith('.md')) {
       record.content = await site.fetch(update.path)
-      record.links = []//TODO markdownLinkExtractor(record.content)
+      addContentLinks(record, urlp.origin)
     }
     return record
   } catch (e) {
@@ -1138,6 +1147,7 @@ async function getLiveRecord (url, {includeLinks, includeContent} = {}) {
 }
 
 /**
+ * @param {String} origin
  * @param {Object} [opts]
  * @param {String[]} [opts.paths]
  * @param {Object} [etc]
@@ -1161,14 +1171,14 @@ async function listLiveRecords (origin, opts, {includeContent, includeLinks} = {
         rtime: Date.now(),
         metadata: file.stat.metadata,
         index: 'live',
-        links: [],
+        links: getMetadataLinks(file.stat.metadata, origin),
         content: undefined,
 
         // helper to fetch the rest of the data if in the results set
         fetchData: async function () {
           if ((includeContent || includeLinks) && file.path.endsWith('.md')) {
             this.content = await site.fetch(file.path)
-            this.links = [] // TODO markdownLinkExtractor(this.content)
+            addContentLinks(this, origin)
           }
         }
       }
@@ -1177,6 +1187,39 @@ async function listLiveRecords (origin, opts, {includeContent, includeLinks} = {
     logger.debug(`Failed to live-query site ${origin}. ${e.toString()}`, {origin, error: e.toString()})
   }  
   return records
+}
+
+function getMetadataLinks (metadata, origin) {
+  var links = []
+  for (let k in metadata) {
+    metadata[k] = metadata[k]
+    if (isUrlLike(metadata[k])) {
+      try {
+        let urlp = parseUrl(normalizeUrl(metadata[k]), origin)
+        links.push({
+          source: `metadata:${k}`,
+          url: urlp.origin + urlp.path,
+          origin: urlp.origin,
+          path: urlp.path
+        })
+      } catch {}
+    }
+  }
+  return links
+}
+
+function addContentLinks (record, origin) {
+  for (let addedLink of markdownLinkExtractor(record.content)) {
+    try {
+      let hrefp = parseUrl(normalizeUrl(addedLink), origin)
+      record.links.push({
+        source: 'content',
+        url: hrefp.origin + hrefp.path,
+        origin: hrefp.origin,
+        path: hrefp.path
+      })
+    } catch {}
+  }
 }
 
 /**

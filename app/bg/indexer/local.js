@@ -122,10 +122,10 @@ export async function query (db, opts, {permissions} = {}) {
     }
     query = query.whereIn('origin', opts.origins)
   } else {
-    if (shouldExcludePrivate) {
-      query = query.whereNot({origin: 'hyper://private'})
-    }
     query = query.whereRaw(`sites.is_index_target = ?`, [1])
+  }
+  if (shouldExcludePrivate) {
+    query = query.whereNot({origin: 'hyper://private'})
   }
   if (opts.excludeOrigins) {
     query = query.whereNotIn('origin', opts.excludeOrigins)
@@ -233,13 +233,12 @@ export async function query (db, opts, {permissions} = {}) {
  * @param {LinkQuery} [opts.links]
  * @param {RangeQuery} [opts.before]
  * @param {RangeQuery} [opts.after]
- * @param {Object} [internal]
- * @param {Object} [internal.permissions]
- * @param {Number} [internal.notificationRtime]
- * @param {EnumeratedSessionPerm[]} [permissions.query]
+ * @param {Object} [etc]
+ * @param {Object} [etc.permissions]
+ * @param {EnumeratedSessionPerm[]} [etc.permissions.query]
  * @returns {Promise<{count: Number, includedOrigins: String[], missedOrigins: String[]}>}
  */
-export async function count (db, opts, {permissions, notificationRtime} = {}) {
+export async function count (db, opts, {permissions} = {}) {
   var shouldExcludePrivate = checkShouldExcludePrivate(opts, permissions)
 
   var query = db('records')
@@ -264,10 +263,10 @@ export async function count (db, opts, {permissions, notificationRtime} = {}) {
     }
     query = query.whereIn('origin', opts.origins)
   } else {
-    if (shouldExcludePrivate) {
-      query = query.whereNot({origin: 'hyper://private'})
-    }
     query = query.whereRaw(`sites.is_index_target = ?`, [1])
+  }
+  if (shouldExcludePrivate) {
+    query = query.whereNot({origin: 'hyper://private'})
   }
   if (opts.excludeOrigins) {
     query = query.whereNotIn('origin', opts.excludeOrigins)

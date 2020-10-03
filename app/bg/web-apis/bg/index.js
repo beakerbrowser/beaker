@@ -16,38 +16,8 @@ export default {
   },
   
   async gql (query, variables) {
-    return indexer.gql(query, variables)
-  },
-
-  getSite (url) {
-    return indexer.getSite(url)
-  },
-
-  listSites (opts) {
-    if (!wcTrust.isWcTrusted(this.sender)) {
-      throw new PermissionsError()
-    }
-    return indexer.listSites(opts)
-  },
-  
-  async get (url) {
-    var query = await getQueryPerms(this.sender)
-    return indexer.get(url, {query})
-  },
-  
-  async query (opts) {
-    var query = await getQueryPerms(this.sender)
-    return indexer.query(opts, {query})
-  },
-  
-  async count (opts) {
-    var query = await getQueryPerms(this.sender)
-    return indexer.count(opts, {query})
-  },
-  
-  async search (q, opts) {
-    var query = await getQueryPerms(this.sender)
-    return indexer.search(q, opts, {query})
+    var queryPerms = await getQueryPerms(this.sender)
+    return indexer.gql(query, variables, {query: queryPerms})
   },
 
   clearNotifications () {
