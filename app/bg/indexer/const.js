@@ -55,6 +55,12 @@ export const METADATA_KEYS = {
  * @prop {String} origin
  * @prop {String[]} paths
  * 
+ * @typedef {Object} RecordLinks
+ * @prop {String} source
+ * @prop {String} url
+ * @prop {String} origin
+ * @prop {String} path
+ * 
  * @typedef {Object} RecordUpdate
  * @prop {Boolean} remove
  * @prop {String} path
@@ -74,14 +80,16 @@ export const METADATA_KEYS = {
  * @prop {String[]} links
  * @prop {String} [content]
  * 
+ * @typedef {Object} HyperbeeRecord
+ * @prop {String} drive
+ * @prop {String} source
+ * @prop {Object} metadata
+ * @prop {Number} rtime
+ * @prop {Number} crtime
+ * @prop {Number} mrtime
+ * @prop {String} content
+ * 
  * @typedef {Object} HyperbeeBacklink
  * @prop {String} key
- * @prop {Object} value
- * @prop {String} value.drive
- * @prop {String} value.source
- * @prop {Object} value.metadata
- * @prop {Number} value.rtime
- * @prop {Number} value.crtime
- * @prop {Number} value.mrtime
- * @prop {String} value.content
+ * @prop {HyperbeeRecord} value
  */

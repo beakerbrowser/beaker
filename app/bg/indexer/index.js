@@ -40,7 +40,6 @@ import { TICK_INTERVAL, METADATA_KEYS } from './const'
 import { SCHEMA as GRAPHQL_SCHEMA } from './graphql'
 import * as hyperbees from './hyperbees'
 import * as local from './local'
-import * as filesystem from '../filesystem/index'
 import lock from '../../lib/lock'
 import { timer } from '../../lib/time'
 import { joinPath, toNiceUrl, parseSimplePathSpec } from '../../lib/strings'
@@ -312,7 +311,7 @@ export async function listSites (opts) {
   if (opts.indexes.includes('local')) {
     results.push(await local.listSites(db, opts))
   }
-  if (0 /* TODO */ && opts.indexes.includes('network')) {
+  if (opts.indexes.includes('network')) {
     try {
       results.push(await timer(5e3, () => hyperbees.listSites(opts)))
     } catch (e) {
@@ -440,7 +439,7 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
   if (opts.indexes.includes('local')) {
     results.push(await local.query(db, opts, {permissions}))
   }
-  if (0 /* TODO */ && opts.indexes.includes('network')) {
+  if (opts.indexes.includes('network')) {
     let networkRes = await timer(5e3, () => hyperbees.query(opts, {
       existingResults: results[0]?.records
     }).catch(e => undefined))
@@ -475,7 +474,7 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
   }
 
   var records
-  if (results.length > 0) {
+  if (opts.indexes.includes('network') || results.length > 0) {
     // merge and sort
     records = results.reduce((acc, res) => acc.concat(res.records), [])
     records.sort((a, b) => {
@@ -550,7 +549,7 @@ export async function count (opts, permissions) {
       permissions
     }))
   }
-  if (0 /* TODO */ && opts.indexes.includes('network')) {
+  if (opts.indexes.includes('network')) {
     results.push(await hyperbees.count(opts, {
       existingResultOrigins: results[0]?.includedOrigins
     }))

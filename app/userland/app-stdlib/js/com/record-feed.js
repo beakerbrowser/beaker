@@ -126,6 +126,7 @@ export class RecordFeed extends LitElement {
             ${this.notifications ? `
               links: {origin: $profileUrl}
               excludeOrigins: [$profileUrl]
+              indexes: ["local", "network"]
             ` : ''}
             offset: $offset
             sort: crtime,
