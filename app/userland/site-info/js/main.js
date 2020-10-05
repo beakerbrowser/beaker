@@ -169,7 +169,16 @@ class SiteInfoApp extends LitElement {
         let session = await beaker.browser.getSiteSession(this.origin)
         if (session?.userUrl) {
           this.sessionPerms = enumeratePerms(session.permissions)
-          this.sessionUser = await beaker.index.getSite(session.userUrl)
+          let {site} = await beaker.index.gql(`
+            query ($url: String!) {
+              site (url: $url){
+                url
+                title
+                description
+              }
+            }
+          `, {url: session.userUrl})
+          this.sessionUser = site
         }
       }
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
