@@ -230,6 +230,11 @@
       "usage": "clear"
     },
     {
+      "name" : "reload",
+      "help": "Reloads the environment",
+      "usage": "reload"
+    },
+    {
       "name": "env",
       "help": "Get and set environment variables",
       "subcommands": [
@@ -299,11 +304,6 @@
           "name": "uninstall",
           "help": "Uninstall a command-package",
           "usage": "commands install {url}"
-        },
-        {
-          "name" : "reload",
-          "help": "Reloads all command-packages from their source.",
-          "usage": "commands reload"
         }
       ]
     },

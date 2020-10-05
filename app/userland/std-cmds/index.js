@@ -317,6 +317,10 @@ export function clear () {
   this.env.clearHistory()
 }
 
+export function reload () {
+  window.location.reload()
+}
+
 // env vars
 // =
 
