@@ -153,7 +153,9 @@ class ShellWindowUI extends LitElement {
     await this.requestUpdate()
     if (!this.isShellInterfaceHidden) {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
-      this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
+      if (!this.isSidebarHidden) {
+        this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
+      }
       if (this.activeTab) {
         this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
       }
