@@ -18,7 +18,7 @@ import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
 import * as contextMenu from '../context-menu'
 import * as windowMenu from '../window-menu'
-import { createShellWindow, getAddedWindowSettings } from '../windows'
+import { createShellWindow, getAddedWindowSettings, toggleSidebarHidden } from '../windows'
 import { examineLocationInput } from '../../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import * as sitedataDb from '../../dbs/sitedata'
@@ -152,12 +152,15 @@ class Tab extends EventEmitter {
   }
 
   get tabBounds () {
+    var addedWindowSettings = getAddedWindowSettings(this.browserWindow)
     var x = X_POSITION
     var y = Y_POSITION
     var {width, height} = this.browserWindow.getContentBounds()
-    if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
+    if (addedWindowSettings.isShellInterfaceHidden) {
       x = 0
       y = 0
+    } else if (addedWindowSettings.isSidebarHidden) {
+      x = 0
     }
     return {x, y: y, width: width - x, height: height - y}
   }
@@ -1118,6 +1121,7 @@ export function emitReplaceState (win) {
     tabs: getWindowTabState(win),
     isFullscreen: win.isFullScreen(),
     isShellInterfaceHidden: getAddedWindowSettings(win).isShellInterfaceHidden,
+    isSidebarHidden: getAddedWindowSettings(win).isSidebarHidden,
     isDaemonActive: hyper.daemon.isActive(),
     hasBgTabs: backgroundTabs.length > 0
   }
@@ -1160,7 +1164,6 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   },
 
   async getNetworkState (tab, opts) {
-
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
     if (tab && tab.primaryPane && tab.primaryPane.driveInfo) {
@@ -1337,6 +1340,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
 
   async runLocationBarCmd (cmd, opts) {
     return locationBar.runCmd(getWindow(this.sender), cmd, opts)
+  },
+
+  async toggleSidebarHidden () {
+    toggleSidebarHidden(getWindow(this.sender))
   },
 
   async showMenu (id, opts) {

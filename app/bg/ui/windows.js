@@ -272,6 +272,9 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
       if (state.isShellInterfaceHidden) {
         setShellInterfaceHidden(win, true)
       }
+      if (state.isSidebarHidden) {
+        setSidebarHidden(win, true)
+      }
       win.emit('custom-pages-ready')
 
       // DISABLED
@@ -407,6 +410,17 @@ export function setShellInterfaceHidden (win, isShellInterfaceHidden) {
     win.setWindowButtonVisibility(!isShellInterfaceHidden)
   }
   sessionWatcher.updateState(win, {isShellInterfaceHidden})
+  tabManager.emitReplaceState(win)
+  win.emit('resize')
+}
+
+export function toggleSidebarHidden (win) {
+  setSidebarHidden(win, !getAddedWindowSettings(win).isSidebarHidden)
+}
+
+export function setSidebarHidden (win, isSidebarHidden) {
+  updateAddedWindowSettings(win, {isSidebarHidden})
+  sessionWatcher.updateState(win, {isSidebarHidden})
   tabManager.emitReplaceState(win)
   win.emit('resize')
 }

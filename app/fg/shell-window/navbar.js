@@ -12,6 +12,7 @@ class ShellWindowNavbar extends LitElement {
     return {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
+      isSidebarHidden: {type: Boolean, attribute: 'is-sidebar-hidden'},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
@@ -25,6 +26,7 @@ class ShellWindowNavbar extends LitElement {
     super()
     this.activeTabIndex = -1
     this.activeTab = null
+    this.isSidebarHidden = false
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
@@ -68,7 +70,8 @@ class ShellWindowNavbar extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="buttons" style="padding-right: 6px">
+      <div class="buttons" style="padding: 0 6px">
+        ${this.sidebarBtn}
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
@@ -112,9 +115,17 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
+  get sidebarBtn () {
+    return html`
+      <button @click=${this.onClickSidebarToggle} style="margin: 0 6px 0 0" title="Toggle Sidebar">
+        <span class="far fa-caret-square-${this.isSidebarHidden ? 'down' : 'up'}" style="position: relative; top: -1px"></span>
+      </button>
+    `
+  }
+
   get backBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack} style="margin: 0px 2px">
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack} style="margin: 0px 2px" title="Back">
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -132,7 +143,7 @@ class ShellWindowNavbar extends LitElement {
 
   get forwardBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward} style="margin: 0px 2px">
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward} style="margin: 0px 2px" title="Forward">
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -150,7 +161,7 @@ class ShellWindowNavbar extends LitElement {
   get reloadBtn () {
     if (this.isLoading) {
       return html`
-        <button @click=${this.onClickStop} style="margin: 0px 2px">
+        <button @click=${this.onClickStop} style="margin: 0px 2px" title="Refresh">
           <svg
             class="icon close"
             width="12"
@@ -188,7 +199,7 @@ class ShellWindowNavbar extends LitElement {
 
   get updogBtn () {
     return html`
-      <button @click=${this.onClickUpdog} ?disabled=${!this.canGoUp} style="margin: 0 0 0 4px">
+      <button @click=${this.onClickUpdog} ?disabled=${!this.canGoUp} style="margin: 0 0 0 4px" title="Up">
         <span class="fas fa-level-up-alt"></span>
       </button>
     `
@@ -196,7 +207,7 @@ class ShellWindowNavbar extends LitElement {
 
   get homeBtn () {
     return html`
-      <button @click=${this.onClickHome} style="margin: 0 6px">
+      <button @click=${this.onClickHome} style="margin: 0 6px" title="Home">
         <span class="fas fa-home"></span>
       </button>
     `
@@ -247,6 +258,10 @@ class ShellWindowNavbar extends LitElement {
 
   // events
   // =
+
+  onClickSidebarToggle (e) {
+    bg.views.toggleSidebarHidden()
+  }
 
   onClickGoBack (e) {
     bg.views.goBack(this.activeTabIndex)

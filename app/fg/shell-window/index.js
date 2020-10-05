@@ -75,12 +75,13 @@ class ShellWindowUI extends LitElement {
 
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
-    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isDaemonActive, isShellInterfaceHidden, hasBgTabs}) => {
-      this.tabs = tabs
-      this.isFullscreen = isFullscreen
-      this.isShellInterfaceHidden = isShellInterfaceHidden
-      this.isDaemonActive = isDaemonActive
-      this.hasBgTabs = hasBgTabs
+    viewEvents.addEventListener('replace-state', state => {
+      this.tabs = state.tabs
+      this.isFullscreen = state.isFullscreen
+      this.isShellInterfaceHidden = state.isShellInterfaceHidden
+      this.isSidebarHidden = state.isSidebarHidden
+      this.isDaemonActive = state.isDaemonActive
+      this.hasBgTabs = state.hasBgTabs
       this.stateHasChanged()
     })
     viewEvents.addEventListener('update-state', ({index, state}) => {
@@ -172,13 +173,14 @@ class ShellWindowUI extends LitElement {
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
           .userProfile=${this.userProfile}
+          ?is-sidebar-hidden=${this.isSidebarHidden}
           ?is-update-available=${this.isUpdateAvailable}
           ?is-holepunchable=${this.isHolepunchable}
           ?is-daemon-active=${this.isDaemonActive}
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>
       `}
-      ${this.isShellInterfaceHidden ? '' : html`
+      ${this.isShellInterfaceHidden || this.isSidebarHidden ? '' : html`
         <shell-window-toolbar-menu
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
