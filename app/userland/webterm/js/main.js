@@ -7,6 +7,7 @@ import { createDrive } from './lib/term-drive-wrapper.js'
 import { importModule } from './lib/import-module.js'
 import { joinPath, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
+import { LSArray } from './lib/ls-array.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
 
@@ -68,10 +69,10 @@ class WebTerm extends LitElement {
     this.envVars = {}
     this.profile = undefined
 
+    var commandHistArray = new LSArray('commandHistory')
     this.commandHist = {
-      array: [],
-      insert: -1,
-      cursor: -1,
+      array: commandHistArray,
+      cursor: commandHistArray.length,
       add (entry) {
         if (entry) {
           this.array.push(entry)
@@ -81,11 +82,11 @@ class WebTerm extends LitElement {
       prevUp () {
         if (this.cursor === -1) return ''
         this.cursor = Math.max(0, this.cursor - 1)
-        return this.array[this.cursor]
+        return this.array.get(this.cursor)
       },
       prevDown () {
         this.cursor = Math.min(this.array.length, this.cursor + 1)
-        return this.array[this.cursor] || ''
+        return this.array.get(this.cursor) || ''
       },
       reset () {
         this.cursor = this.array.length
