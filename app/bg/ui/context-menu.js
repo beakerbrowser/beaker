@@ -214,7 +214,7 @@ export default function registerContextMenu () {
 
       if (isHyperdrive) {
         menuItems.push({
-          label: 'Edit Source',
+          label: 'Edit Page Source',
           click: async (item, win) => {
             if (targetTab) targetTab.createOrFocusPaneByOrigin({url: 'beaker://editor/', setActive: true})
           }
