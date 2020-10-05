@@ -28,7 +28,7 @@ export class LibraryApp extends LitElement {
     this.view = ''
     const getView = () => {
       var view = location.pathname.slice(1)
-      return view === '' ? 'bookmarks' : view
+      return view === '' ? 'sites' : view
     }
     this.setView(getView())
     window.addEventListener('popstate', (event) => {
@@ -88,8 +88,8 @@ export class LibraryApp extends LitElement {
       <div class="layout">
         <nav>
           <div class="page-nav">
-            ${pageNav('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
             ${pageNav('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
+            ${pageNav('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
             ${pageNav('history', html`<span class="fas fa-fw fa-history"></span> <span class="label">History</span>`)}
             ${pageNav('downloads', html`<span class="fas fa-fw fa-arrow-down"></span> <span class="label">Downloads</span>`)}
           </div>
