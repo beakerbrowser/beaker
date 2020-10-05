@@ -163,7 +163,7 @@ export function setup (rpc) {
         if (typeof opts === 'string') {
           opts = {path: [opts]}
         }
-        opts.origin = [url]
+        opts.drive = [url]
         var res = await hyperdriveRPC.query(opts)
         res.forEach(item => {
           if (item.stat) item.stat = createStat(item.stat)
@@ -323,8 +323,8 @@ export function setup (rpc) {
       if (typeof opts === 'string') {
         opts = {path: [opts]}
       }
-      if (!opts.origin && location.protocol === 'hyper:') {
-        opts.origin = [location.hostname]
+      if (!opts.drive && location.protocol === 'hyper:') {
+        opts.drive = [location.hostname]
       }
       var res = await hyperdriveRPC.query(opts)
       res.forEach(item => {
