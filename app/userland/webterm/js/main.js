@@ -231,24 +231,29 @@ class WebTerm extends LitElement {
         continue
       }
 
-      for (let command of commands) {
-        if (!command.name) continue
-        let commandData = {
-          fn: this.commandModules[pkgId][command.name],
-          package: pkgId,
-          name: command.name,
-          path: [command.name],
-          help: command.help,
-          usage: command.usage,
-          autocomplete: command.autocomplete,
-          options: command.options,
-          subcommands: subcommandsMap(pkg, this.commandModules[pkgId], command)
+      try {
+        for (let command of commands) {
+          if (!command.name) continue
+          let commandData = {
+            fn: this.commandModules[pkgId][command.name],
+            package: pkgId,
+            name: command.name,
+            path: [command.name],
+            help: command.help,
+            usage: command.usage,
+            autocomplete: command.autocomplete,
+            options: command.options,
+            subcommands: subcommandsMap(pkg, this.commandModules[pkgId], command)
+          }
+          if (!(command.name in this.commands)) {
+            this.commands[command.name] = commandData
+          } else {
+            this.outputError(`Unabled to add ${command.name} from ${pkg.manifest.title}`, 'Command name already in use')
+          }
         }
-        if (!(command.name in this.commands)) {
-          this.commands[command.name] = commandData
-        } else {
-          this.outputError(`Unabled to add ${command.name} from ${pkg.manifest.title}`, 'Command name already in use')
-        }
+      } catch (err) {
+        this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
+        continue
       }
     }
   }
