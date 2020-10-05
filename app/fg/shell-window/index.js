@@ -202,6 +202,7 @@ class ShellWindowUI extends LitElement {
 
   onToolbarChange (e) {
     var el = this.shadowRoot.querySelector('shell-window-toolbar-menu')
+    if (!el) return
     this.toolbar = el.toolbar = e && e.toolbar
     el.requestUpdate()
   }

@@ -117,7 +117,7 @@ class ShellWindowNavbar extends LitElement {
 
   get sidebarBtn () {
     return html`
-      <button @click=${this.onClickSidebarToggle} style="margin: 0 6px 0 0" title="Toggle Sidebar">
+      <button @click=${this.onClickSidebarToggle} title="Toggle Sidebar">
         <span class="far fa-caret-square-${this.isSidebarHidden ? 'down' : 'up'}" style="position: relative; top: -1px"></span>
       </button>
     `
