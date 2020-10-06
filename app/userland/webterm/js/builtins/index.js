@@ -294,12 +294,6 @@ export async function go (opts = {}, location = '') {
       location = st.metadata.href
     }
   }
-  try {
-    this.env.goto(location.toString())
-  } catch (e) {
-    // will fail if not a directory, don't worry about it
-    if (!e.notADirectory) throw e
-  }
   await this.page.goto(location, {newTab: opts['new-tab']})
 }
 

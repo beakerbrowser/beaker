@@ -50,7 +50,6 @@ class WebTerm extends LitElement {
   constructor () {
     super()
     beaker.panes.setAttachable()
-    this.attachedPane = undefined
     this.isLoaded = false
     this.startUrl = ''
     this._url = ''
@@ -96,8 +95,9 @@ class WebTerm extends LitElement {
         if (e.metaKey || anchor.getAttribute('target') === '_blank') {
           window.open(anchor.getAttribute('href'))
         } else {
-          if (this.attachedPane) {
-            beaker.panes.navigate(this.attachedPane.id, anchor.getAttribute('href'))
+          var attachedPane = beaker.panes.getAttachedPane()
+          if (attachedPane) {
+            beaker.panes.navigate(attachedPane.id, anchor.getAttribute('href'))
           } else {
             window.location = anchor.getAttribute('href')
           }
@@ -110,24 +110,12 @@ class WebTerm extends LitElement {
       }
     })
 
-    beaker.panes.addEventListener('pane-attached', e => {
-      this.attachedPane = beaker.panes.getAttachedPane()
-      this.setCWD(this.attachedPane.url)
-    })
-    beaker.panes.addEventListener('pane-detached', e => {
-      this.attachedPane = undefined
-    })
-    beaker.panes.addEventListener('pane-navigated', e => {
-      this.attachedPane.url = e.detail.url
-      this.setCWD(e.detail.url)
-    })
-
     ;(async () => {
       let ctx = (new URLSearchParams(location.search)).get('url')
       if (ctx && ctx.startsWith('beaker://webterm')) ctx = undefined
-      this.attachedPane = await beaker.panes.attachToLastActivePane()
-      if (this.attachedPane) {
-        ctx = this.attachedPane.url
+      var attachedPane = await beaker.panes.attachToLastActivePane()
+      if (attachedPane) {
+        ctx = attachedPane.url
       }
       this.load(ctx || 'hyper://private/').then(_ => {
         this.setFocus()
@@ -289,12 +277,12 @@ class WebTerm extends LitElement {
   }
 
   async loadPageCommands () {
-    this.attachedPane = beaker.panes.getAttachedPane()
-    if (!this.attachedPane) {
+    var attachedPane = beaker.panes.getAttachedPane()
+    if (!attachedPane) {
       this.pageCommands = {}
       return
     }
-    this.pageCommands = await beaker.panes.executeJavaScript(this.attachedPane.id, `
+    this.pageCommands = await beaker.panes.executeJavaScript(attachedPane.id, `
       ;(() => {
         let commands = {}
         if (beaker.terminal.getCommands().length) {
@@ -354,9 +342,6 @@ class WebTerm extends LitElement {
 
     this.url = location
     this.cwd = locationParsed
-    if (this.attachedPane && this.attachedPane.url !== locationParsed.toString()) {
-      beaker.panes.navigate(this.attachedPane.id, locationParsed.toString())
-    }
     this.requestUpdate()
   }
 
@@ -501,8 +486,8 @@ class WebTerm extends LitElement {
     }
     this.commandHist.add(prompt.value)
 
-    this.attachedPane = beaker.panes.getAttachedPane()
-    this.envVars['@'] = this.attachedPane ? this.attachedPane.url : this.cwd.toString()
+    var attachedPane = beaker.panes.getAttachedPane()
+    this.envVars['@'] = attachedPane ? attachedPane.url : this.cwd.toString()
 
     var inputValue = prompt.value
     try {
