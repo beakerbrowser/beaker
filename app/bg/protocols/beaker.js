@@ -230,9 +230,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://cmd-pkg' || requestUrl.startsWith('beaker://cmd-pkg/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'cmd-pkg'), cb)
   }
-  if (requestUrl === 'beaker://std-cmds' || requestUrl.startsWith('beaker://std-cmds/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'std-cmds'), cb)
-  }
   if (requestUrl === 'beaker://site-info' || requestUrl.startsWith('beaker://site-info/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'site-info'), cb, {fallbackToIndexHTML: true})
   }

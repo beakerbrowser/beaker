@@ -1,22 +1,17 @@
 import { LitElement, html, TemplateResult } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { render } from 'beaker://app-stdlib/vendor/lit-element/lit-html/lit-html.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
 import { parser } from './lib/parser.js'
 import { Cliclopts } from './lib/cliclopts.1.1.1.js'
 import { createDrive } from './lib/term-drive-wrapper.js'
-import { importModule } from './lib/import-module.js'
 import { joinPath, shortenAllKeys } from 'beaker://app-stdlib/js/strings.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import { LSArray } from './lib/ls-array.js'
+import * as builtinsFns from './builtins/index.js'
+import builtinsManifest from './builtins/manifest.js'
 import css from '../css/main.css.js'
 import './lib/term-icon.js'
 
-// export lit-html as a window global
-window.html = html
-window.html.render = render
-
 const TAB_COMPLETION_RENDER_LIMIT = 15
-
 
 // Look up control/navigation keys via keycode.
 //
@@ -166,7 +161,7 @@ class WebTerm extends LitElement {
     this.url = url
 
     var cwd = this.parseURL(this.url)
-    while (cwd.pathame !== '/') {
+    while (cwd.pathname !== '/') {
       try {
         let st = await (createDrive(cwd.origin)).stat(cwd.pathname)
         if (st.isDirectory()) break
@@ -192,71 +187,9 @@ class WebTerm extends LitElement {
     this.pageCommands = {}
     this.profile = await beaker.browser.getProfile()
     /* dont await */ this.loadEnvVars()
-    await this.loadCommands()
     await this.loadBuiltins()
+    await this.loadInstalledCommands()
     await this.loadPageCommands()
-  }
-
-  async loadCommands () {
-    var packages = [{
-      url: 'beaker://std-cmds/',
-      manifest: JSON.parse(await beaker.browser.readFile('beaker://std-cmds/index.json', 'utf8'))
-    }]
-
-    var cmdPkgDrives = await beaker.hyperdrive.readFile('hyper://private/webterm/command-packages.json').then(JSON.parse).catch(e => ([]))
-    for (let driveUrl of cmdPkgDrives) {
-      try {
-        packages.push({
-          url: driveUrl,
-          manifest: JSON.parse(await beaker.hyperdrive.drive(driveUrl).readFile(`index.json`))
-        })
-      } catch (e) {
-        console.log(e)
-        this.outputError(`Failed to read manifest for command package (${driveUrl})`, e.toString())
-      }
-    }
-
-    for (let pkg of packages) {
-      var pkgId = pkg.url
-      var commands = pkg.manifest.commands
-      if (!commands || !Array.isArray(commands) || commands.length === 0) {
-        this.outputError(`Skipping ${pkg.manifest.title} (${pkg.url})`, 'No commands found')
-        continue
-      }
-
-      try {
-        // HACK we use importModule() instead of import() because I could NOT get rollup to leave dynamic imports alone -prf
-        this.commandModules[pkgId] = await importModule(joinPath(pkg.url, 'index.js'))
-      } catch (err) {
-        this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
-        continue
-      }
-
-      try {
-        for (let command of commands) {
-          if (!command.name) continue
-          let commandData = {
-            fn: this.commandModules[pkgId][command.name],
-            package: pkgId,
-            name: command.name,
-            path: [command.name],
-            help: command.help,
-            usage: command.usage,
-            autocomplete: command.autocomplete,
-            options: command.options,
-            subcommands: subcommandsMap(pkg, this.commandModules[pkgId], command)
-          }
-          if (!(command.name in this.commands)) {
-            this.commands[command.name] = commandData
-          } else {
-            this.outputError(`Unabled to add ${command.name} from ${pkg.manifest.title}`, 'Command name already in use')
-          }
-        }
-      } catch (err) {
-        this.outputError(`Failed to load ${pkg.manifest.title} (${pkg.url}) index.js`, err)
-        continue
-      }
-    }
   }
 
   async loadBuiltins () {
@@ -268,6 +201,91 @@ class WebTerm extends LitElement {
       help: 'Get documentation on a command',
       usage: 'help [command]'
     }
+
+    try {
+      for (let command of builtinsManifest.commands) {
+        let commandData = {
+          fn: builtinsFns[command.name],
+          package: 'builtins',
+          name: command.name,
+          path: [command.name],
+          help: command.help,
+          usage: command.usage,
+          autocomplete: command.autocomplete,
+          options: command.options,
+          subcommands: subcommandsMap('builtins', name => builtinsFns[command.name][name], command.name, command.subcommands)
+        }
+        if (!(command.name in this.commands)) {
+          this.commands[command.name] = commandData
+        } else {
+          this.outputError(`Unabled to add ${command.name} from builtins`, 'Command name already in use')
+        }
+      }
+    } catch (err) {
+      this.outputError(`Failed to load builtins`, err)
+    }
+  }
+
+  async loadInstalledCommands () {
+    var installed = await beaker.hyperdrive.readFile('hyper://private/webterm/installed.json').then(JSON.parse).catch(e => ([]))
+    var installedValidated = []
+    for (let app of installed) {
+      if (!app || typeof app !== 'object') {
+        this.outputError(`Invalid entry in /webterm/installed.json: ${app}`)
+        continue
+      }
+      if (!app.name || typeof app.name !== 'string') {
+        this.outputError(`Invalid entry in /webterm/installed.json: ${JSON.stringify(app)}`, new Error('.name must be a string'))
+        continue
+      }
+      if (!app.url || typeof app.url !== 'string') {
+        this.outputError(`Invalid entry in /webterm/installed.json: ${JSON.stringify(app)}`, new Error('.url must be a string'))
+        continue
+      }
+      installedValidated.push(app)
+    }
+    await Promise.all(installedValidated.map(async app => {
+      let subcommands = await beaker.browser.spawnAndExecuteJs(app.url, `
+        ;(() => {
+          let commands = []
+          if (beaker.terminal.getCommands().length) {
+            for (let command of beaker.terminal.getCommands()) {
+              commands.push({
+                package: undefined,
+                name: command.name,
+                path: [command.name],
+                help: command.help,
+                usage: command.usage,
+                autocomplete: command.autocomplete,
+                options: command.options,
+                subcommands: undefined
+              })
+            }
+          }
+          return commands
+        })();
+      `)
+      var appCommand = {
+        package: app.name,
+        name: app.name,
+        help: app.description && typeof app.description === 'string' ? app.description : undefined,
+        path: [app.name],
+        subcommands: subcommandsMap(
+          app.name,
+          name => (...args) => beaker.browser.spawnAndExecuteJs(app.url, `
+            ;(() => {
+              let command = beaker.terminal.getCommands().find(c => c.name === ${JSON.stringify(name)});
+              if (command) {
+                return command.handle.apply(command, ${JSON.stringify(args)})
+              }
+            })();
+          `),
+          app.name,
+          subcommands
+        ) 
+      }
+      this.commands[app.name] = appCommand
+    }))
   }
 
   async loadPageCommands () {
@@ -836,12 +854,7 @@ class WebTerm extends LitElement {
           ${heading}
           ${commands.map(command => {
             var name = parentCmdName + command.name
-            var pkg
-            if (command.package.startsWith('beaker://')) {
-              pkg = html`std-cmds`
-            } else {
-              pkg = html`<a href=${command.package} target="_blank">${shortenHash(command.package)}</a>`
-            }
+            var pkg = html`<a href=${command.package} target="_blank">${shortenHash(command.package)}</a>`
             var summary = html`
               <strong style="white-space: pre">${name.padEnd(commandNameLen + 2)}</strong>
               ${command.help || ''}
@@ -964,17 +977,17 @@ function shortenHash (str = '') {
   return str.replace(/[0-9a-f]{64}/ig, v => `${v.slice(0, 6)}..${v.slice(-2)}`)
 }
 
-function subcommandsMap (pkg, commandModule, command) {
-  if (!command.subcommands || !Array.isArray(command.subcommands)) {
+function subcommandsMap (pkgId, getFn, parentCmdName, subcommandsArray) {
+  if (!subcommandsArray || !Array.isArray(subcommandsArray)) {
     return undefined
   }
   let subcommands = {}
-  for (let subcmd of command.subcommands) {
+  for (let subcmd of subcommandsArray) {
     subcommands[subcmd.name] = {
-      fn: commandModule[command.name][subcmd.name],
-      package: pkg.name || pkg.url,
+      fn: getFn(subcmd.name),
+      package: pkgId,
       name: subcmd.name,
-      path: [command.name, subcmd.name],
+      path: [parentCmdName, subcmd.name],
       help: subcmd.help,
       usage: subcmd.usage,
       options: subcmd.options,

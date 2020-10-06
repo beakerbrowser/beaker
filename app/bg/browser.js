@@ -32,6 +32,7 @@ import * as toolbar from './filesystem/toolbar'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
 import { isProfileListedInBeakerNetwork, addProfileToBeakerNetwork } from './indexer/hyperbees'
 import * as wcTrust from './wc-trust'
+import { spawnAndExecuteJs } from './lib/electron'
 
 // constants
 // =
@@ -202,7 +203,6 @@ export const WEBAPI = {
 
   fetchBody,
   downloadURL,
-  readFile,
 
   convertDat,
 
@@ -231,6 +231,8 @@ export const WEBAPI = {
   closeWindow,
   resizeSiteInfo,
   refreshTabState,
+
+  spawnAndExecuteJs,
 
   showOpenDialog,
   showContextMenu,
@@ -272,20 +274,6 @@ export function fetchBody (url) {
 
 export async function downloadURL (url) {
   this.sender.downloadURL(url)
-}
-
-function readFile (obj, opts) {
-  var pathname = undefined
-  if (obj === 'beaker://std-cmds/index.json') {
-    pathname = path.join(__dirname, 'userland', 'std-cmds', 'index.json')
-  }
-  if (!pathname) return
-  return new Promise((resolve, reject) => {
-    fs.readFile(pathname, opts, (err, res) => {
-      if (err) reject(err)
-      else resolve(res)
-    })
-  })
 }
 
 export async function convertDat (url) {

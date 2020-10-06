@@ -1,6 +1,4 @@
-{
-  "type": "webterm.sh/cmd-pkg",
-  "title": "Standard Commands",
+export default {
   "commands": [
     {
       "name": "ls",
@@ -282,28 +280,23 @@
       ]
     },
     {
-      "name": "commands",
+      "name": "term",
       "help": "Webterm command management",
       "subcommands": [
         {
           "name": "ls",
-          "help": "List all installed command-packages",
-          "usage": "commands ls"
-        },
-        {
-          "name": "create",
-          "help": "Create a new command-package",
-          "usage": "commands create"
+          "help": "List all installed webterm apps",
+          "usage": "term ls"
         },
         {
           "name": "install",
-          "help": "Install a command-package",
-          "usage": "commands install {url}"
+          "help": "Install a webterm app",
+          "usage": "term install {name} {url}"
         },
         {
           "name": "uninstall",
-          "help": "Uninstall a command-package",
-          "usage": "commands install {url}"
+          "help": "Uninstall a webterm app",
+          "usage": "term install {name}"
         }
       ]
     },

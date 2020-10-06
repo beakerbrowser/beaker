@@ -32,7 +32,6 @@ export default {
 
   fetchBody: 'promise',
   downloadURL: 'promise',
-  readFile: 'promise',
 
   convertDat: 'promise',
 
@@ -52,6 +51,8 @@ export default {
   closeWindow: 'promise',
   resizeSiteInfo: 'promise',
   refreshTabState: 'promise',
+
+  spawnAndExecuteJs: 'promise',
 
   showOpenDialog: 'promise',
   showContextMenu: 'promise',

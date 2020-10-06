@@ -1,7 +1,8 @@
+import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { resolveParse, parseLocation, joinPath } from './util.js'
-import * as commandsModule from './commands.js'
+import * as termModule from './term.js'
 
-export const commands = commandsModule
+export const term = termModule
 
 // current working directory methods
 // =
