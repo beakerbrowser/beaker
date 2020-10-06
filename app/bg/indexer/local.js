@@ -101,6 +101,10 @@ export async function query (db, opts, {permissions} = {}) {
   if (typeof opts.limit === 'number') {
     query = query.limit(opts.limit)
   }
+  if (opts.search || opts.links) {
+    // needed due to joins
+    query = query.groupBy('records.rowid')
+  }
 
   if (opts.sort === 'crtime' || opts.before?.key === 'crtime' || opts.after?.key === 'crtime') {
     query = query.select(db.raw(`CASE rtime WHEN rtime < ctime THEN rtime ELSE ctime END AS crtime`))
@@ -114,7 +118,6 @@ export async function query (db, opts, {permissions} = {}) {
       .innerJoin('records_data', 'records_data.record_rowid', 'records.rowid')
       .innerJoin('records_data_fts', 'records_data_fts.rowid', 'records_data.rowid')
       .whereRaw(`records_data_fts.value MATCH ?`, [`"${opts.search.replace(/["]/g, '""')}" *`])
-      .groupBy('records.rowid')
   }
   if (opts.origins) {
     if (shouldExcludePrivate && opts.origins.find(origin => origin === 'hyper://private')) {
@@ -255,6 +258,10 @@ export async function count (db, opts, {permissions} = {}) {
   } 
   if (opts.before?.key === 'mrtime' || opts.after?.key === 'mrtime') {
     query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
+  }
+  if (opts.links) {
+    // needed due to joins
+    query = query.groupBy('records.rowid')
   }
 
   if (opts.origins) {
