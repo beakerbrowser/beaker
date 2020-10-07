@@ -676,7 +676,7 @@ export class Pane extends EventEmitter {
       overlay.set(this.browserWindow, {
         value: '<strong>Comments</strong><br>See comments from your network by clicking here.',
         leftArrow: true,
-        bounds: {x: 34, y: 114, width: 335, height: 46}
+        bounds: {x: 34, y: 78, width: 335, height: 46}
       })
     }
   }
