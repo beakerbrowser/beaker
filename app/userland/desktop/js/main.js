@@ -204,7 +204,6 @@ class DesktopApp extends LitElement {
                 <beaker-sites-list
                   listing="all"
                   filter=${this.searchQuery || ''}
-                  empty-message="No results found${this.searchQuery ? ` for "${this.searchQuery}"` : ''}"
                   .profile=${this.profile}
                 ></beaker-sites-list>
               ` : ''}
