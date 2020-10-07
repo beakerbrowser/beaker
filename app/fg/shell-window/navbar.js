@@ -71,7 +71,6 @@ class ShellWindowNavbar extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="buttons" style="padding: 0 6px">
-        ${this.sidebarBtn}
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
@@ -112,14 +111,6 @@ class ShellWindowNavbar extends LitElement {
         ${this.daemonInactiveBtn}
         ${this.browserMenuBtn}
       </div>
-    `
-  }
-
-  get sidebarBtn () {
-    return html`
-      <button @click=${this.onClickSidebarToggle} title="Toggle Sidebar">
-        <span class="far fa-caret-square-${this.isSidebarHidden ? 'down' : 'up'}" style="position: relative; top: -1px"></span>
-      </button>
     `
   }
 
@@ -258,10 +249,6 @@ class ShellWindowNavbar extends LitElement {
 
   // events
   // =
-
-  onClickSidebarToggle (e) {
-    bg.views.toggleSidebarHidden()
-  }
 
   onClickGoBack (e) {
     bg.views.goBack(this.activeTabIndex)
