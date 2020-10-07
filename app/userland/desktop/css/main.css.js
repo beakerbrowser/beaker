@@ -284,7 +284,7 @@ header {
 
 .onecol {
   margin: 20vh auto 0;
-  max-width: 1000px;
+  max-width: 900px;
 }
 
 .onecol beaker-record-feed {
