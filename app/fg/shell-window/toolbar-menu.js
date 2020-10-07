@@ -9,13 +9,11 @@ const WINDOW_MENU_ENABLED = false
 
 const BASIC_BUILTINS = [
   {builtin: true, url: 'beaker://activity/'},
-  {builtin: true, url: 'beaker://history/'},
-  {builtin: true, url: 'beaker://library/'}
-]
-const ADVANCED_BUILTINS = [
   {builtin: true, url: 'beaker://editor/'},
   {builtin: true, url: 'beaker://webterm/'},
-  {builtin: true, url: 'beaker://explorer/', hyperOnly: true},
+  {builtin: true, url: 'beaker://explorer/', hyperOnly: true}
+]
+const ADVANCED_BUILTINS = [
   {builtin: true, url: 'beaker://hypercore-tools/', hyperOnly: true}
 ]
 
@@ -282,9 +280,7 @@ class ShellWindowToolbarMenu extends LitElement {
       'beaker://activity': 'Comments',
       'beaker://editor': 'Editor',
       'beaker://explorer': 'Files Explorer',
-      'beaker://history': 'History',
       'beaker://hypercore-tools': 'Hypercore Devtools',
-      'beaker://library': 'My Library',
       'beaker://webterm': 'Terminal'
     })[(new URL(item.url)).origin] || item.url
     bg.overlay.set({
