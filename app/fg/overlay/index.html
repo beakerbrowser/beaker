@@ -44,14 +44,41 @@
         border-bottom: 1px solid #bbb;
         z-index: 1;
       }
+      #text.top-arrow {
+        overflow: visible;
+        margin-top: 5px;
+      }
+      #text.top-arrow::before {
+        content: '';
+        position: absolute;
+        top: -5px;
+        left: calc(50% - 4px);
+        width: 8px;
+        height: 8px;
+        background: #fff;
+        transform: rotate(45deg);
+        border-left: 1px solid #bbb;
+        border-top: 1px solid #bbb;
+        z-index: 1;
+      }
+      #text.multi-line {
+        overflow: visible;
+        white-space: initial;
+      }
+      #text.centered {
+        text-align: center;
+      }
     </style>
     <script>
       window.set = opts => {
-        if (opts?.leftArrow) {
-          text.classList.add('left-arrow')
-        } else {
-          text.classList.remove('left-arrow')
-        }
+        if (opts?.leftArrow) text.classList.add('left-arrow')
+        else text.classList.remove('left-arrow')
+        if (opts?.topArrow) text.classList.add('top-arrow')
+        else text.classList.remove('top-arrow')
+        if (opts?.centered) text.classList.add('centered')
+        else text.classList.remove('centered')
+        if (opts?.multiLine) text.classList.add('multi-line')
+        else text.classList.remove('multi-line')
         if (opts?.value) {
           text.innerHTML = opts.value
           document.body.style.display = 'block'

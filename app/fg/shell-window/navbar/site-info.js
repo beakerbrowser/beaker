@@ -106,7 +106,12 @@ class NavbarSiteInfo extends LitElement {
       return html`<span class="fas fa-fw fa-pen"></span>`
     }
     return html`
-      <span class="subscribe-btn" @click=${this.onClickSubscribe}>
+      <span
+        class="subscribe-btn"
+        @click=${this.onClickSubscribe}
+        @mouseover=${this.onMouseoverSubscribe}
+        @mouseleave=${this.onMouseleaveSubscribe}
+      >
         ${this.isSubscribed ? html`
           <i class="fa fa-check"></i> Subscribed
         ` : html`
@@ -152,6 +157,26 @@ class NavbarSiteInfo extends LitElement {
     }
     this.requestUpdate()
     bg.views.refreshState('active')
+  }
+
+  onMouseoverSubscribe (e) {
+    let rect = e.currentTarget.getClientRects()[0]
+    bg.overlay.set({
+      value: 'See posts, comments, links, and more from this site in your social apps',
+      topArrow: true,
+      centered: true,
+      multiLine: true,
+      bounds: {
+        x: (rect.left - 50)|0,
+        y: (rect.bottom + 2)|0,
+        width: 200,
+        height: 62
+      }
+    })
+  }
+
+  onMouseleaveSubscribe (e, item) {
+    bg.overlay.set(false)
   }
 }
 NavbarSiteInfo.styles = [buttonResetCSS, css`
