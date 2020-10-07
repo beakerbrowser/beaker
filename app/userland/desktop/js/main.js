@@ -239,6 +239,7 @@ class DesktopApp extends LitElement {
               ${appLink('beaker://settings', 'Settings')}
             </div>
             ${this.renderPins()}
+            ${this.renderWhatsNew()}
             <div>
               ${this.currentNav === 'legacy-archives' ? html`
                 ${this.renderLegacyArchivesView()}
@@ -390,6 +391,37 @@ class DesktopApp extends LitElement {
         <a class="pin add" @click=${e => this.onClickNewBookmark(e, true)}>
           <span class="fas fa-fw fa-plus thumb"></span>
         </a>
+      </div>
+    `
+  }
+
+  renderWhatsNew () {
+    if (localStorage.seenWhatsNew === '1.0') {
+      return ''
+    }
+    return html`
+      <div class="whats-new">
+        <h3>
+          What's New in Beaker
+          <a class="dismiss" @click=${this.onCloseWhatsNew}}><span class="fas fa-times"></span> close</a>
+        </h3>
+        <div class="columns">
+          <div class="column">
+            <div><a href="beaker://social/"><img src="asset:screenshot:beaker://social/"></a></div>
+            <div class="title"><a href="beaker://social/">Beaker Social</a></div>
+            <div class="description">Peer-to-peer social media</div>
+          </div>
+          <div class="column">
+            <div><a href="beaker://uplink/"><img src="asset:screenshot:beaker://uplink/"></a></div>
+            <div class="title"><a href="beaker://uplink/">Beaker Uplink</a></div>
+            <div class="description">The most recent bookmarks in your network</div>
+          </div>
+          <div class="column">
+            <div><a href="beaker://reader/"><img src="asset:screenshot:beaker://reader/"></a></div>
+            <div class="title"><a href="beaker://reader/">Beaker Reader</a></div>
+            <div class="description">Publish and read blogposts</div>
+          </div>
+        </div>
       </div>
     `
   }
@@ -594,6 +626,11 @@ class DesktopApp extends LitElement {
     setTimeout(() => {
       this.suggestedSites = this.suggestedSites.filter(s => s !== site)
     }, 1e3)
+  }
+
+  onCloseWhatsNew (e) {
+    localStorage.seenWhatsNew = '1.0'
+    this.requestUpdate()
   }
 }
 

@@ -425,6 +425,49 @@ beaker-sites-list {
   margin-bottom: 10px;
 }
 
+.whats-new {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.whats-new h3 {
+  font-size: 24px;
+  line-height: 1;
+  margin: 0 0 30px;
+}
+
+.whats-new h3 .dismiss {
+  font-size: 12px;
+  color: var(--text-color--light);
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.whats-new .columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.whats-new .columns .column {
+  padding: 0 20px;
+}
+
+.whats-new .columns .column img {
+  margin: 0 0 10px;
+  border: 1px solid var(--border-color--light);
+  border-radius: 4px;
+}
+
+.whats-new .columns .column .title {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.whats-new .columns .column .description {
+  font-size: 16px;
+}
+
 .legacy-archives {
   font-size: 14px;
 }
