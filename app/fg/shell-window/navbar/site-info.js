@@ -162,7 +162,7 @@ class NavbarSiteInfo extends LitElement {
   onMouseoverSubscribe (e) {
     let rect = e.currentTarget.getClientRects()[0]
     bg.overlay.set({
-      value: 'See posts, comments, links, and more from this site in your social apps',
+      value: 'See posts, comments, links, and more from this site in Beaker apps',
       topArrow: true,
       centered: true,
       multiLine: true,
