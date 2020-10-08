@@ -811,13 +811,6 @@ export function buildWindowMenu (opts = {}) {
           if (win) tabManager.create(win, 'https://docs.beakerbrowser.com/', {setActive: true})
         }
       },
-      {
-        id: 'developerPortal',
-        label: 'Developer Portal',
-        click: function (item) {
-          if (win) tabManager.create(win, 'https://beaker.dev/', {setActive: true})
-        }
-      },
       {type: 'separator'},
       {
         id: 'reportIssue',

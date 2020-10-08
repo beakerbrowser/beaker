@@ -38,8 +38,8 @@ class BrowserMenu extends LitElement {
   }
 
   render () {
-    if (this.submenu === 'library') {
-      return this.renderLibrary()
+    if (this.submenu === 'apps') {
+      return this.renderApps()
     } else if (this.submenu) {
       return this.renderWindowMenu(this.submenu)
     }
@@ -75,9 +75,20 @@ class BrowserMenu extends LitElement {
         </div>
 
         <div class="section">
+          <div class="menu-item" @click=${e => this.onShowSubmenu('apps')}>
+            <i class="fas fa-th"></i>
+            <span class="label">Apps</span>
+            <span class="more"><span class="fas fa-caret-right"></span></span>
+          </div>
+
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
             <img class="favicon" src="asset:favicon:beaker://library/">
             <span class="label">My Library</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://history')}>
+            <img class="favicon" src="asset:favicon:beaker://history/">
+            <span class="label">History</span>
           </div>
 
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://settings')}>
@@ -124,6 +135,36 @@ class BrowserMenu extends LitElement {
       </div>
     `
   }
+
+  renderApps () {
+    return html`
+      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <div class="wrapper">
+        <div class="header">
+          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
+            <i class="fa fa-angle-left"></i>
+          </button>
+          <h2>Apps</h2>
+        </div>
+        <div class="section">
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://social')}>
+            <img class="favicon" src="asset:favicon:beaker://social/">
+            <span class="label">Beaker Social</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://uplink')}>
+            <img class="favicon" src="asset:favicon:beaker://uplink/">
+            <span class="label">Beaker Uplink</span>
+          </div>
+
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://reader')}>
+            <img class="favicon" src="asset:favicon:beaker://reader/">
+            <span class="label">Beaker Reader</span>
+          </div>
+        </div>
+      </div>`
+  }
+
 
   renderWindowMenu (menu) {
     var items = this.windowMenuItems[menu]
