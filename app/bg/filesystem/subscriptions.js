@@ -178,6 +178,7 @@ export async function listBlocked () {
  * @returns {Promise<Boolean>}
  */
 export async function isBlocked (url) {
+  url = normalizeOrigin(url)
   let blocklist = await listBlocked()
   return !!blocklist.find(item => item.url === url)
 }
@@ -189,6 +190,7 @@ export async function isBlocked (url) {
  * @returns {Promise<void>}
  */
 export async function addBlock ({url, title}) {
+  url = normalizeOrigin(url)
   let blocklist = await listBlocked()
   let existing = blocklist.find(item => item.url === url)
   if (existing) existing.title = title
@@ -201,6 +203,7 @@ export async function addBlock ({url, title}) {
  * @returns {Promise<void>}
  */
 export async function removeBlock (url) {
+  url = normalizeOrigin(url)
   let blocklist = await listBlocked()
   let i = blocklist.findIndex(item => item.url === url)
   if (i === -1) return

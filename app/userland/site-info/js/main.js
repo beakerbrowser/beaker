@@ -27,7 +27,8 @@ class SiteInfoApp extends LitElement {
       sessionUser: {type: Object},
       sessionPerms: {type: Object},
       requestedPerms: {type: Object},
-      forks: {type: Array}
+      forks: {type: Array},
+      isBlocked: {type: Boolean}
     }
   }
 
@@ -128,6 +129,7 @@ class SiteInfoApp extends LitElement {
     this.sessionPerms = undefined
     this.requestedPerms = undefined
     this.forks = undefined
+    this.isBlocked = false
     contextMenu.destroy()
   }
 
@@ -140,10 +142,11 @@ class SiteInfoApp extends LitElement {
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
-        ;[this.info, this.driveCfg, this.forks] = await Promise.all([
+        ;[this.info, this.driveCfg, this.forks, this.isBlocked] = await Promise.all([
           drive.getInfo(),
           beaker.drives.get(this.url),
-          beaker.drives.getForks(this.url)
+          beaker.drives.getForks(this.url),
+          beaker.subscriptions.isBlocked(this.url)
         ])
       } else {
         this.info = {
@@ -252,6 +255,11 @@ class SiteInfoApp extends LitElement {
             ` : ''}
           </p>
         </div>
+        ${this.isBlocked ? html`
+          <div class="blocked">
+            <span class="fas fa-fw fa-ban"></span> You have blocked this site
+          </div>
+        ` : ''}
       </div>
     `
   }
@@ -389,7 +397,12 @@ class SiteInfoApp extends LitElement {
           icon: 'far fa-fw fa-list-alt',
           label: 'Site Properties',
           click: () => this.onDriveProps()
-        }
+        },
+        !this.info?.writable ? {
+          icon: 'fas fa-fw fa-ban',
+          label: this.isBlocked ? 'Unblock' : 'Block',
+          click: () => this.onToggleBlocked()
+        } : undefined
       ].filter(Boolean)
     })
   }
@@ -402,6 +415,15 @@ class SiteInfoApp extends LitElement {
   async onDriveProps () {
     await beaker.shell.drivePropertiesDialog(this.url)
     this.load()
+  }
+
+  async onToggleBlocked () {
+    if (this.isBlocked) {
+      await beaker.subscriptions.removeBlock(this.url)
+    } else {
+      await beaker.subscriptions.addBlock({url: this.url, title: this.info.title})
+    }
+    this.isBlocked = !this.isBlocked
   }
 
   async onLogoutSession () {
