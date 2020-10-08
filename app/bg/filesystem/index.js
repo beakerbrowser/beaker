@@ -98,21 +98,15 @@ export async function setup () {
   // default pinned bookmarks
   if (isInitialCreation) {
     await rootDrive.pda.mkdir('/bookmarks')
-    await rootDrive.pda.writeFile(`/bookmarks/private.goto`, '', {metadata: {href: 'hyper://private/', title: 'My Private Site'}})
-    await rootDrive.pda.writeFile(`/bookmarks/docs-beakerbrowser-com.goto`, '', {metadata: {href: 'https://docs.beakerbrowser.com/', title: 'Beaker Help'}})
-    await rootDrive.pda.writeFile(`/bookmarks/discussions-beakerbrowser-beaker-github.goto`, '', {metadata: {href: 'https://github.com/beakerbrowser/beaker/discussions', title: 'Beaker Forum'}})
     await rootDrive.pda.writeFile(`/bookmarks/opencollective-com-beaker.goto`, '', {metadata: {href: 'https://opencollective.com/beaker', title: 'Support Beaker'}})
     await rootDrive.pda.writeFile(`/bookmarks/social.goto`, '', {metadata: {href: 'beaker://social/', title: 'Beaker Social'}})
     await rootDrive.pda.writeFile(`/bookmarks/uplink.goto`, '', {metadata: {href: 'beaker://uplink/', title: 'Beaker Uplink'}})
     await rootDrive.pda.writeFile(`/bookmarks/reader.goto`, '', {metadata: {href: 'beaker://reader/', title: 'Beaker Reader'}})
     await rootDrive.pda.mkdir('/beaker')
     await rootDrive.pda.writeFile(`/beaker/pins.json`, JSON.stringify([
-      'hyper://private/',
       'beaker://social/',
       'beaker://uplink/',
       'beaker://reader/',
-      'https://docs.beakerbrowser.com/',
-      'https://github.com/beakerbrowser/beaker/discussions',
       'https://opencollective.com/beaker'
     ], null, 2))
   }

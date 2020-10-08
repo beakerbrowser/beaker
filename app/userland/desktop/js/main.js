@@ -215,7 +215,7 @@ class DesktopApp extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
-          <a href="https://docs.beakerbrowser.com/" title="Help"><span class="far fa-fw fa-life-ring"></span> Help</a>
+          <a href="https://docs.beakerbrowser.com/" title="Help">Help</a>
           <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
         </div>
         ${this.renderReleaseNotice()}
