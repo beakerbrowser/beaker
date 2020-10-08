@@ -309,7 +309,6 @@ class UplinkApp extends LitElement {
           <div>
             <h4>
               1. Subscribe to sites to see what's happening
-              ${!this.isIntroStepCompleted(0) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 0)}><small>(skip)</small></a>` : ''}
             </h4>
             ${!this.suggestedSites ? html`<div><span class="spinner"></span></div>` : ''}
             ${this.suggestedSites?.length > 0 ? html`
@@ -333,7 +332,14 @@ class UplinkApp extends LitElement {
                   </div>
                 `)}
               </div>
-            ` : ''}
+              ` : ''}
+            <p>
+              <button
+                class="primary"
+                ?disabled=${this.isIntroStepCompleted(0)}
+                @click=${e => this.onClickCompleteIntroStep(e, 0)}
+              ><span class="fas fa-fw fa-check"></span> Done</button>
+            </p>
           </div>
         </section>
         <section>
@@ -343,7 +349,7 @@ class UplinkApp extends LitElement {
           <div>
             <h4>
               2. Get listed
-              ${!this.isIntroStepCompleted(1) ? html`<a href="#" @click=${e => this.onClickSkipIntroStep(e, 1)}><small>(skip)</small></a>` : ''}
+              ${!this.isIntroStepCompleted(1) ? html`<a href="#" @click=${e => this.onClickCompleteIntroStep(e, 1)}><small>(skip)</small></a>` : ''}
             </h4>
             <p>Add your <a href=${this.profile?.url} target="_blank">personal site</a> to the Beaker Network so people can find you.</p>
             <p>
@@ -376,10 +382,6 @@ class UplinkApp extends LitElement {
       this.isEmpty = e.detail.isEmpty
     }
     this.requestUpdate()
-  }
-
-  onClickSkipIntroStep (e, step) {
-    this.setIntroStepCompleted(step, true)
   }
 
   onKeyupSearch (e) {
@@ -430,9 +432,10 @@ class UplinkApp extends LitElement {
     setTimeout(() => {
       this.suggestedSites = this.suggestedSites.filter(s => s !== site)
     }, 1e3)
-    if (this.isIntroActive) {
-      this.setIntroStepCompleted(INTRO_STEPS.SUBSCRIBE, true)
-    }
+  }
+
+  onClickCompleteIntroStep (e, step) {
+    this.setIntroStepCompleted(step, true)
   }
 
   async onClickListMyself (e) {
