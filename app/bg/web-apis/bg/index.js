@@ -20,13 +20,6 @@ export default {
     return indexer.gql(query, variables, {query: queryPerms})
   },
 
-  clearNotifications () {
-    if (!wcTrust.isWcTrusted(this.sender)) {
-      throw new PermissionsError()
-    }
-    return indexer.clearNotifications()
-  },
-
   getState () {
     if (!wcTrust.isWcTrusted(this.sender)) {
       throw new PermissionsError()

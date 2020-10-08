@@ -46,7 +46,6 @@ export async function spawnAndExecuteJs (url, js) {
   wc.on('will-redirect', e => e.preventDefault())
 
   try {
-    wc.once('did-finish-load', console.log)
     await new Promise((resolve, reject) => {
       wc.once('dom-ready', resolve)
       wc.once('did-fail-load', reject)
