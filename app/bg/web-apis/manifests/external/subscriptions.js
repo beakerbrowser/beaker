@@ -3,5 +3,9 @@ export default {
   listNetworkFor: 'promise',
   get: 'promise',
   add: 'promise',
-  remove: 'promise'
+  remove: 'promise',
+  listBlocked: 'promise',
+  isBlocked: 'promise',
+  addBlock: 'promise',
+  removeBlock: 'promise'
 }

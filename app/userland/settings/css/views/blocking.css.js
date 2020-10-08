@@ -84,6 +84,13 @@ input[type="checkbox"] {
   margin: 0px 7px 0px 2px;
 }
 
+.site-block-list .unblock-btn {
+  color: var(--text-color--very-light);
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 3px;
+}
+
 .adblock-settings-list {
 }
 

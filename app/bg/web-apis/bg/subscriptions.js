@@ -39,5 +39,33 @@ export default {
       throw new PermissionsError()
     }
     return subscriptions.remove(...args)
+  },
+
+  listBlocked (...args) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
+    return subscriptions.listBlocked(...args)
+  },
+
+  isBlocked (...args) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
+    return subscriptions.isBlocked(...args)
+  },
+
+  addBlock (...args) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
+    return subscriptions.addBlock(...args)
+  },
+
+  removeBlock (...args) {
+    if (!wcTrust.isWcTrusted(this.sender)) {
+      throw new PermissionsError()
+    }
+    return subscriptions.removeBlock(...args)
   }
 }

@@ -212,9 +212,10 @@ export async function addProfileToBeakerNetwork () {
  * @param {Object} [etc]
  * @param {RecordDescription[]} [etc.existingResults]
  * @param {String[]} [etc.existingResultOrigins]
+ * @param {String[]} [etc.blockedOrigins]
  * @returns {Promise<HyperbeeBacklink[]>}
  */
-async function queryInner (opts, {existingResults, existingResultOrigins} = {}) {
+async function queryInner (opts, {existingResults, existingResultOrigins, blockedOrigins} = {}) {
   var pathQuery = opts.paths ? toArray(opts.paths).map(parseSimplePathSpec) : undefined
   var linkPathQuery
   if (opts.links?.paths?.length > 1 || opts.links?.paths?.[0].includes('*')) {
@@ -287,6 +288,9 @@ async function queryInner (opts, {existingResults, existingResultOrigins} = {}) 
       return false
     }
     if (opts.excludeOrigins && opts.excludeOrigins.includes(origin)) {
+      return false
+    }
+    if (blockedOrigins?.length && blockedOrigins.includes(origin)) {
       return false
     }
     if (opts.before) {

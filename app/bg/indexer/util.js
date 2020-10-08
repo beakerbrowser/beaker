@@ -6,6 +6,8 @@ import * as filesystem from '../filesystem/index'
 import * as drives from '../hyper/drives'
 import { query } from '../filesystem/query'
 import { READ_TIMEOUT, READ_DIFF_TIMEOUT } from './const'
+import * as logLib from '../logger'
+const logger = logLib.get().child({category: 'indexer', subcategory: 'util'})
 
 // typedefs
 // =
@@ -75,6 +77,20 @@ export async function listMyOrigins () {
   return ['hyper://private'].concat(driveMetas.filter(dm => dm.writable).map(dm => normalizeOrigin(dm.url)))
 }
 
+/**
+ * @returns {Promise<String[]>}
+ */
+export async function listBlockedOrigins () {
+  try {
+    let blocklist = await filesystem.get().pda.readFile('/beaker/blocklist.json', 'json')
+    return blocklist.map(item => normalizeOrigin(item.url))
+  } catch (e) {
+    if (!e.toString().includes('NotFound')) {
+      logger.error(`Failed to load blocklist: ${e.toString()}`)
+    }
+  }
+  return []
+}
 
 /**
  * @param {Object} db

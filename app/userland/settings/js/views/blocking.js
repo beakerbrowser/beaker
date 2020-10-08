@@ -1,8 +1,9 @@
 import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
-import viewCSS from '../../css/views/adblock.css.js'
+import viewCSS from '../../css/views/blocking.css.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
+import { fancyUrl } from '../../../app-stdlib/js/strings.js'
 
-class AdblockSettingsView extends LitElement {
+class BlockingSettingsView extends LitElement {
   static get properties () {
     return {
     }
@@ -22,6 +23,7 @@ class AdblockSettingsView extends LitElement {
     // fetch data
     this.browserInfo = await beaker.browser.getInfo()
     this.settings = await beaker.browser.getSettings()
+    this.blockedSites = await beaker.subscriptions.listBlocked()
     console.log('loaded', {
       browserInfo: this.browserInfo,
       settings: this.settings
@@ -37,13 +39,44 @@ class AdblockSettingsView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="form-group">
-        <h2>Filter Lists</h2>
-        ${this.renderFilterLists()}
+        <h2>Blocked Sites</h2>
+        ${this.renderSiteBlockList()}
+      </div>
+      <div class="form-group">
+        <h2>Adblock Filter Lists</h2>
+        ${this.renderAdblockFilterLists()}
       </div>
     `
   }
 
-  renderFilterLists() {
+  renderSiteBlockList () {
+    return html`
+      <div class="section">
+        <div class="site-block-list">
+          ${this.blockedSites?.length === 0 ? html`<em>No blocked sites</em>` : ''}
+          ${this.blockedSites.map((blockedSite)=>{
+            return html`
+              <div class="blocked-site">
+                <a class="unblock-btn" @click="${()=>this.onUnblockSite(blockedSite)}" data-tooltip="Unblock" title="Unblock this site">
+                  <span class="fas fa-fw fa-times"></span>
+                </a>
+                <a href=${blockedSite.url} target="_blank">
+                  ${blockedSite.title || fancyUrl(blockedSite.url)}
+                </a>
+              </div>`
+            })
+          }
+        </div>
+      </div>
+      <form @submit=${this.onBlockSite}>
+        <input type="text" placeholder="Name" name="sitetitle" required>
+        <input type="url" placeholder="URL" name="siteurl" required>
+        <button type="submit">Add</button>
+      </form>
+    `
+  }
+
+  renderAdblockFilterLists() {
     return html`
       <div class="section">
         <div class="adblock-settings-list">
@@ -81,6 +114,23 @@ class AdblockSettingsView extends LitElement {
   // events
   // =
 
+  async onBlockSite (e) {
+    var form = e.target
+    e.preventDefault()
+    await beaker.subscriptions.addBlock({title: form.sitetitle.value, url: form.siteurl.value, selected: true})
+    form.sitetitle.value =""
+    form.siteurl.value=""
+    this.load()
+  }
+
+  async onUnblockSite (blockedSite) {
+    if (!confirm(`Unblock ${blockedSite.title || 'this site'}?`)) {
+      return
+    }
+    await beaker.subscriptions.removeBlock(blockedSite.url)
+    this.load()
+  }
+
   onAdblockListChange (e) {
     const index = e.target.value
     if (e.target.checked) {
@@ -114,4 +164,4 @@ class AdblockSettingsView extends LitElement {
     this.requestUpdate()
   }
 }
-customElements.define('adblock-settings-view', AdblockSettingsView)
+customElements.define('blocking-settings-view', BlockingSettingsView)

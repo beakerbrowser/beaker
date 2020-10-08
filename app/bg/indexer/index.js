@@ -42,7 +42,7 @@ import * as hyperbees from './hyperbees'
 import * as local from './local'
 import lock from '../../lib/lock'
 import { timer } from '../../lib/time'
-import { joinPath, toNiceUrl, parseSimplePathSpec } from '../../lib/strings'
+import { toNiceUrl } from '../../lib/strings'
 import { normalizeOrigin, normalizeUrl, isUrlLike } from '../../lib/urls'
 import * as validation from './validation'
 import {
@@ -51,11 +51,11 @@ import {
   updateIndexState,
   setSiteFlags,
   listMyOrigins,
+  listBlockedOrigins,
   listOriginsToIndex,
   listOriginsToCapture,
   listOriginsToDeindex,
   loadSite,
-  checkShouldExcludePrivate,
   parseUrl,
   toArray,
   parallel
@@ -88,6 +88,7 @@ var state = {
   targets: []
 }
 var events = new EventEmitter()
+var cachedBlockedOrigins = []
 
 // exported api
 // =
@@ -452,7 +453,8 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
   }
   if (opts.indexes.includes('network')) {
     let networkRes = await timer(5e3, () => hyperbees.query(opts, {
-      existingResults: results[0]?.records
+      existingResults: results[0]?.records,
+      blockedOrigins: cachedBlockedOrigins
     }).catch(e => undefined))
     if (networkRes) {
       results.push(networkRes)
@@ -687,6 +689,8 @@ async function tick () {
     var originsToDeindex = await listOriginsToDeindex(db, originsToIndex)
     DEBUGGING.setQueue(originsToDeindex)
     await parallel(originsToDeindex, deindexSite)
+
+    cachedBlockedOrigins = await listBlockedOrigins()
   } finally {
     DEBUGGING.setStatus('waiting', Date.now() + TICK_INTERVAL)
     setTimeout(tick, TICK_INTERVAL)

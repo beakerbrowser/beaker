@@ -1,5 +1,5 @@
 import { joinPath } from '../../lib/strings.js'
-import { createResourceSlug, normalizeUrl, isSameOrigin } from '../../lib/urls'
+import { createResourceSlug, normalizeUrl, normalizeOrigin, isSameOrigin } from '../../lib/urls'
 import * as drives from '../hyper/drives'
 import * as indexer from '../indexer/index'
 import { METADATA_KEYS } from '../indexer/const'
@@ -157,6 +157,55 @@ export async function migrateSubscriptionsFromContacts () {
       })
     }
   }
+}
+
+/**
+ * @returns {Promise<Object[]>}
+ */
+export async function listBlocked () {
+  try {
+    let blocklist = await filesystem.get().pda.readFile('/beaker/blocklist.json', 'json')
+    blocklist = blocklist.filter(item => item && typeof item === 'object' && item.url && typeof item.url === 'string')
+    blocklist.forEach(item => {item.url = normalizeOrigin(item.url)})
+    return blocklist
+  } catch (e) {
+    return []
+  }
+}
+
+/**
+ * @param {String} url
+ * @returns {Promise<Boolean>}
+ */
+export async function isBlocked (url) {
+  let blocklist = await listBlocked()
+  return !!blocklist.find(item => item.url === url)
+}
+
+/**
+ * @param {Object} opts
+ * @param {String} opts.url
+ * @param {String} opts.title
+ * @returns {Promise<void>}
+ */
+export async function addBlock ({url, title}) {
+  let blocklist = await listBlocked()
+  let existing = blocklist.find(item => item.url === url)
+  if (existing) existing.title = title
+  else blocklist.push({url, title})
+  await filesystem.get().pda.writeFile('/beaker/blocklist.json', blocklist, 'json')
+}
+
+/**
+ * @param {String} url
+ * @returns {Promise<void>}
+ */
+export async function removeBlock (url) {
+  let blocklist = await listBlocked()
+  let i = blocklist.findIndex(item => item.url === url)
+  if (i === -1) return
+  blocklist.splice(i, 1)
+  await filesystem.get().pda.writeFile('/beaker/blocklist.json', blocklist, 'json')
 }
 
 // internal
