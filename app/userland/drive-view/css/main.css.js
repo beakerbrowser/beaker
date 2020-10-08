@@ -168,6 +168,14 @@ a:hover {
   background: var(--text-color--private-link);
 }
 
+.blocked {
+  background: #ffcbcb;
+  color: red;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
 beaker-record-thread {
   margin: 20px 0 100px;
 }
@@ -299,6 +307,13 @@ beaker-record-thread {
 
   .sidebar.no-thumb .nav {
     left: 10px;
+  }
+  
+  .blocked {
+    position: fixed;
+    top: 5px;
+    right: 190px;
+    padding: 6px 10px;
   }
 }
 `

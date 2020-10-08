@@ -38,6 +38,7 @@ class DriveViewApp extends LitElement {
     this.drive = beaker.hyperdrive.drive(location)
     this.info = undefined
     this.profile = undefined
+    this.isBlocked = false
     this.contentCounts = undefined
     this.showFilesOverride = false
     this.hasThumb = true
@@ -101,6 +102,7 @@ class DriveViewApp extends LitElement {
       url: window.location.origin,
       profileUrl: this.profile.url
     }).catch(e => undefined)
+    this.isBlocked = await beaker.subscriptions.isBlocked(location.origin)
     return res?.site
   }
 
@@ -152,6 +154,9 @@ class DriveViewApp extends LitElement {
           </div>
           <div class="title"><a href="/">${this.info.title || 'Untitled'}</a></div>
           <div class="description">${this.info.description || ''}</div>
+          ${this.isBlocked ? html`
+            <div class="blocked"><span class="fas fa-fw fa-ban"></span> You have blocked this site</div>
+          ` : ''}
           ${!showSubs ? '' : html`
             <div class="known-subscribers">
               ${this.info?.isSubscriberToUser ? html`
@@ -193,6 +198,9 @@ class DriveViewApp extends LitElement {
             ` : html`
               <span class="fas fa-fw fa-rss"></span> Subscribe
             `}
+          </button>
+          <button class="transparent" @click=${this.onClickMoreTools}>
+            <span class="fas fa-caret-down"></span>
           </button>
         `}
       </div>
@@ -338,6 +346,22 @@ class DriveViewApp extends LitElement {
     this.info = await this.fetchSiteInfo()
   }
 
+  async onToggleBlocked () {
+    if (this.isBlocked) {
+      this.isBlocked = false
+      this.requestUpdate()
+      await beaker.subscriptions.removeBlock(this.info.url)
+    } else {
+      this.isBlocked = true
+      this.requestUpdate()
+      await beaker.subscriptions.addBlock({
+        url: this.info.url,
+        title: this.info.title
+      })
+    }
+    this.info = await this.fetchSiteInfo()
+  }
+
   async onEditProperties () {
     await beaker.shell.drivePropertiesDialog(this.info.url)
     location.reload()
@@ -347,15 +371,18 @@ class DriveViewApp extends LitElement {
     e.preventDefault()
     e.stopPropagation()
     var rect = e.currentTarget.getClientRects()[0]
-    const items = [
-      {icon: 'far fa-comment', label: 'New Post', click: this.onClickNewPost}
-    ]
-    if (!this.isSystem) {
-      items.unshift('-')
-      items.unshift(this.isSubscriber
-        ? {icon: 'fas fa-times', label: 'Unsubscribe', click: this.onToggleSubscribe}
-        : {icon: 'fas fa-rss', label: 'Subscribe', click: this.onToggleSubscribe},
-      )
+    var items = []
+    if (this.info.writable) {
+      items.push({icon: 'far fa-comment', label: 'New Post', click: this.onClickNewPost.bind(this)})
+      if (!this.isSystem) {
+        items.unshift('-')
+        items.unshift(this.isSubscriber
+          ? {icon: 'fas fa-times', label: 'Unsubscribe', click: this.onToggleSubscribe.bind(this)}
+          : {icon: 'fas fa-rss', label: 'Subscribe', click: this.onToggleSubscribe.bind(this)},
+        )
+      }
+    } else {
+      items.push({icon: 'fas fa-ban', label: this.isBlocked ? 'Unblock' : 'Block', click: this.onToggleBlocked.bind(this)})
     }
     contextMenu.create({
       x: rect.right,
