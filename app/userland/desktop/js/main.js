@@ -212,13 +212,11 @@ class DesktopApp extends LitElement {
         </main>
       `
     } else {
-      const appLink = (url, label) => html`
-        <a href=${url} title=${label}><img src="asset:favicon:${url}"> ${label}</a>
-      `
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
-          ${this.renderSettingsBtn()}
+          <a href="https://docs.beakerbrowser.com/" title="Help"><span class="far fa-fw fa-life-ring"></span> Help</a>
+          <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
         </div>
         ${this.renderReleaseNotice()}
         <main>
@@ -229,14 +227,6 @@ class DesktopApp extends LitElement {
                 <a class="clear-search" @click=${this.onClickClearSearch}><span class="fas fa-times"></span></a>
               ` : ''}
               <input @keyup=${this.onKeyupSearch} placeholder="Search your sites, bookmarks, posts, and more">
-            </div>
-            <div class="apps">
-              ${appLink('beaker://social', 'Social')}
-              ${appLink('beaker://uplink', 'Uplink')}
-              ${appLink('beaker://reader', 'Reader')}
-              ${appLink('beaker://library', 'Library')}
-              ${appLink('beaker://history', 'History')}
-              ${appLink('beaker://settings', 'Settings')}
             </div>
             ${this.renderPins()}
             ${this.renderWhatsNew()}
@@ -329,12 +319,6 @@ class DesktopApp extends LitElement {
           <div class=${icon}></div>
         <div>Subscribe to sites to see ${thing}</div>
       </div>
-    `
-  }
-
-  renderSettingsBtn () {
-    return html`
-      <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
     `
   }
 
