@@ -1,7 +1,0 @@
-/*
-A few style fixes to the editor -prf
-*/
-.ql-editor ol li[data-list="bullet"]:before {
-  content: '\\2022';
-  text-align: center;
-}
