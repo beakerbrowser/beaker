@@ -349,7 +349,7 @@ export class RecordThread extends LitElement {
         } catch (e) {
           if (e.message.includes('NotFoundError')) {
             yield html`
-              <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+              <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
               <div class="error">
                 <h2>File not found</h2>
                 <div>There is no file or folder at this URL. <span class="far fa-frown"></span></div>
@@ -357,7 +357,7 @@ export class RecordThread extends LitElement {
             `
           } else {
             yield html`
-              <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+              <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
               <div class="error">
                 <h2>Uhoh!</h2>
                 <p>This file wasn't able to load. <span class="far fa-frown"></span></p>

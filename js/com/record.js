@@ -215,7 +215,7 @@ export class Record extends LitElement {
     }
 
     return html`
-      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
       ${this.isNotification ? this.renderNotification() : ''}
       ${this.showContext && context ? html`
         <div class="card-context">
@@ -243,7 +243,7 @@ export class Record extends LitElement {
           ${res.url.startsWith('hyper://private') ? html`
             <span class="sysicon fas fa-lock"></span>
           ` : html`
-            <img class="favicon" src="asset:thumb:${res.site.url}">
+            <img class="favicon" src="${res.site.url}/thumb">
           `}
         </a>
         <span class="arrow"></span>
@@ -301,7 +301,7 @@ export class Record extends LitElement {
     }
 
     return html`
-      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
       ${this.isNotification ? this.renderNotification() : ''}
       <div
         class=${classMap({
@@ -315,7 +315,7 @@ export class Record extends LitElement {
       >
         <div class="header">
           <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-            <img class="favicon" src="asset:thumb:${res.site.url}">
+            <img class="favicon" src="${res.site.url}/thumb">
           </a>
           <div class="origin">
             ${res.url.startsWith('hyper://private/') ? html`
@@ -394,7 +394,7 @@ export class Record extends LitElement {
         })}
       >
         <a class="thumb" href=${res.site.url} title=${res.site.title} data-tooltip=${res.site.title}>
-          <img class="favicon" src="asset:thumb:${res.site.url}">
+          <img class="favicon" src="${res.site.url}/thumb">
         </a>
         <div>
           <a class="author" href=${res.site.url} title=${res.site.title}>
@@ -468,7 +468,7 @@ export class Record extends LitElement {
     href = href || res.url
 
     return html`
-    <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+    <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
       <div class="record expanded-link ${res.url.startsWith('hyper://private') ? 'private' : ''}">
         <a class="thumb" href=${href} title=${res.site.title}>
           ${this.renderThumb(res)}
@@ -488,7 +488,7 @@ export class Record extends LitElement {
                   Me (Private)
                 </a>
               ` : html`
-                <img class="favicon" src="asset:thumb:${res.site.url}">
+                <img class="favicon" src="${res.site.url}/thumb">
                 <a class="author" href=${res.site.url} title=${res.site.title}>
                   ${res.site.title}
                 </a>
@@ -543,7 +543,7 @@ export class Record extends LitElement {
     })[recordType] || res.url.split('/').pop() || niceDate(res.ctime)
 
     return html`
-      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
       ${this.isNotification ? this.renderNotification() : ''}
       <div
         class=${classMap({
@@ -558,7 +558,7 @@ export class Record extends LitElement {
           ${res.url.startsWith('hyper://private') ? html`
             <span class="sysicon fas fa-lock"></span>
           ` : html`
-            <img class="favicon" src="asset:thumb:${res.site.url}">
+            <img class="favicon" src="${res.site.url}/thumb">
           `}
         </a>
         <div class="container">
@@ -596,7 +596,7 @@ export class Record extends LitElement {
     var recordType = getRecordType(res)
 
     return html`
-      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
       <div
         class=${classMap({
           record: true,
@@ -610,7 +610,7 @@ export class Record extends LitElement {
           ${res.url.startsWith('hyper://private') ? html`
             <span class="sysicon fas fa-lock"></span>
           ` : html`
-            <img class="favicon" src="asset:thumb:${res.site.url}">
+            <img class="favicon" src="${res.site.url}/thumb">
           `}
         </a>
         <div class="container">

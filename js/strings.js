@@ -99,6 +99,32 @@ export function slugifyUrl (str = '') {
   return slugify(str)
 }
 
+export function createResourceSlug (href, title) {
+  var slug
+  try {
+    var hrefp = new URL(href)
+    if (hrefp.pathname === '/' && !hrefp.search && !hrefp.hash) {
+      // at the root path - use the hostname for the filename
+      if (DRIVE_KEY_REGEX.test(hrefp.hostname) && !!title.trim()) {
+        // ...unless it's a hyper key
+        slug = slugify(title.trim())
+      } else {
+        slug = slugify(hrefp.hostname)
+      }
+    } else if (typeof title === 'string' && !!title.trim()) {
+      // use the title if available on subpages
+      slug = slugify(title.trim())
+    } else {
+      // use parts of the url
+      slug = slugify(hrefp.hostname + hrefp.pathname + hrefp.search + hrefp.hash)
+    }
+  } catch (e) {
+    // weird URL, just use slugified version of it
+    slug = slugify(href)
+  }
+  return slug.toLowerCase()
+}
+
 const reservedChars = /[^\w]/g
 const endingDashes = /([-]+$)/g
 const extraDashes = /(-[-]+)/g

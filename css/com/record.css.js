@@ -1,4 +1,4 @@
-import {css} from '../../vendor/lit-element/lit-element.js'
+import {css, unsafeCSS} from '../../vendor/lit-element/lit-element.js'
 import buttonsCSS from '../buttons2.css.js'
 import inputsCSS from '../inputs.css.js'
 import tooltipCSS from '../tooltip.css.js'
@@ -129,7 +129,7 @@ a:hover {
 .image-loading {
   width: 14px;
   height: 14px;
-  background: url(beaker://assets/spinner.gif);
+  background: url(${unsafeCSS((new URL('../../img/spinner.gif', import.meta.url)).toString())});
   background-size: 100%;
 }
 
