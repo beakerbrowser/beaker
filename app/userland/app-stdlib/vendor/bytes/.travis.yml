@@ -1,0 +1,77 @@
+language: node_js
+node_js:
+  - "0.8"
+  - "0.10"
+  - "0.12"
+  - "1.8"
+  - "2.5"
+  - "3.3"
+  - "4.9"
+  - "5.12"
+  - "6.16"
+  - "7.10"
+  - "8.15"
+  - "9.11"
+  - "10.15"
+  - "11.7"
+sudo: false
+cache:
+  directories:
+    - node_modules
+before_install:
+  # Configure npm
+  - |
+    # Skip updating shrinkwrap / lock
+    npm config set shrinkwrap false
+  # Setup Node.js version-specific dependencies
+  - |
+    # mocha for testing
+    # - use 2.x for Node.js < 0.10
+    # - use 3.x for Node.js < 6
+    if [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -eq 0 && "$(cut -d. -f2 <<< "$TRAVIS_NODE_VERSION")" -lt 10 ]]; then
+      npm install --save-dev mocha@2.5.3
+    elif [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -lt 6 ]]; then
+      npm install --save-dev mocha@3.5.3
+    fi
+  - |
+    # nyc for coverage
+    # - remove on Node.js < 6
+    if [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -lt 6 ]]; then
+      npm rm --save-dev nyc
+    fi
+  - |
+    # eslint for linting
+    # - remove on Node.js < 6
+    if [[ "$(cut -d. -f1 <<< "$TRAVIS_NODE_VERSION")" -lt 6 ]]; then
+      node -pe 'Object.keys(require("./package").devDependencies).join("\n")' | \
+        grep -E '^eslint(-|$)' | \
+        xargs npm rm --save-dev
+    fi
+  # Update Node.js modules
+  - |
+    # Prune & rebuild node_modules
+    if [[ -d node_modules ]]; then
+      npm prune
+      npm rebuild
+    fi
+
+script:
+  - |
+    # Run test script, depending on nyc install
+    if [[ -n "$(npm -ps ls nyc)" ]]; then
+      npm run-script test-ci
+    else
+      npm test
+    fi
+  - |
+    # Run linting, depending on eslint install
+    if [[ -n "$(npm -ps ls eslint)" ]]; then
+      npm run-script lint
+    fi
+after_script:
+  - |
+    # Upload coverage to coveralls, if exists
+    if [[ -d .nyc_output ]]; then
+      npm install --save-dev coveralls@2
+      nyc report --reporter=text-lcov | coveralls
+    fi
