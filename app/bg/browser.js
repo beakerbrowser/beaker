@@ -126,7 +126,7 @@ export async function setup () {
   })
 
   // request blocking for security purposes
-  session.defaultSession.webRequest.onBeforeRequest({urls: ['*://*/*']}, (details, cb) => {
+  session.defaultSession.webRequest.onBeforeRequest((details, cb) => {
     if (details.url.startsWith('asset:')) {
       if (details.resourceType === 'mainFrame') {
         // allow toplevel navigation
