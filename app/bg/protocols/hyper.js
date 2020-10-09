@@ -402,7 +402,7 @@ export const protocolHandler = async function (request, respond) {
     if (!mimeType) {
       let chunk;
       for await (const part of checkoutFS.session.drive.createReadStream(entry.path, { start: 0, length: 512 })) {
-        chunk = chunk ? Buffer.concat(chunk, part) : part;
+        chunk = chunk ? Buffer.concat([chunk, part]) : part;
       }
       mimeType = mime.identify(entry.path, chunk)
     }
