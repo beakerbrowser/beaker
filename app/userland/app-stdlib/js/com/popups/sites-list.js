@@ -85,7 +85,7 @@ export class SitesListPopup extends BasePopup {
 
   renderBody () {
     return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <link rel="stylesheet" href=${(new URL('../../../css/fontawesome.css', import.meta.url)).toString()}>
       <div class="sites">
         ${this.isLoading ? html`
           <div class="loading"><span class="spinner"></span></div>
@@ -100,7 +100,7 @@ export class SitesListPopup extends BasePopup {
     const title = site.title || 'Untitled'
     return html`
       <a href=${site.url} class="site" title=${title} target="_blank">
-        <img class="thumb" src="asset:thumb:${site.url}"/>
+        <img class="thumb" src="${site.url}/thumb"/>
         <span class="details">
           <span class="title">${title}</span>
         </span>

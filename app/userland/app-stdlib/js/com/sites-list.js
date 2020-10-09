@@ -278,14 +278,14 @@ export class SitesList extends LitElement {
     if (!this.sites.length) {
       if (!this.emptyMessage) return html``
       return html`
-        <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+        <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
         <div class="sites empty">
           <span>${this.emptyMessage}</div></span>
         </div>
       `
     }
     return html`
-      <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+      <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
       <div class="container">
         <div class="sites ${this.singleRow ? 'single-row' : 'full'}">
           ${repeat(this.sites, site => site.url, site => this.renderSite(site))}
@@ -299,7 +299,7 @@ export class SitesList extends LitElement {
     return html`
       <div class="site">
         <div class="thumb">
-          <a href=${site.url} title=${title}><img src="asset:thumb:${site.url}"></a>
+          <a href=${site.url} title=${title}><img src="${site.url}/thumb"></a>
         </div>
         <div class="info">
           <div class="title"><a href=${site.url} title=${title}>${title}</a></div>

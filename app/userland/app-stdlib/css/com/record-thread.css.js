@@ -1,8 +1,8 @@
-import {css} from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import buttonsCSS from 'beaker://app-stdlib/css/buttons2.css.js'
-import inputsCSS from 'beaker://app-stdlib/css/inputs.css.js'
-import tooltipCSS from 'beaker://app-stdlib/css/tooltip.css.js'
-import spinnerCSS from 'beaker://app-stdlib/css/com/spinner.css.js'
+import {css} from '../../vendor/lit-element/lit-element.js'
+import buttonsCSS from '../../css/buttons2.css.js'
+import inputsCSS from '../../css/inputs.css.js'
+import tooltipCSS from '../../css/tooltip.css.js'
+import spinnerCSS from '../../css/com/spinner.css.js'
 
 const cssStr = css`
 ${buttonsCSS}

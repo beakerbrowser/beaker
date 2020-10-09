@@ -4,7 +4,7 @@ import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-
 import { joinPath, toNiceUrl } from '../strings.js'
 import { debouncer } from '../functions.js'
 import * as contextMenu from './context-menu.js'
-import registerSuggestions from 'beaker://editor/js/com/suggestions.js'
+import registerSuggestions from '../vs/suggestions.js'
 import css from '../../css/com/post-composer.css.js'
 
 var _currentComposer = undefined
@@ -45,13 +45,7 @@ class PostComposer extends LitElement {
     if (this.driveUrl) {
       this.profile = await beaker.hyperdrive.getInfo(this.driveUrl)
     } else {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
-      let {profile} = await beaker.index.gql(`
-        query Profile ($url: String!) {
-          profile: site(url: $url) { url title }
-        }
-      `, {url: addressBook?.profiles?.[0]?.key})
-      this.profile = profile
+      this.profile = (await beaker.session.get())?.user
     }
     this.requestUpdate()
   }
@@ -83,7 +77,7 @@ class PostComposer extends LitElement {
 
   async createEditor () {
     return new Promise((resolve, reject) => {
-      window.require.config({ baseUrl: 'beaker://assets/' })
+      window.require.config({baseUrl: (new URL('..', import.meta.url)).toString()})
       window.require(['vs/editor/editor.main'], () => {
         registerSuggestions()
         var isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -140,8 +134,8 @@ class PostComposer extends LitElement {
       >${label}</a>
     `
     return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <link rel="stylesheet" href="beaker://assets/vs/editor/editor.main.css">
+      <link rel="stylesheet" href=${(new URL('../../css/fontawesome.css', import.meta.url)).toString()}>
+      <link rel="stylesheet" href=${(new URL('../vs/editor/editor.main.css', import.meta.url)).toString()}>
       <form @submit=${this.onSubmit}>
         <nav>
           ${navItem('edit', 'Write')}
@@ -280,8 +274,7 @@ class PostComposer extends LitElement {
       roomy: true,
       rounded: true,
       style: `padding: 6px 0`,
-      items,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
+      items
     })
   }
 

@@ -1,7 +1,7 @@
 /* globals beaker */
-import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
-import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
+import { html, css } from '../../../vendor/lit-element/lit-element.js'
+import { BasePopup } from './base.js'
+import popupsCSS from '../../../css/com/popups.css.js'
 import '../record-thread.js'
 
 // exported api

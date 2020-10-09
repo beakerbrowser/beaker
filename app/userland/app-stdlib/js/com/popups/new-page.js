@@ -1,10 +1,10 @@
 /* globals beaker */
-import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
-import { getAvailableName } from 'beaker://app-stdlib/js/fs.js'
-import { joinPath } from 'beaker://app-stdlib/js/strings.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
-import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
+import { html, css } from '../../../vendor/lit-element/lit-element.js'
+import { BasePopup } from './base.js'
+import { getAvailableName } from '../../fs.js'
+import { joinPath } from '../../strings.js'
+import * as contextMenu from '../../com/context-menu.js'
+import popupsCSS from '../../../css/com/popups.css.js'
 
 // exported api
 // =
@@ -33,13 +33,7 @@ export class NewPagePopup extends BasePopup {
     if (this.driveUrl) {
       this.profile = await beaker.hyperdrive.getInfo(this.driveUrl)
     } else {
-      let addressBook = await beaker.hyperdrive.readFile('hyper://private/address-book.json', 'json').catch(e => undefined)
-      let {profile} = await beaker.index.gql(`
-        query Profile($url: String!) {
-          profile: site(url: $url) { url title }
-        }
-      `, {url: addressBook?.profiles?.[0]?.key})
-      this.profile = profile
+      this.profile = (await beaker.session.get())?.user
     }
     this.requestUpdate()
   }
@@ -207,14 +201,14 @@ export class NewPagePopup extends BasePopup {
     `
 
     return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <link rel="stylesheet" href=${(new URL('../../../css/fontawesome.css', import.meta.url)).toString()}>
       <nav>
         ${navItem('page', html`<span class="far fa-fw fa-file"></span> Page`)}
         ${navItem('blogpost', html`<span class="fas fa-fw fa-blog"></span> Blogpost`)}
       </nav>
       <form @submit=${this.onSubmit}>
         <div class="where">
-          <img src="asset:thumb:${this.profile?.url}">
+          <img src="${this.profile?.url}/thumb">
           <div>
             <div class="title">${this.profile?.title}</div>
             <div>
