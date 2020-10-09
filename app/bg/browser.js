@@ -127,7 +127,7 @@ export async function setup () {
 
   // request blocking for security purposes
   session.defaultSession.webRequest.onBeforeRequest((details, cb) => {
-    if (details.url.startsWith('asset:')) {
+    if (details.url.startsWith('asset:') || details.url.startsWith('beaker:')) {
       if (details.resourceType === 'mainFrame') {
         // allow toplevel navigation
         return cb({cancel: false})
