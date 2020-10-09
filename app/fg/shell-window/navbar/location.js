@@ -705,6 +705,10 @@ button.folder-sync .fa-sync {
   top: -3px;
 }
 
+button.folder-sync .fa-folder-open {
+  transform: translateY(.5px);
+}
+
 .subscribe-btn-group {
   display: flex;
   border: 1px solid var(--border-color--navbar-subscribe-btn);
