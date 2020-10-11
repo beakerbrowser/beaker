@@ -527,7 +527,7 @@ ${spinnerCSS}
 .tab-minimize {
   opacity: 0;
   position: absolute;
-  top: 8px;
+  top: 7px;
   width: 16px;
   height: 16px;
   z-index: 4;
