@@ -243,5 +243,72 @@ section.files .file.downloaded .indicator {
 section.files .file.downloaded a {
   color: var(--text-color--default);
 }
+
+.api-calls-grid.two {
+  display: grid;
+  grid-template-rows: auto auto;
+}
+
+.api-calls-grid.two > * {
+  overflow: scroll;
+}
+
+.api-calls-grid.two > :first-child {
+  height: calc(30vh - 12px);
+}
+
+.api-calls-grid.two > :last-child {
+  height: calc(70vh - 12px);
+  border-top: 1px solid var(--border-color--light);
+}
+
+.api-calls {
+  width: 100vw;
+  overflow: hidden;
+}
+
+.api-calls table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.api-calls table tr:hover {
+  cursor: pointer;
+  background: var(--bg-color--light);
+}
+
+.api-calls table :-webkit-any(th, td) {
+  text-align: left;
+  white-space: nowrap;
+  border-right: 1px solid var(--border-color--light);
+  border-bottom: 1px solid var(--border-color--light);
+  padding: 3px 6px;
+  font-size: 12px;
+}
+
+.api-calls table tr.selected td {
+  background: var(--bg-color--selected);
+  color: var(--bg-color--default);
+}
+
+.api-call-details {
+  box-sizing: border-box;
+  padding: 6px 10px;
+}
+
+.api-call-details > div:nth-child(even) {
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--bg-color--secondary);
+  margin-bottom: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.api-call-details pre {
+  margin: 0;
+  font-size: 12px;
+}
 `
 export default cssStr

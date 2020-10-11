@@ -1,7 +1,8 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import * as QP from './lib/qp.js'
 import css from '../css/main.css.js'
-import { toHex, isSameOrigin } from 'beaker://app-stdlib/js/strings.js'
+import { toHex, isSameOrigin, toNiceDomain, shorten } from 'beaker://app-stdlib/js/strings.js'
+import { timeDifference } from 'beaker://app-stdlib/js/time.js'
 import bytes from 'beaker://app-stdlib/vendor/bytes/index.js'
 import 'beaker://app-stdlib/js/com/hover-card.js'
 
@@ -13,6 +14,8 @@ class HypercoreToolsApp extends LitElement {
   static get properties () {
     return {
       selectedDrive: {type: Object},
+      selectedAPICall: {type: Number},
+      currentView: {type: String},
       currentDriveView: {type: String}
     }
   }
@@ -21,9 +24,13 @@ class HypercoreToolsApp extends LitElement {
     super()
     beaker.panes.setAttachable()
     this.selectedDrive = undefined
+    this.currentView = 'hypercores'
     this.currentDriveView = 'cores'
     this.url = undefined
     this.drivecores = []
+    this.apiCallLog = []
+    this.selectedAPICall = undefined
+    this.auditLogStream = undefined
 
     var ignoreNextAttachEvent = false
     beaker.panes.addEventListener('pane-attached', e => {
@@ -60,18 +67,20 @@ class HypercoreToolsApp extends LitElement {
     this.drivecores = await beaker.hyperdebug.listCores(url)
     console.log(this.drivecores)
     this.requestUpdate()
+    this.apiCallLog = []
+    this.bindApiLogEvents()
 
     for (let drive of this.drivecores) {
       drive.url = `hyper://${toHex(drive.metadata.key)}`
 
       drive.metadata.downloadedBlockBits = await beaker.hyperdebug.hasCoreBlocks(drive.metadata.key, 0, drive.metadata.totalBlocks)
       drive.metadata.log = []
-      this.bindLogEvents(drive.metadata, drive.url, 'metadata')
+      this.bindCoreLogEvents(drive.metadata, drive.url, 'metadata')
       this.requestUpdate()
 
       drive.content.downloadedBlockBits = await beaker.hyperdebug.hasCoreBlocks(drive.content.key, 0, drive.content.totalBlocks)
       drive.content.log = []
-      this.bindLogEvents(drive.content, drive.url, 'content')
+      this.bindCoreLogEvents(drive.content, drive.url, 'content')
       this.requestUpdate()
 
       try {
@@ -84,7 +93,19 @@ class HypercoreToolsApp extends LitElement {
     }
   }
 
-  bindLogEvents (core, url, corename) {
+  async bindApiLogEvents () {
+    this.selectedAPICall = undefined
+    if (this.auditLogStream) this.auditLogStream.close()
+    this.auditLogStream = await beaker.logger.streamAuditLog({caller: this.url, includeResponse: true})
+    this.auditLogStream.addEventListener('data', e => {
+      this.apiCallLog.push(e.detail)
+      if (this.currentView === 'api-calls') {
+        this.requestUpdate()
+      }
+    })
+  }
+
+  bindCoreLogEvents (core, url, corename) {
     const log = (...args) => {
       core.log.unshift(args.join(' '))
       this.requestUpdate()
@@ -128,6 +149,12 @@ class HypercoreToolsApp extends LitElement {
   // =
 
   render () {
+    const mainNavItem = (id, label) => html`
+      <a
+        class="${id === this.currentView ? 'current' : ''}"
+        @click=${e => this.currentView = id}
+      >${label}</a>
+    `
     const driveNavItem = (id, label) => html`
       <a
         class="${id === this.currentDriveView ? 'current' : ''}"
@@ -138,44 +165,55 @@ class HypercoreToolsApp extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="hover-el"></div>
       <nav>
-        <a class="current">Hypercores</a>
+        ${mainNavItem('hypercores', 'Hypercores')}
+        ${mainNavItem('api-calls', 'API Calls')}
       </nav>
       <main>
-        ${this.selectedDrive ? html`
-          <div class="drives-list">
-            <div class="drives-list-header">
-              <div class="key">Key</div>
-              <nav>
-                <a @click=${this.onClickDeselectDrive}>&times;</a>
-                ${driveNavItem('cores', 'Cores')}
-                ${driveNavItem('files', 'Files')}
-              </nav>
-            </div>
-            <div class="drives-list-columns">
-              <div class="list">
-                ${this.drivecores.map(this.renderDriveListItemShort.bind(this))}
+        ${this.currentView === 'hypercores' ? html`
+          ${this.selectedDrive ? html`
+            <div class="drives-list">
+              <div class="drives-list-header">
+                <div class="key">Key</div>
+                <nav>
+                  <a @click=${this.onClickDeselectDrive}>&times;</a>
+                  ${driveNavItem('cores', 'Cores')}
+                  ${driveNavItem('files', 'Files')}
+                </nav>
               </div>
-              <div class="view">
-                ${this.currentDriveView === 'cores' ? html`
-                  ${this.renderDriveCores(this.selectedDrive)}
-                ` : this.currentDriveView === 'files' ? html`
-                  ${this.renderDriveFiles(this.selectedDrive)}
-                ` : ''}
+              <div class="drives-list-columns">
+                <div class="list">
+                  ${this.drivecores.map(this.renderDriveListItemShort.bind(this))}
+                </div>
+                <div class="view">
+                  ${this.currentDriveView === 'cores' ? html`
+                    ${this.renderDriveCores(this.selectedDrive)}
+                  ` : this.currentDriveView === 'files' ? html`
+                    ${this.renderDriveFiles(this.selectedDrive)}
+                  ` : ''}
+                </div>
               </div>
             </div>
-          </div>
-        ` : html`
-          <div class="drives-list">
-            <div class="drives-list-header">
-              <div class="key">Key</div>
-              <div class="type">Type</div>
-              <div class="initiator">Initiator</div>
-              <div class="peers">Peers</div>
-              <div class="blocks">Blocks</div>
+          ` : html`
+            <div class="drives-list">
+              <div class="drives-list-header">
+                <div class="key">Key</div>
+                <div class="type">Type</div>
+                <div class="initiator">Initiator</div>
+                <div class="peers">Peers</div>
+                <div class="blocks">Blocks</div>
+              </div>
+              ${this.drivecores.map(this.renderDriveListItemFull.bind(this))}
             </div>
-            ${this.drivecores.map(this.renderDriveListItemFull.bind(this))}
+          `}
+        ` : ''}
+        ${this.currentView === 'api-calls' ? html`
+          <div class="api-calls-grid ${this.selectedAPICall !== undefined ? 'two' : 'one'}">
+            <div>${this.renderAPICalls()}</div>
+            ${this.selectedAPICall !== undefined ? html`
+              <div>${this.renderSelectedAPICall()}</div>
+            ` : ''}
           </div>
-        `}
+        ` : ''}
       </main>
     `
   }
@@ -324,6 +362,64 @@ class HypercoreToolsApp extends LitElement {
     `
   }
 
+  renderAPICalls () {
+    return html`
+      <div class="api-calls">
+        <table class="rows">
+          <thead>
+            <tr class="logger-row">
+              <th class="method">method</th>
+              <th class="runtime">run time</th>
+              <th class="args">args</th>
+            </tr>
+          </thead>
+          <tbody>${this.apiCallLog.map((row, i) => {
+            return html`
+              <tr
+                class="logger-row ${this.selectedAPICall === i ? 'selected' : ''}"
+                @click=${e => {this.selectedAPICall = i}}
+              >
+                <td class="method"><code>${row.method}</code></td>
+                <td class="runtime"><code>${row.runtime}ms</code></td>
+                <td class="args"><code>${shorten(row.args, 100)}</code></td>
+              </tr>
+            `
+          })}</tbody>
+        </table>
+      </div>
+    `
+  }
+
+  renderSelectedAPICall () {
+    var call = this.apiCallLog[this.selectedAPICall]
+    console.log(call)
+    if (!call) return ''
+    var args = call.args
+    try { args = JSON.parse(args) }
+    catch {}
+    return html`
+      <div class="api-call-details">
+        <div><strong>Method</strong></div>
+        <div>${call.method}</div>
+        <div><strong>Run time</strong></div>
+        <div>${call.runtime}ms</div>
+        <div><strong>Arguments</strong></div>
+        <div>
+          ${call.method === 'index.gql' ? html`
+            <pre>${multilineTrim(args.query)}</pre>
+            <pre>${JSON.stringify(args.variables, null, 2)}</pre>
+          ` : html`
+            <pre>${JSON.stringify(args, null, 2)}</pre>
+          `}
+        </div>
+        ${call.response ? html`
+          <div><strong>Result</strong></div>
+          <div><pre>${JSON.stringify(call.response, null, 2)}</pre></div>
+        ` : ''}
+      </div>
+    `
+  }
+
   // events
   // =
 
@@ -358,4 +454,20 @@ function isRangeDownloaded (bits, offset, blocks) {
     if (!bits[i]) return false
   }
   return true
+}
+
+function multilineTrim (str) {
+  var start = undefined
+  var lines = str.split('\n')
+  var out = []
+  for (let line of lines) {
+    if (typeof start === 'undefined') {
+      start = /\S/.exec(line)?.index
+    }
+    if (typeof start === 'undefined') {
+      continue
+    }
+    out.push(line.slice(start))
+  }
+  return out.join('\n')
 }

@@ -3,6 +3,7 @@ import * as siteSessions from '../../dbs/site-sessions'
 import { enumeratePerms } from '../../../lib/session-permissions'
 import * as wcTrust from '../../wc-trust'
 import * as indexer from '../../indexer/index'
+import * as auditLog from '../../dbs/audit-log'
 
 // exported api
 // =
@@ -15,9 +16,11 @@ export default {
     return indexer.clearAllData()
   },
   
-  async gql (query, variables) {
-    var queryPerms = await getQueryPerms(this.sender)
-    return indexer.gql(query, variables, {query: queryPerms})
+  gql (query, variables) {
+    return auditLog.record(this.sender.getURL(), 'index.gql', {query, variables}, undefined, async () => {
+      var queryPerms = await getQueryPerms(this.sender)
+      return indexer.gql(query, variables, {query: queryPerms})
+    })
   },
 
   getState () {

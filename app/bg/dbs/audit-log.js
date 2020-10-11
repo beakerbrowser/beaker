@@ -37,8 +37,9 @@ export async function setup (opts) {
 
 export async function record (caller, method, args, writeSize, fn, opts) {
   var ts = Date.now()
+  var res
   try {
-    var res = await fn()
+    res = await fn()
     return res
   } finally {
     var runtime = Date.now() - ts
@@ -66,24 +67,32 @@ export async function record (caller, method, args, writeSize, fn, opts) {
         writeSize,
         ts,
         runtime
-      })
+      }, res)
       if (writeSize) insert('hyperdrive_write_stats', {caller, writeSize})
     }
   }
 }
 
-export async function list ({keys, offset, limit} = {keys: [], offset: 0, limit: 100}) {
+export async function list ({keys, caller, offset, limit} = {keys: [], caller: undefined, offset: 0, limit: 100}) {
   var query = knex('hyperdrive_ops').select(...(keys || [])).offset(offset).limit(limit).orderBy('rowid', 'desc')
+  if (caller) {
+    query = query.where({caller: extractOrigin(caller)})
+  }
   var queryAsSql = query.toSQL()
   return cbPromise(cb => db.all(queryAsSql.sql, queryAsSql.bindings, cb))
 }
 
-export async function stream () {
+export async function stream ({caller, includeResponse} = {caller: undefined, includeResponse: false}) {
+  if (caller) caller = extractOrigin(caller)
   var s = new Readable({
     read () {},
     objectMode: true
   })
-  const onData = detail => s.push(['data', {detail}])
+  const onData = (detail, response) => {
+    if (caller && detail.caller !== caller) return
+    if (includeResponse) detail.response = response
+    s.push(['data', {detail}])
+  }
   events.on('insert', onData)
   s.on('close', e => events.removeListener('insert', onData))
   return s
@@ -112,11 +121,11 @@ export async function stats () {
 // internal methods
 // =
 
-function insert (table, data) {
+function insert (table, data, response) {
   var query = knex(table).insert(data)
   var queryAsSql = query.toSQL()
   db.run(queryAsSql.sql, queryAsSql.bindings)
-  events.emit('insert', data)
+  events.emit('insert', data, response)
 }
 
 /**

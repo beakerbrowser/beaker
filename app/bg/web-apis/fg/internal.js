@@ -41,7 +41,7 @@ export const setup = function (rpc) {
   internal.hyperdebug.createCoreEventStream = (key) => fromEventStream(hyperdebugRPC.createCoreEventStream(key))
   internal.logger = Object.assign({}, loggerRPC)
   internal.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))
-  internal.logger.streamAuditLog = () => fromEventStream(loggerRPC.streamAuditLog())
+  internal.logger.streamAuditLog = (opts) => fromEventStream(loggerRPC.streamAuditLog(opts))
   internal.sitedata = Object.assign({}, sitedataRPC)
   internal.watchlist = Object.assign({}, watchlistRPC)
   internal.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
