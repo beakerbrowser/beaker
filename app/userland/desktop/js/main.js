@@ -162,7 +162,8 @@ class DesktopApp extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
-          ${this.renderSettingsBtn()}
+          <a href="https://docs.beakerbrowser.com/" title="Help">Help</a>
+          <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
         </div>
         <header>
           <div class="search-ctrl">
