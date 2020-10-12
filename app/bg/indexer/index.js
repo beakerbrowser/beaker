@@ -766,7 +766,12 @@ async function indexSite (origin, myOrigins) {
           site_rowid: site.rowid,
           path: update.path
         })
-        if (res[0]) await db('records_data').del().where({record_rowid: res[0].rowid})
+        if (res[0]) {
+          await Promise.all([
+            db('records_data').del().where({record_rowid: res[0].rowid}),
+            db('records_links').del().where({record_rowid: res[0].rowid})
+          ])
+        }
         res = await db('records').del().where({site_rowid: site.rowid, path: update.path})
         if (+res > 0) {
           logger.silly(`Deindexed ${site.origin}${update.path}`, {origin: site.origin, path: update.path})
