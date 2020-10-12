@@ -81,6 +81,13 @@ class BrowserMenu extends LitElement {
             <span class="more"><span class="fas fa-caret-right"></span></span>
           </div>
 
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://private')}>
+            <img class="favicon" src="asset:favicon:hyper://private/">
+            <span class="label">My Private Site</span>
+          </div>
+        </div>
+
+        <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'beaker://library')}>
             <img class="favicon" src="asset:favicon:beaker://library/">
             <span class="label">My Library</span>
