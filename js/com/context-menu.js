@@ -121,7 +121,7 @@ export class BeakerContextMenu extends LitElement {
     this.noBorders = noBorders || false
     this.customStyle = style || undefined
     this.items = items
-    this.fontAwesomeCSSUrl = fontAwesomeCSSUrl || '/vendor/beaker-app-stdlib/fontawesome.css'
+    this.fontAwesomeCSSUrl = fontAwesomeCSSUrl || '/vendor/beaker-app-stdlib/css/fontawesome.css'
     this.customRender = render
   }
 
