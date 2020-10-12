@@ -399,7 +399,7 @@ class NavbarLocation extends LitElement {
     if (!this.dontShowAutocompleteOnNextFocus) {
       var rect = this.getClientRects()[0]
       bg.views.runLocationBarCmd('show', {
-        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0)},
+        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0) + 1},
         results: (await this.autocompleteState.bookmarksFetch).slice(0, 10)
       })
       this.isAutocompleteOpen = true
@@ -472,7 +472,7 @@ class NavbarLocation extends LitElement {
     if (!this.isAutocompleteOpen) {
       let rect = this.getClientRects()[0]
       bg.views.runLocationBarCmd('show', {
-        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0)},
+        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0) + 1},
         query: this.autocompleteState.inputValue,
         results: this.autocompleteState.results
       })
