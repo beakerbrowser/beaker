@@ -1,10 +1,10 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
-import { ifDefined } from '../../vendor/lit-element/lit-html/directives/if-defined.js'
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/sites-list.css.js'
 import { emit } from '../dom.js'
-import { shorten, pluralize, isSameOrigin, toNiceDomain } from '../strings.js'
+import { shorten, pluralize, isSameOrigin, toNiceDomain, createResourceSlug } from '../strings.js'
+import { getAvailableName } from '../fs.js'
 import { writeToClipboard } from '../clipboard.js'
 import * as toast from './toast.js'
 
@@ -355,25 +355,42 @@ export class SitesList extends LitElement {
   async onClickShowSubscribers (e, site) {
     e.preventDefault()
     e.stopPropagation()
-    let sites = /* dont await */ beaker.subscriptions.listNetworkFor(site.url).then(subs => subs.map(s => s.site))
+    let sites = /* dont await */ beaker.index.gql(`
+      query ($origin: String!) {
+        records (links: {origin: $origin} paths: ["/subscriptions/*.goto"]) {
+          site {
+            url
+            title
+          }
+        }
+      }
+    `, {origin: site.url}).then(({records}) => records.map(r => r.site))
     SitesListPopup.create('Subscribers', sites)
   }
 
   async onToggleSubscribe (e, site) {
+    var drive = beaker.hyperdrive.drive(this.profile.url)
     if (this.isSubscribed(site)) {
       site.isSubscribedByUser = false
       site.subCount--
       this.requestUpdate()
-      await beaker.subscriptions.remove(site.url)
+
+      let res = await drive.query({
+        path: '/subscriptions/*.goto',
+        metadata: {href: site.url}
+      })
+      await drive.unlink(res[0].path)
     } else {
       site.isSubscribedByUser = true
       site.subCount++
       this.requestUpdate()
-      await beaker.subscriptions.add({
+
+      let slug = createResourceSlug(site.url, site.title)
+      let filename = await getAvailableName('/subscriptions', slug, drive, 'goto') // avoid collisions
+      await drive.writeFile(`/subscriptions/${filename}`, '', {metadata: {
         href: site.url,
-        title: site.title,
-        site: this.profileUrl
-      })
+        title: site.title
+      }})
     }
   }
 
