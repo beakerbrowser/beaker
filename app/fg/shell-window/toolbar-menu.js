@@ -277,7 +277,7 @@ class ShellWindowToolbarMenu extends LitElement {
     let rect = e.currentTarget.getClientRects()[0]
     let label = ({
       'beaker://about': 'Site Profile',
-      'beaker://activity': 'Comments',
+      'beaker://activity': 'Activity',
       'beaker://editor': 'Editor',
       'beaker://explorer': 'Files Explorer',
       'beaker://hypercore-tools': 'Hypercore Devtools',
