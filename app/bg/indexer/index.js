@@ -139,14 +139,18 @@ class GraphQLBase {
 
 class GraphQLRecord extends GraphQLBase {
   async site (args, ctx) {
-    let site = await getSite(this.url)
+    let site = await getSite(this.url, {}, {
+      permissions: ctx.permissions
+    })
     return new GraphQLSite(site)
   }
 
   // linkedSites(indexes: [String]): [Site]
   async linkedSites (args, ctx) {
     var siteUrls = new Set(this.links.map(link => link.origin)) // dedup
-    var sites = await Promise.all(Array.from(siteUrls).map(link => getSite(link)))
+    var sites = await Promise.all(Array.from(siteUrls).map(link => getSite(link, {}, {
+      permissions: ctx.permissions
+    })))
     return sites.filter(Boolean).map(site => new GraphQLSite(site))
   }
 
@@ -232,13 +236,17 @@ const graphqlRoot = {
 
   // site(url: String!, cached: Boolean): Site
   async site (args, ctx) {
-    var site = await getSite(args.url, {cacheOnly: args.cached})
+    var site = await getSite(args.url, {cacheOnly: args.cached}, {
+      permissions: ctx.permissions
+    })
     return new GraphQLSite(site)
   },
 
   // sites(indexes: [String], writable: Boolean, offset: Int, limit: Int, reverse: Boolean): [Site]
   async sites (args, ctx) {
-    var sites = await listSites(args)
+    var sites = await listSites(args, {
+      permissions: ctx.permissions
+    })
     return sites.map(site => new GraphQLSite(site))
   }
 }
@@ -262,9 +270,12 @@ export async function clearAllData () {
  * @param {String} url 
  * @param {Object} [opts]
  * @param {Object} [opts.cacheOnly]
+ * @param {Object} [etc]
+ * @param {Object} [etc.permissions]
+ * @param {EnumeratedSessionPerm[]} [etc.permissions.query]
  * @returns {Promise<SiteDescription>}
  */
-export async function getSite (url, opts) {
+export async function getSite (url, opts, etc) {
   var origin = validation.origin('url', url)
   if (!origin.startsWith('hyper://')) return undefined // hyper only for now
   var siteRows = await db('sites').select('*').where({origin}).limit(1)
@@ -310,9 +321,12 @@ export async function getSite (url, opts) {
  * @param {Boolean} [opts.writable]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
+ * @param {Object} [etc]
+ * @param {Object} [etc.permissions]
+ * @param {EnumeratedSessionPerm[]} [etc.permissions.query]
  * @returns {Promise<SiteDescription[]>}
  */
-export async function listSites (opts) {
+export async function listSites (opts, etc) {
   opts = opts && typeof opts === 'object' ? opts : {}
   opts.indexes = validation.arrayOfStrings('indexes', opts.indexes) || ['local']
   opts.offset = validation.number('offset', opts.offset)
@@ -321,7 +335,7 @@ export async function listSites (opts) {
 
   var results = []
   if (opts.indexes.includes('local')) {
-    results.push(await local.listSites(db, opts))
+    results.push(await local.listSites(db, opts, etc))
   }
   if (opts.indexes.includes('network')) {
     try {

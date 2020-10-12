@@ -1,10 +1,8 @@
 import { PermissionsError } from 'beaker-error-constants'
-import { normalizeOrigin, normalizeUrl, isUrlLike } from '../../lib/urls'
-import { joinPath, parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
-import {
-  toArray,
-  checkShouldExcludePrivate
-} from './util'
+import { getProfileUrl } from '../filesystem/index'
+import { normalizeOrigin } from '../../lib/urls'
+import { parseSimplePathSpec, toNiceUrl } from '../../lib/strings'
+import { checkShouldExcludePrivate } from './util'
 import { METADATA_KEYS } from './const'
 
 /**
@@ -31,9 +29,12 @@ import { METADATA_KEYS } from './const'
  * @param {Boolean} [opts.writable]
  * @param {Number} [opts.offset]
  * @param {Number} [opts.limit]
+ * @param {Object} [etc]
+ * @param {Object} [etc.permissions]
+ * @param {EnumeratedSessionPerm[]} [etc.permissions.query]
  * @returns {Promise<SiteDescription[]>}
  */
-export async function listSites (db, opts) {
+export async function listSites (db, opts, etc) {
   var query = db('sites')
     .select('*')
     .offset(opts?.offset || 0)
@@ -49,6 +50,12 @@ export async function listSites (db, opts) {
   if (typeof opts?.writable === 'boolean') {
     query = query.where('sites.writable', opts.writable ? 1 : 0)
   }
+
+  // perms (TODO expand on this)
+  query = query.where(b => {
+    b.where('sites.writable', 0).orWhere({origin: normalizeOrigin(getProfileUrl())})
+  })
+  
   var siteRows = await query
   return siteRows.map(row => ({
     origin: row.origin,
