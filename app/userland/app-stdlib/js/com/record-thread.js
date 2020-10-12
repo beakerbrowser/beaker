@@ -109,7 +109,7 @@ export class RecordThread extends LitElement {
     this.isLoading = true
     this.reset()
     var record = await this.fetchRecordOrSite(this.recordUrl)
-    this.subjectUrl = record?.metadata?.['comment/subject'] || record?.url || this.recordUrl
+    this.subjectUrl = record?.metadata?.['comment/subject'] || this.recordUrl
     /* dont await */ this.loadSubject(record)
     /* dont await */ this.loadComments(record)
     this.isLoading = false

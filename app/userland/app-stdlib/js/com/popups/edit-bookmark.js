@@ -2,6 +2,8 @@
 import { html, css } from '../../../vendor/lit-element/lit-element.js'
 import { BasePopup } from './base.js'
 import popupsCSS from '../../../css/com/popups.css.js'
+import { normalizeUrl, createResourceSlug, joinPath } from '../../strings.js'
+import { getAvailableName } from '../../fs.js'
 
 // exported api
 // =
@@ -11,6 +13,13 @@ export class EditBookmarkPopup extends BasePopup {
     super()
     this.bookmark = bookmark
     this.isPublic = this.bookmark ? (this.bookmark?.site?.url !== 'hyper://private') : true
+    if (bookmark && typeof beaker.bookmarks === 'undefined') {
+      // NOTE
+      // we're still migrating beaker-app-stdlib from being a purely internal library
+      // and the 'edit bookmark' logic needs to be updated. sorry!
+      // -prf
+      throw new Error('Can only create bookmarks with EditBookmarkPopup - edit not yet implemented')
+    }
   }
 
   static get styles () {
@@ -27,6 +36,10 @@ export class EditBookmarkPopup extends BasePopup {
       display: flex;
       align-items: center;
       margin: 5px 0;
+    }
+
+    .popup-inner input[type="text"] {
+      padding: 6px;
     }
 
     .popup-inner input[type="checkbox"] {
@@ -115,10 +128,12 @@ export class EditBookmarkPopup extends BasePopup {
             ${this.isPublic ? 'Visible to everybody' : 'Only visible to you'}
           </div>
 
-          <label class="checkbox" for="pinned-input">
-            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
-            Pin to start page
-          </label>
+          ${typeof beaker.bookmarks === 'undefined' ? '' : html`
+            <label class="checkbox" for="pinned-input">
+              <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
+              Pin to start page
+            </label>
+          `}
         </div>
 
         <div class="actions">
@@ -149,14 +164,25 @@ export class EditBookmarkPopup extends BasePopup {
     let b = {
       href: e.target.href.value,
       title: e.target.title.value,
-      pinned: e.target.pinned.checked,
-      site: this.isPublic ? `hyper://${(await beaker.browser.getProfile()).key}` : 'hyper://private'
+      pinned: e.target.pinned?.checked,
+      site: this.isPublic ? (await beaker.session.get()).user.url : 'hyper://private'
     }
     console.log(b)
-    if (this.bookmark && b.href !== this.bookmark.href) {
-      await beaker.bookmarks.remove(this.bookmark.href)
+    if (typeof beaker.bookmarks === 'undefined') {
+      // userland
+      b.href = normalizeUrl(b.href)
+      let drive = beaker.hyperdrive.drive(b.site)
+      let slug = createResourceSlug(b.href, b.title)
+      let filename = await getAvailableName('/bookmarks', slug, drive, 'goto') // avoid collisions
+      let path = joinPath('/bookmarks', filename)
+      await drive.writeFile(path, '', {metadata: {href: b.href, title: b.title}})
+    } else {
+      // builtin
+      if (this.bookmark && b.href !== this.bookmark.href) {
+        await beaker.bookmarks.remove(this.bookmark.href)
+      }
+      await beaker.bookmarks.add(b)
     }
-    await beaker.bookmarks.add(b)
 
     this.dispatchEvent(new CustomEvent('resolve'))
   }
