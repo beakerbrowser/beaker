@@ -5,6 +5,7 @@ import * as archivesDb from '../../dbs/archives'
 import * as modals from '../../ui/subwindows/modals'
 import * as siteSessions from '../../dbs/site-sessions'
 import { validateAndNormalizePermissions } from '../../../lib/session-permissions'
+import * as wcTrust from '../../wc-trust'
 
 // typedefs
 // =
@@ -66,6 +67,9 @@ export default {
    */
   async get () {
     var session = await siteSessions.get(normalizeOrigin(this.sender.getURL()))
+    if (!session && wcTrust.isWcTrusted(this.sender)) {
+      return massageSessionRecord(undefined, await fetchUserInfo(filesystem.getProfileUrl()))
+    }
     if (session) return massageSessionRecord(session, await fetchUserInfo(session.userUrl))
   },
 
@@ -93,7 +97,7 @@ function massageSessionRecord (session, user) {
       title: user.title,
       description: user.description
     },
-    permissions: session.permissions
+    permissions: session?.permissions
   }
 }
 
