@@ -60,7 +60,7 @@ export class DrivesView extends LitElement {
         }
       })
     }
-    drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
+    drives.sort((a, b) => (b.info.lastAccessTime - a.info.lastAccessTime))
     console.log(drives)
 
     this.drives = drives
