@@ -162,6 +162,7 @@ class DesktopApp extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
+          <a href="beaker://library/" title="Library">My Library</a>
           <a href="https://docs.beakerbrowser.com/" title="Help">Help</a>
           <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
         </div>
@@ -216,6 +217,7 @@ class DesktopApp extends LitElement {
       return html`
         <link rel="stylesheet" href="beaker://assets/font-awesome.css">
         <div id="topright">
+          <a href="beaker://library/" title="Library">My Library</a>
           <a href="https://docs.beakerbrowser.com/" title="Help">Help</a>
           <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
         </div>
