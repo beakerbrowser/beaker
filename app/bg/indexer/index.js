@@ -67,7 +67,9 @@ import {
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RangeQuery} RangeQuery
+ * @typedef {import('./const').MetadataQuery} MetadataQuery
  * @typedef {import('./const').LinkQuery} LinkQuery
+ * @typedef {import('./const').BacklinkQuery} BacklinkQuery
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
@@ -145,7 +147,6 @@ class GraphQLRecord extends GraphQLBase {
     return new GraphQLSite(site)
   }
 
-  // linkedSites(indexes: [String]): [Site]
   async linkedSites (args, ctx) {
     var siteUrls = new Set(this.links.map(link => link.origin)) // dedup
     var sites = await Promise.all(Array.from(siteUrls).map(link => getSite(link, {}, {
@@ -154,7 +155,6 @@ class GraphQLRecord extends GraphQLBase {
     return sites.filter(Boolean).map(site => new GraphQLSite(site))
   }
 
-  // backlinks(paths: [String], indexes: [String]): [Record]
   async backlinks (args, ctx, ast) {
     let records = await query(Object.assign({links: {url: this.url}}, args), {
       includeContent: queryAstWants(ast, 'content'),
@@ -164,7 +164,6 @@ class GraphQLRecord extends GraphQLBase {
     return records.map(record => new GraphQLRecord(record))
   }
 
-  // backlinkCount(paths: [String], indexes: [String]): Long
   async backlinkCount (args, ctx) {
     return count(Object.assign({links: {url: this.url}}, args), {
       permissions: ctx.permissions
@@ -173,7 +172,6 @@ class GraphQLRecord extends GraphQLBase {
 }
 
 class GraphQLSite extends GraphQLBase {
-  // backlinks(paths: [String], indexes: [String]): [Record]
   async backlinks (args, ctx, ast) {
     let records = await query(Object.assign({links: {origin: this.url}}, args), {
       includeContent: queryAstWants(ast, 'content'),
@@ -183,14 +181,12 @@ class GraphQLSite extends GraphQLBase {
     return records.map(record => new GraphQLRecord(record))
   }
 
-  // backlinkCount(paths: [String], indexes: [String]): [Record]
   async backlinkCount (args, ctx) {
     return count(Object.assign({links: {origin: this.url}}, args), {
       permissions: ctx.permissions
     })
   }
   
-  // records(search: String, paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery, sort: Sort, offset: Int, limit: Int, reverse: Boolean): [Record]
   async records (args, ctx, ast) {
     var records = await query(Object.assign({origins: [this.url]}, args), {
       permissions: ctx.permissions,
@@ -200,7 +196,6 @@ class GraphQLSite extends GraphQLBase {
     return records.map(record => new GraphQLRecord(record))
   }
   
-  // recordCount(search: String, paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery): [Record]
   async recordCount (args, ctx) {
     return count(Object.assign({origins: [this.url]}, args), {
       permissions: ctx.permissions
@@ -209,7 +204,6 @@ class GraphQLSite extends GraphQLBase {
 }
 
 const graphqlRoot = {
-  // record(url: String!): Record
   async record (args, ctx, ast) {
     var record = await get(args.url, {
       permissions: ctx.permissions,
@@ -219,7 +213,6 @@ const graphqlRoot = {
     return record ? new GraphQLRecord(record) : undefined
   },
   
-  // records(search: String, origins: [String], paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery, sort: Sort, offset: Int, limit: Int, reverse: Boolean): [Record]
   async records (args, ctx, ast) {
     var records = await query(args, {
       permissions: ctx.permissions,
@@ -228,13 +221,11 @@ const graphqlRoot = {
     })
     return records.map(record => new GraphQLRecord(record))
   },
-  
-  // recordCount(search: String, origins: [String], paths: [String], links: LinkQuery, indexes: [String], before: RangeQuery, after: RangeQuery): CountResponse
+
   async recordCount (args, ctx) {
     return count(args, {permissions: ctx.permissions})
   },
 
-  // site(url: String!, cached: Boolean): Site
   async site (args, ctx) {
     var site = await getSite(args.url, {cacheOnly: args.cached}, {
       permissions: ctx.permissions
@@ -242,7 +233,6 @@ const graphqlRoot = {
     return new GraphQLSite(site)
   },
 
-  // sites(indexes: [String], writable: Boolean, offset: Int, limit: Int, reverse: Boolean): [Site]
   async sites (args, ctx) {
     var sites = await listSites(args, {
       permissions: ctx.permissions
@@ -431,7 +421,9 @@ export async function get (url, {permissions, includeLinks, includeContent} = {}
  * @param {String[]} [opts.origins]
  * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
+ * @param {MetadataQuery[]} [opts.metadata]
  * @param {LinkQuery} [opts.links]
+ * @param {BacklinkQuery} [opts.backlinks]
  * @param {String[]} [opts.indexes] - 'local', 'network', url of a specific hyperbee index
  * @param {RangeQuery} [opts.before]
  * @param {RangeQuery} [opts.after]
@@ -452,7 +444,9 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
   opts.origins = validation.arrayOfOrigins('origins', opts.origins)
   opts.excludeOrigins = validation.arrayOfOrigins('excludeOrigins', opts.excludeOrigins)
   opts.paths = validation.arrayOfStrings('paths', opts.paths)
+  opts.metadata = validation.metadataQuery('metadata', opts.metadata)
   opts.links = validation.linkQuery('links', opts.links)
+  opts.backlinks = validation.backlinkQuery('backlinks', opts.backlinks)
   opts.indexes = validation.arrayOfStrings('indexes', opts.indexes) || ['local']
   opts.before = validation.rangeQuery('before', opts.before)
   opts.after = validation.rangeQuery('after', opts.after)
@@ -552,7 +546,9 @@ export async function query (opts, {includeContent, includeLinks, permissions} =
  * @param {String[]} [opts.origins]
  * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
+ * @param {MetadataQuery[]} [opts.metadata]
  * @param {LinkQuery} [opts.links]
+ * @param {BacklinkQuery} [opts.backlinks]
  * @param {String[]} [opts.indexes] - 'local' or 'network'
  * @param {RangeQuery} [opts.before]
  * @param {RangeQuery} [opts.after]
@@ -566,7 +562,9 @@ export async function count (opts, {permissions}) {
   opts.origins = validation.arrayOfOrigins('origins', opts.origins)
   opts.excludeOrigins = validation.arrayOfOrigins('excludeOrigins', opts.excludeOrigins)
   opts.paths = validation.arrayOfStrings('paths', opts.paths)
+  opts.metadata = validation.metadataQuery('metadata', opts.metadata)
   opts.links = validation.linkQuery('links', opts.links)
+  opts.backlinks = validation.backlinkQuery('backlinks', opts.backlinks)
   opts.indexes = validation.arrayOfStrings('indexes', opts.indexes) || ['local']
   opts.before = validation.rangeQuery('before', opts.before)
   opts.after = validation.rangeQuery('after', opts.after)

@@ -50,10 +50,18 @@ export const METADATA_KEYS = {
  * @prop {Number} value
  * @prop {Boolean} inclusive
  * 
+ * @typedef {Object} MetadataQuery
+ * @prop {String} key
+ * @prop {String[]} values
+ * 
  * @typedef {Object} LinkQuery
  * @prop {String} url
  * @prop {String} origin
  * @prop {String[]} paths
+ * 
+ * @typedef {Object} BacklinkQuery
+ * @prop {String[]} paths
+ * @prop {MetadataQuery[]} metadata
  * 
  * @typedef {Object} RecordLink
  * @prop {String} source

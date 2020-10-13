@@ -78,6 +78,17 @@ export function rangeQuery (name, v) {
   return v
 }
 
+export function metadataQuery (name, v) {
+  if (!v) return
+  if (!Array.isArray(v)) throw new Error(`${name} must be an array`)
+  for (let item of v) {
+    item = object(name, item)
+    item.key = string(`${name}[].key`, item.key)
+    item.values = arrayOfStrings(`${name}[].values`, item.values)
+  }
+  return v
+}
+
 export function linkQuery (name, v) {
   if (!v) return
   v = object(name, v)
@@ -90,5 +101,13 @@ export function linkQuery (name, v) {
     v.origin = origin(`${name}.origin`, v.origin)
     v.paths = arrayOfStrings(`${name}.paths`, v.paths)
   }
+  return v
+}
+
+export function backlinkQuery (name, v) {
+  if (!v) return
+  v = object(name, v)
+  v.metadata = metadataQuery(`${name}.metadata`, v.metadata)
+  v.paths = arrayOfStrings(`${name}.paths`, v.paths)
   return v
 }

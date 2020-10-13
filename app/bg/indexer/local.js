@@ -11,7 +11,9 @@ import { METADATA_KEYS } from './const'
  * @typedef {import('./const').RecordUpdate} RecordUpdate
  * @typedef {import('./const').ParsedUrl} ParsedUrl
  * @typedef {import('./const').RangeQuery} RangeQuery
+ * @typedef {import('./const').MetadataQuery} MetadataQuery
  * @typedef {import('./const').LinkQuery} LinkQuery
+ * @typedef {import('./const').BacklinkQuery} BacklinkQuery
  * @typedef {import('./const').RecordDescription} RecordDescription
  * @typedef {import('../filesystem/query').FSQueryResult} FSQueryResult
  * @typedef {import('../../lib/session-permissions').EnumeratedSessionPerm} EnumeratedSessionPerm
@@ -75,7 +77,9 @@ export async function listSites (db, opts, etc) {
  * @param {String[]} [opts.origins]
  * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
+ * @param {MetadataQuery[]} [opts.metadata]
  * @param {LinkQuery} [opts.links]
+ * @param {BacklinkQuery} [opts.backlinks]
  * @param {RangeQuery} [opts.before]
  * @param {RangeQuery} [opts.after]
  * @param {String} [opts.sort]
@@ -120,9 +124,12 @@ export async function query (db, opts, {permissions} = {}) {
     query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
   }
 
+  if (opts.search || opts.metadata) {
+    query = query.innerJoin('records_data', 'records_data.record_rowid', 'records.rowid')
+  }
+
   if (opts.search) {
     query = query
-      .innerJoin('records_data', 'records_data.record_rowid', 'records.rowid')
       .innerJoin('records_data_fts', 'records_data_fts.rowid', 'records_data.rowid')
       .whereRaw(`records_data_fts.value MATCH ?`, [`"${opts.search.replace(/["]/g, '""')}" *`])
   }
@@ -148,6 +155,17 @@ export async function query (db, opts, {permissions} = {}) {
       }
     })
   }
+  if (opts.metadata) {
+    query = query.where(function () {
+      let chain = this.where('records_data.key', opts.metadata[0].key).whereIn('records_data.value', opts.metadata[0].values)
+      for (let i = 1; i < opts.metadata.length; i++) {
+        chain = chain.orWhere(function () {
+          this.where('records_data.key', opts.metadata[i].key)
+            .whereIn('records_data.value', opts.metadata[i].values)
+        })
+      }
+    })
+  }
   if (opts.links) {
     query = query.innerJoin('records_links', 'records_links.record_rowid', 'records.rowid')
     if (opts.links.origin) {
@@ -165,6 +183,45 @@ export async function query (db, opts, {permissions} = {}) {
         })
       }
     }
+  }
+  if (opts.backlinks) {
+    query = query.whereExists(function () {
+      var subquery = this.select('backlink_records.rowid')
+        .from('records as backlink_records')
+        .innerJoin('records_links as backlink_records_links', 'backlink_records_links.record_rowid', 'backlink_records.rowid')
+        .where('backlink_records_links.href_origin', db.ref('origin'))
+        .where('backlink_records_links.href_path', db.ref('records.path'))
+      if (opts.backlinks.paths) {
+        if (opts.backlinks.paths.every(str => !str.includes('*'))) {
+          subquery = subquery.whereIn('backlink_records.path', opts.backlinks.paths)
+        } else {
+          subquery = subquery.where(function () {
+            let chain = this.whereRaw(`backlink_records.path GLOB ?`, [opts.backlinks.paths[0]])
+            for (let i = 1; i < opts.backlinks.paths.length; i++) {
+              chain = chain.orWhereRaw(`backlink_records.path GLOB ?`, [opts.backlinks.paths[i]])
+            }
+          })
+        }
+      }
+      if (opts.backlinks.metadata) {
+        subquery = subquery.innerJoin(
+          'records_data as backlink_records_data',
+          'backlink_records_data.record_rowid',
+          'backlink_records.rowid'
+        )
+        subquery = subquery.where(function () {
+          let chain = this
+            .where('backlink_records_data.key', opts.backlinks.metadata[0].key)
+            .whereIn('backlink_records_data.value', opts.backlinks.metadata[0].values)
+          for (let i = 1; i < opts.backlinks.metadata.length; i++) {
+            chain = chain.orWhere(function () {
+              this.where('backlink_records_data.key', opts.backlinks.metadata[i].key)
+                .whereIn('backlink_records_data.value', opts.backlinks.metadata[i].values)
+            })
+          }
+        })
+      }
+    })
   }
   if (opts.before) {
     query = query.where(opts.before.key, opts.before.inclusive ? '<=' : '<', opts.before.value)
@@ -240,7 +297,9 @@ export async function query (db, opts, {permissions} = {}) {
  * @param {String[]} [opts.origins]
  * @param {String[]} [opts.excludeOrigins]
  * @param {String[]} [opts.paths]
+ * @param {MetadataQuery[]} [opts.metadata]
  * @param {LinkQuery} [opts.links]
+ * @param {BacklinkQuery} [opts.backlinks]
  * @param {RangeQuery} [opts.before]
  * @param {RangeQuery} [opts.after]
  * @param {Object} [etc]
@@ -266,7 +325,7 @@ export async function count (db, opts, {permissions} = {}) {
   if (opts.before?.key === 'mrtime' || opts.after?.key === 'mrtime') {
     query = query.select(db.raw(`CASE rtime WHEN rtime < mtime THEN rtime ELSE mtime END AS mrtime`))
   }
-  if (opts.links) {
+  if (opts.metadata || opts.links) {
     // needed due to joins
     query = query.groupBy('records.rowid')
   }
@@ -293,6 +352,18 @@ export async function count (db, opts, {permissions} = {}) {
       }
     })
   }
+  if (opts.metadata) {
+    query = query.innerJoin('records_data', 'records_data.record_rowid', 'records.rowid')
+    query = query.where(function () {
+      let chain = this.where('records_data.key', opts.metadata[0].key).whereIn('records_data.value', opts.metadata[0].values)
+      for (let i = 1; i < opts.metadata.length; i++) {
+        chain = chain.orWhere(function () {
+          this.where('records_data.key', opts.metadata[i].key)
+            .whereIn('records_data.value', opts.metadata[i].values)
+        })
+      }
+    })
+  }
   if (opts.links) {
     query = query.leftJoin('records_links', 'records.rowid', 'records_links.record_rowid')
     if (opts.links.origin) {
@@ -310,6 +381,45 @@ export async function count (db, opts, {permissions} = {}) {
         })
       }
     }
+  }
+  if (opts.backlinks) {
+    query = query.whereExists(function () {
+      var subquery = this.select('backlink_records.rowid')
+        .from('records as backlink_records')
+        .innerJoin('records_links as backlink_records_links', 'backlink_records_links.record_rowid', 'backlink_records.rowid')
+        .where('backlink_records_links.href_origin', db.ref('origin'))
+        .where('backlink_records_links.href_path', db.ref('records.path'))
+      if (opts.backlinks.paths) {
+        if (opts.backlinks.paths.every(str => !str.includes('*'))) {
+          subquery = subquery.whereIn('backlink_records.path', opts.backlinks.paths)
+        } else {
+          subquery = subquery.where(function () {
+            let chain = this.whereRaw(`backlink_records.path GLOB ?`, [opts.backlinks.paths[0]])
+            for (let i = 1; i < opts.backlinks.paths.length; i++) {
+              chain = chain.orWhereRaw(`backlink_records.path GLOB ?`, [opts.backlinks.paths[i]])
+            }
+          })
+        }
+      }
+      if (opts.backlinks.metadata) {
+        subquery = subquery.innerJoin(
+          'records_data as backlink_records_data',
+          'backlink_records_data.record_rowid',
+          'backlink_records.rowid'
+        )
+        subquery = subquery.where(function () {
+          let chain = this
+            .where('backlink_records_data.key', opts.backlinks.metadata[0].key)
+            .whereIn('backlink_records_data.value', opts.backlinks.metadata[0].values)
+          for (let i = 1; i < opts.backlinks.metadata.length; i++) {
+            chain = chain.orWhere(function () {
+              this.where('backlink_records_data.key', opts.backlinks.metadata[i].key)
+                .whereIn('backlink_records_data.value', opts.backlinks.metadata[i].values)
+            })
+          }
+        })
+      }
+    })
   }
   if (opts.before) {
     query = query.where(opts.before.key, opts.before.inclusive ? '<=' : '<', opts.before.value)
