@@ -146,9 +146,6 @@ class ShellWindowTabs extends LitElement {
               : tab.isCurrentlyAudible
                 ? html`<span class="fas fa-volume-up"></span>`
                 : ''}
-            ${tab.isActive ? html`
-              <div class="tab-minimize" title="Minimize to background" @click=${e => this.onClickMinimize(e, index)}></div>
-            ` : ''}
             ${this.tabs.length < 12 || tab.isActive ? html`
               <div class="tab-close" title="Close tab" @click=${e => this.onClickClose(e, index)}></div>
             ` : ''}
@@ -268,12 +265,6 @@ class ShellWindowTabs extends LitElement {
     if (e.which === 2) {
       bg.views.closeTab(index)
     }
-  }
-
-  onClickMinimize (e, index) {
-    e.preventDefault()
-    e.stopPropagation()
-    bg.views.minimizeTab(index)
   }
 
   onClickClose (e, index) {
@@ -542,12 +533,7 @@ ${spinnerCSS}
   right: 8px;
 }
 
-.tab-minimize {
-  right: 25px;
-}
-
-.tab-close:before,
-.tab-minimize:before {
+.tab-close:before {
   opacity: 0;
 }
 
@@ -559,27 +545,13 @@ ${spinnerCSS}
   line-height: .71;
 }
 
-.tab-minimize:before {
-  display: block;
-  content: "";
-  position: absolute;
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
-  border-bottom: 1.5px solid;
-}
-
 .tab-close:hover:before,
-.tab-close:active:before,
-.tab-minimize:hover:before,
-.tab-minimize:active:before {
+.tab-close:active:before {
   opacity: 1;
 }
 
 .tab-close:hover,
-.tab-close:active,
-.tab-minimize:hover,
-.tab-minimize:active  {
+.tab-close:active  {
   background: var(--bg-color--tab-close--hover);
 }
 
@@ -593,24 +565,20 @@ ${spinnerCSS}
   padding-right: 40px;
 }
 
-.tab:hover .tab-close,
-.tab:hover .tab-minimize {
+.tab:hover .tab-close {
   opacity: 1;
   background: var(--bg-color--tab--hover);
 }
 
-.tab:hover .tab-close:hover,
-.tab:hover .tab-minimize:hover {
+.tab:hover .tab-close:hover {
   background: var(--bg-color--tab-close--hover);
 }
 
-.tab.current:hover .tab-close:hover,
-.tab.current:hover .tab-minimize:hover {
+.tab.current:hover .tab-close:hover {
   background: var(--bg-color--tab-close--current--hover);
 }
 
-.tab:hover .tab-close:before,
-.tab:hover .tab-minimize:before {
+.tab:hover .tab-close:before {
   opacity: 1;
 }
 
@@ -629,8 +597,7 @@ ${spinnerCSS}
   background: var(--highlight-color--tab--current);
 }
 
-.tab.current .tab-close,
-.tab.current .tab-minimize {
+.tab.current .tab-close {
   background: var(--bg-color--tab--current);
 }
 
