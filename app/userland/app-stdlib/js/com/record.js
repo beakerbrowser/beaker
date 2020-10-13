@@ -221,6 +221,7 @@ export class Record extends LitElement {
         <div class="card-context">
           <beaker-record
             record-url=${context}
+            render-mode="wrapper"
             constrain-height
             noborders
             nothumb
@@ -615,8 +616,8 @@ export class Record extends LitElement {
         </a>
         <div class="container">
           ${this.isNotification ? this.renderNotification() : ''}
-          <a class="subject" href=${res.metadata.href} @click=${this.onViewWrapperThread}>
-            ${asyncReplace(loadAndSimpleRender(res.metadata.href))}
+          <a class="subject" href=${res.metadata.href || res.url} @click=${this.onViewWrapperThread}>
+            ${asyncReplace(loadAndSimpleRender(res.metadata.href || res.url))}
           </a>
         </div>
       </div>

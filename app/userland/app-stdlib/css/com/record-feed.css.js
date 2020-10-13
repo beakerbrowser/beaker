@@ -72,49 +72,49 @@ h2 a:hover {
 
 .results beaker-record {
   display: block;
-  margin: 10px 0;
+  margin: var(--beaker-record-feed--default-margin, 10px) 0;
 }
 
 .results beaker-record[render-mode="link"] {
-  margin: 18px 0;
+  margin: var(--beaker-record-feed--link-margin--grouped, 18px) 0;
 }
 .results beaker-record:not([render-mode="link"]) + beaker-record[render-mode="link"] {
-  margin-top: 24px;
+  margin-top: var(--beaker-record-feed--link-margin, 24px);
 }
 .results beaker-record[render-mode="link"] + beaker-record:not([render-mode="link"]) {
-  margin-top: 24px;
+  margin-top: var(--beaker-record-feed--link-margin, 24px);
 }
 
 .results beaker-record[render-mode="expanded-link"] {
-  margin: 20px 0;
+  margin: var(--beaker-record-feed--expanded-link-margin, 20px) 0;
 }
 
 .results beaker-record[render-mode="action"] {
-  margin: 16px 0;
+  margin: var(--beaker-record-feed--action-margin, 16px) 0;
 }
 
 .results beaker-record.small[render-mode="action"] {
-  margin: 4px 0;
+  margin: var(--beaker-record-feed--small-action-margin, 4px) 0;
 }
 
 .results beaker-record[render-mode="comment"] {
-  margin: 10px 0 10px 45px;
+  margin: var(--beaker-record-feed--comment-margin--grouped, 10px) 0 var(--beaker-record-feed--comment-margin--grouped, 10px) 45px;
 }
 .results beaker-record:not([render-mode="comment"]) + beaker-record[render-mode="comment"] {
-  margin-top: 24px;
+  margin-top: var(--beaker-record-feed--comment-margin, 24px);
 }
 .results beaker-record[render-mode="comment"] + beaker-record:not([render-mode="comment"]) {
-  margin-top: 24px;
+  margin-top: var(--beaker-record-feed--comment-margin, 24px);
 }
 
 .results beaker-record[render-mode="wrapper"] {
-  margin: 18px 0;
+  margin: var(--beaker-record-feed--wrapper-margin--grouped, 18px) 0;
 }
 .results beaker-record:not([render-mode="wrapper"]) + beaker-record[render-mode="wrapper"] {
-  margin-top: 18px;
+  margin-top: var(--beaker-record-feed--wrapper-margin, 18px);
 }
 .results beaker-record[render-mode="wrapper"] + beaker-record:not([render-mode="wrapper"]) {
-  margin-top: 18px;
+  margin-top: var(--beaker-record-feed--wrapper-margin, 18px);
 }
 
 .empty {

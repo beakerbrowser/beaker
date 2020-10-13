@@ -830,6 +830,10 @@ a:hover {
   color: var(--text-color--lightish);
 }
 
+:host([as-context]) .record.wrapper {
+  padding: 10px 12px;
+}
+
 .record.wrapper.unread {
   background: var(--bg-color--unread);
   box-shadow: 0 0 0 5px var(--bg-color--unread);
