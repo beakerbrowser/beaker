@@ -14,6 +14,8 @@ ${markdownCSS}
 
 :host {
   display: block;
+  content-visibility: auto;
+  contain-intrinsic-size: 610px 115px;
 }
 
 a {
@@ -90,7 +92,7 @@ a:hover {
   display: inline-block;
   padding: 0 4px;
   border-radius: 4px;
-  margin-right: 4px;
+  margin-right: 18px;
   color: var(--text-color--pretty-light);
 }
 
@@ -102,6 +104,29 @@ a:hover {
 .comment-ctrl .far {
   margin-right: 2px;
   font-size: 12px;
+}
+
+.tag-ctrl {
+  display: inline-block;
+  padding: 0 4px;
+  border-radius: 4px;
+  color: var(--text-color--pretty-light);
+}
+
+.tag-ctrl:hover {
+  text-decoration: none;
+  background: var(--bg-color--semi-light);
+}
+
+.tag-ctrl .fa-tag {
+  -webkit-text-stroke: 1px var(--text-color--pretty-light);
+  color: transparent;
+  font-size: 10px;
+}
+
+.tag {
+  color: var(--text-color--pretty-light);
+  margin-right: 4px;
 }
 
 .notification {
@@ -806,8 +831,17 @@ a:hover {
   color: var(--text-color--default);
 }
 
+.record.comment .ctrls a.reply {
+  margin-right: 18px;
+}
+
 .record.comment .ctrls a :-webkit-any(.far, .fas) {
   color: var(--text-color--very-light);
+}
+
+.record.comment .ctrls a .fa-tag {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--text-color--very-light);
 }
 
 .record.comment .ctrls a small {

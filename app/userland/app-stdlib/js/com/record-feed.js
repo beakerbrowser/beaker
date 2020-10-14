@@ -1,24 +1,15 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
-import { getRecordType, typeToQuery } from '../records.js'
-import { isSameOrigin } from '../strings.js'
+import { getRecordType } from '../records.js'
 import css from '../../css/com/record-feed.css.js'
 import { emit } from '../dom.js'
-
 import './record.js'
-
-const DEFAULT_SEARCH_PATH_QUERIES = [
-  typeToQuery('blogpost'),
-  typeToQuery('bookmark'),
-  typeToQuery('microblogpost'),
-  typeToQuery('comment'),
-  typeToQuery('page')
-]
 
 export class RecordFeed extends LitElement {
   static get properties () {
     return {
       pathQuery: {type: Array},
+      tagQuery: {type: Array},
       showDateTitles: {type: Boolean, attribute: 'show-date-titles'},
       dateTitleRange: {type: String, attribute: 'date-title-range'},
       forceRenderMode: {type: String, attribute: 'force-render-mode'},
@@ -43,6 +34,7 @@ export class RecordFeed extends LitElement {
   constructor () {
     super()
     this.pathQuery = undefined
+    this.tagQuery = undefined
     this.showDateTitles = false
     this.dateTitleRange = undefined
     this.forceRenderMode = undefined
@@ -84,6 +76,10 @@ export class RecordFeed extends LitElement {
       // NOTE ^ to correctly track this, the query arrays must be reused
       this.results = undefined // clear results while loading
       this.queueQuery()
+    } else if (changedProperties.has('taqQuery') && changedProperties.get('taqQuery') != this.taqQuery) {
+      // NOTE ^ to correctly track this, the query arrays must be reused
+      this.results = undefined // clear results while loading
+      this.queueQuery()
     } else if (changedProperties.has('sources') && !isArrayEq(this.sources, changedProperties.get('sources'))) {
       this.queueQuery()
     }
@@ -113,6 +109,7 @@ export class RecordFeed extends LitElement {
         query Feed (
           $paths: [String]!
           $offset: Int!
+          ${this.tagQuery ? `$tags: [String!]!` : ''}
           ${this.sources ? `$origins: [String]!` : ''}
           ${this.filter ? `$search: String!` : ''}
           ${this.limit ? `$limit: Int!` : ''}
@@ -123,6 +120,14 @@ export class RecordFeed extends LitElement {
             ${this.sources ? `origins: $origins` : ''}
             ${this.filter ? `search: $search` : ''}
             ${this.limit ? `limit: $limit` : ''}
+            ${this.tagQuery ? `
+              backlinks: {
+                paths: ["/tags/*.goto"]
+                metadata: [
+                  {key: "tag/id", values: $tags}
+                ]
+              }
+            ` : ''}
             ${this.notifications ? `
               links: {origin: $profileUrl}
               excludeOrigins: [$profileUrl]
@@ -156,11 +161,17 @@ export class RecordFeed extends LitElement {
               metadata
               site { url title }
             }
+            tags: backlinks(paths: ["/tags/*.goto"]) {
+              url
+              metadata
+              site { url title }
+            }
             commentCount: backlinkCount(paths: ["/comments/*.md"])
           }
         }
       `, {
         paths: this.pathQuery,
+        tags: this.tagQuery,
         origins: this.sources,
         search: this.filter,
         offset,
@@ -244,6 +255,7 @@ export class RecordFeed extends LitElement {
       'comment': 'card',
       'microblogpost': 'card',
       'subscription': 'action',
+      'tag': 'wrapper',
       'vote': 'wrapper'
     })[getRecordType(result)] || 'link'
     return html`
