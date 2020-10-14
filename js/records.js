@@ -6,6 +6,7 @@ export function typeToQuery (type) {
     'microblogpost': '/microblog/*.md',
     'page': '/pages/*.md',
     'subscription': '/subscriptions/*.goto',
+    'tag': '/tags/*.goto',
     'vote': '/votes/*.goto'
   })[type]
   if (!query) throw new Error('Invalid type: ' + type)
@@ -19,6 +20,7 @@ const RECORD_TYPE_RES = {
   microblogpost: /^\/microblog\/([^\/])+\.md$/i,
   page: /^\/pages\/([^\/])+\.md$/i,
   subscription: /^\/subscriptions\/([^\/])+\.goto$/i,
+  tag: /^\/tags\/([^\/])+\.goto$/i,
   vote: /^\/votes\/([^\/])+\.goto$/i
 }
 
@@ -36,7 +38,7 @@ export function getPreferredRenderMode (record) {
   if (['comment', 'microblogpost'].includes(type)) {
     return 'card'
   }
-  if (['subscription', 'vote'].includes(type)) {
+  if (['subscription', 'tag', 'vote'].includes(type)) {
     return 'action'
   }
   return 'link'

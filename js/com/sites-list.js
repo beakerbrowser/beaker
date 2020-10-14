@@ -7,7 +7,6 @@ import { shorten, pluralize, isSameOrigin, toNiceDomain, createResourceSlug } fr
 import { getAvailableName } from '../fs.js'
 import { writeToClipboard } from '../clipboard.js'
 import * as toast from './toast.js'
-import './img-fallbacks.js'
 
 const EXPLORER_URL = site => `beaker://explorer/${site.url.slice('hyper://'.length)}`
 
@@ -300,12 +299,7 @@ export class SitesList extends LitElement {
     return html`
       <div class="site">
         <div class="thumb">
-          <a href=${site.url} title=${title}>
-            <beaker-img-fallbacks>
-              <img src="${site.url}/thumb" slot="img1">
-              <img src="beaker://assets/default-user-thumb" slot="img2">
-            </beaker-img-fallbacks>
-          </a>
+          <a href=${site.url} title=${title}><img src="${site.url}/thumb"></a>
         </div>
         <div class="info">
           <div class="title"><a href=${site.url} title=${title}>${title}</a></div>

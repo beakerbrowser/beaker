@@ -95,6 +95,11 @@ export class RecordThread extends LitElement {
                 metadata
                 site { url title }
               }
+              tags: backlinks(paths: ["/tags/*.goto"]) {
+                url
+                metadata
+                site { url title }
+              }
               commentCount: backlinkCount(paths: ["/comments/*.md"])
             }
           }
@@ -160,6 +165,11 @@ export class RecordThread extends LitElement {
             metadata
             site { url title }
           }
+          tags: backlinks(paths: ["/tags/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
           commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
       }
@@ -194,6 +204,11 @@ export class RecordThread extends LitElement {
             title
           }
           votes: backlinks(paths: ["/votes/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
+          tags: backlinks(paths: ["/tags/*.goto"]) {
             url
             metadata
             site { url title }

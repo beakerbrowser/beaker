@@ -30,6 +30,7 @@ class PostComposer extends LitElement {
     this.placeholder = 'What\'s new?'
     this.currentView = 'edit'
     this.draftText = ''
+    this.tags = ''
     this._visibility = 'public'
     this.subject = undefined
     this.parent = undefined
@@ -148,6 +149,11 @@ class PostComposer extends LitElement {
           ${this.currentView === 'preview' ? this.renderPreview() : ''}
         </div>
 
+        <div class="tags">
+          <span class="fas fa-tag"></span>
+          <input placeholder="Tags, separated by spaces" @keyup=${this.onKeyupTags}>
+        </div>
+
         <div class="actions">
           <div class="ctrls">
             <input type="file" class="image-select" accept=".png,.gif,.jpg,.jpeg" @change=${this.onChangeImage}>
@@ -254,6 +260,13 @@ class PostComposer extends LitElement {
     })
   }
 
+  onKeyupTags (e) {
+    var input = e.currentTarget
+    this.tags = input.value.toLowerCase()
+    this.tags = this.tags.replace(/[^a-z0-9- ]/g, '')
+    input.value = this.tags
+  }
+
   onClickAddImage (e) {
     e.preventDefault()
     this.currentView = 'edit'
@@ -350,10 +363,23 @@ class PostComposer extends LitElement {
     } else {
       await drive.writeFile(`${folder}${filename}.md`, postBody)
     }
+    var url = joinPath(driveUrl, `${folder}${filename}.md`)
+
+    var tags = this.tags.trim()
+    if (tags) {
+      let tagFilename = Date.now()
+      for (let tag of tags.split(' ').filter(Boolean)) {
+        tag = tag.trim()
+        if (!tag) continue
+        await drive.writeFile(`/tags/${tagFilename++}.goto`, '', {
+          metadata: {href: url, 'tag/id': tag}
+        })
+      }
+    }
     
     this.draftText = ''
+    this.tags = ''
     this.currentView = 'edit'
-    var url = joinPath(driveUrl, `${folder}${filename}.md`)
     this.dispatchEvent(new CustomEvent('publish', {detail: {url}}))
     _currentComposer = undefined
   }

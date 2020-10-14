@@ -12,6 +12,7 @@ export class ViewThreadPopup extends BasePopup {
     super()
     this.recordUrl = opts.recordUrl
     this.profileUrl = opts.profileUrl
+    this.onViewTag = opts.onViewTag
   }
 
   static get properties () {
@@ -60,6 +61,7 @@ export class ViewThreadPopup extends BasePopup {
         profile-url=${this.profileUrl}
         @load=${this.onLoadThread}
         @view-thread=${this.onViewThread}
+        @view-tag=${this.onViewTag}
       ></beaker-record-thread>
     `
   }

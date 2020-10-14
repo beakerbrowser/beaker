@@ -1,13 +1,15 @@
 import { LitElement, html } from '../../vendor/lit-element/lit-element.js'
 import { classMap } from '../../vendor/lit-element/lit-html/directives/class-map.js'
+import { repeat } from '../../vendor/lit-element/lit-html/directives/repeat.js'
 import { unsafeHTML } from '../../vendor/lit-element/lit-html/directives/unsafe-html.js'
 import { asyncReplace } from '../../vendor/lit-element/lit-html/directives/async-replace.js'
 import { SitesListPopup } from './popups/sites-list.js'
 import css from '../../css/com/record.css.js'
 import { removeMarkdown } from '../../vendor/remove-markdown.js'
-import { shorten, makeSafe, toNiceDomain, pluralize, fancyUrlAsync, isSameOrigin } from '../strings.js'
+import { shorten, toNiceDomain, pluralize, fancyUrlAsync, isSameOrigin, joinPath } from '../strings.js'
 import { getRecordType, getPreferredRenderMode } from '../records.js'
 import { emit } from '../dom.js'
+import * as tagsMenu from './tags-menu.js'
 import './post-composer.js'
 
 export class Record extends LitElement {
@@ -97,6 +99,11 @@ export class Record extends LitElement {
             metadata
             site { url title }
           }
+          tags: backlinks(paths: ["/tags/*.goto"]) {
+            url
+            metadata
+            site { url title }
+          }
           commentCount: backlinkCount(paths: ["/comments/*.md"])
         }
       }
@@ -109,9 +116,14 @@ export class Record extends LitElement {
   }
 
   async reloadSignals () {
-    let {votes, commentCount} = await beaker.index.gql(`
+    let {votes, tags, commentCount} = await beaker.index.gql(`
       query Signals ($href: String!) {
         votes: records(paths: ["/votes/*.goto"] links: {url: $href}) {
+          url
+          metadata
+          site { url title }
+        }
+        tags: records(paths: ["/tags/*.goto"] links: {url: $href}) {
           url
           metadata
           site { url title }
@@ -120,6 +132,7 @@ export class Record extends LitElement {
       }
     `, {href: this.record.url})
     this.record.votes = votes
+    this.record.tags = tags
     this.record.commentCount = commentCount
     this.requestUpdate()
   }
@@ -285,6 +298,7 @@ export class Record extends LitElement {
           <div class="ctrls">
             ${this.renderVoteCtrl()}
             ${this.renderCommentsCtrl()}
+            ${this.renderTagsCtrl()}
           </div>
         </div>
       </div>
@@ -354,7 +368,8 @@ export class Record extends LitElement {
         ` : ''}
         <div class="ctrls">
           ${this.renderVoteCtrl()}
-          <a @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
+          <a class="reply" @click=${this.onClickReply}><span class="fas fa-fw fa-reply"></span> <small>Reply</small></a>
+          ${this.renderTagsCtrl()}
         </div>
         ${this.isReplyOpen ? html`
           <beaker-post-composer
@@ -410,6 +425,8 @@ export class Record extends LitElement {
               <a class="subject" href=${res.metadata.href}>${this.actionTarget}</a>
             ` : rtype === 'bookmark' ? html`
               <span class="action">bookmarked ${this.actionTarget}</span>
+            ` : rtype === 'tag' ? html`
+              <span class="action">tagged ${this.actionTarget} <a @click=${e => this.onViewTag(e, res.metadata['tag/id'])}>#${res.metadata['tag/id']}</a></span>
             ` : rtype === 'comment' ? html`
               <span class="action">commented on ${this.actionTarget}</span>
             ` : showContentAfter ? html`
@@ -506,6 +523,7 @@ export class Record extends LitElement {
             <span>|</span>
             ${this.renderVoteCtrl()}
             ${this.renderCommentsCtrl()}
+            ${this.renderTagsCtrl()}
           </div>
           ${content ? html`
             <div class="excerpt">
@@ -586,6 +604,7 @@ export class Record extends LitElement {
             </span>
             ${this.renderVoteCtrl()}
             ${this.renderCommentsCtrl()}
+            ${this.renderTagsCtrl()}
           </div>
         </div>
       </div>
@@ -669,6 +688,19 @@ export class Record extends LitElement {
     `
   }
 
+  renderTagsCtrl () {
+    return html`
+      <a class="tag-ctrl" @click=${this.onClickTags}>
+        <span class="fas fa-tag"></span>
+      </a>
+      ${repeat(this.record?.tags || [], tag => tag.url, tag => {
+        var id = tag.metadata['tag/id']
+        if (!id) return ''
+        return html`<a class="tag" @click=${e => this.onViewTag(e, id)}>#${id}</a>`
+      })}
+    `
+  }
+
   renderMatchText (key) {
     if (!this.searchTerms) return undefined
     let v = key === 'content' ? this.record.content : this.record.metadata[key]
@@ -698,13 +730,20 @@ export class Record extends LitElement {
     const link = res.links.find(l => l.url.startsWith(this.profileUrl))
     var type = getRecordType(res)
     var description = 'linked to'
+    var afterdesc = ''
     if (type === 'vote') {
       if (res.metadata['vote/value'] == '1') {
         description = 'upvoted'
       } else if (res.metadata['vote/value'] == '-1') {
         description = 'downvoted'
-      } else {
-        description = 'linked to'
+      }
+    } else if (type === 'tag') {
+      let tag = res.metadata['tag/id']
+      if (tag) {
+        description = 'tagged'
+        afterdesc = html`
+          as <strong><a @click=${e => this.onViewTag(e, tag)}>#${tag}</a></strong>
+        `
       }
     } else if (link.source === 'content') {
       if (type === 'microblogpost' || type === 'comment') {
@@ -733,6 +772,7 @@ export class Record extends LitElement {
           ${asyncReplace(getNotificationSubjectStream(link.url, this.profileUrl))}
         </a>
         ${where}
+        ${afterdesc}
       </div>
     `
   }
@@ -764,6 +804,10 @@ export class Record extends LitElement {
     }
   }
 
+  onViewTag (e, tag) {
+    emit(this, 'view-tag', {detail: {tag}})
+  }
+
   async onViewWrapperThread (e) {
     if (!this.viewContentOnClick && e.button === 0 && !e.metaKey && !e.ctrlKey) {
       e.preventDefault()
@@ -785,6 +829,11 @@ export class Record extends LitElement {
               title
             }
             votes: backlinks(paths: ["/votes/*.goto"]) {
+              url
+              metadata
+              site { url title }
+            }
+            tags: backlinks(paths: ["/tags/*.goto"]) {
               url
               metadata
               site { url title }
@@ -854,6 +903,33 @@ export class Record extends LitElement {
       })
     }
     this.reloadSignals()
+  }
+
+  onClickTags (e) {
+    e.preventDefault()
+    e.stopPropagation()
+    var rect = e.currentTarget.getClientRects()[0]
+    tagsMenu.create({
+      x: rect.left,
+      y: rect.bottom,
+      record: this.record,
+      profileUrl: this.profileUrl,
+      onAdd: async (tagId) => {
+        let url = joinPath(this.profileUrl, `/tags/${Date.now()}.goto`)
+        await beaker.hyperdrive.writeFile(url, '', {
+          metadata: {
+            href: this.record.url,
+            'tag/id': tagId
+          }
+        })
+        this.reloadSignals()
+        return url
+      },
+      onRemove: async (tag) => {
+        await beaker.hyperdrive.unlink(tag.url)
+        await this.reloadSignals()
+      }
+    })
   }
 }
 

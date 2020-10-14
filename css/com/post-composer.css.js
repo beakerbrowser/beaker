@@ -52,7 +52,7 @@ nav a:hover:not(.current) {
   border-radius: 4px;
   border-top-left-radius: 0;
   padding: 14px 0 2px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .placeholder {
@@ -88,6 +88,29 @@ textarea.hidden {
 }
 .preview > :last-child {
   margin-bottom: 0;
+}
+
+.tags {
+  display: flex;
+  align-items: center;
+  background: var(--bg-color--default);
+  border: 1px solid var(--border-color--light);
+  border-radius: 4px;
+  padding: 6px 12px;
+  margin-bottom: 6px;
+}
+
+.tags .fas {
+  margin-right: 6px;
+  font-size: 12px;
+  -webkit-text-stroke: 1px var(--text-color--default);
+  color: transparent;
+}
+
+.tags input {
+  flex: 1;
+  border: 0;
+  outline: 0;
 }
 
 .actions {
