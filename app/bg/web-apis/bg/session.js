@@ -63,14 +63,26 @@ export default {
   },
 
   /**
+   * @param {Object} [opts]
+   * @param {Object} [opts.permissions]
+   * @param {Array<FilePerm>} [opts.permissions.publicFiles]
+   * @param {Array<FilePerm>} [opts.permissions.privateFiles]
    * @returns {Promise<SessionPublicAPIRecord>}
    */
-  async get () {
+  async get (opts = {}) {
     var session = await siteSessions.get(normalizeOrigin(this.sender.getURL()))
     if (!session && wcTrust.isWcTrusted(this.sender)) {
       return massageSessionRecord(undefined, await fetchUserInfo(filesystem.getProfileUrl()))
     }
-    if (session) return massageSessionRecord(session, await fetchUserInfo(session.userUrl))
+    if (session) {
+      if (opts?.permissions) {
+        validateAndNormalizePermissions(opts.permissions)
+        if (!hasEnoughPermissions(opts.permissions, session.permissions)) {
+          return undefined
+        }
+      }
+      return massageSessionRecord(session, await fetchUserInfo(session.userUrl))
+    }
   },
 
   /**
@@ -118,4 +130,27 @@ async function fetchUserInfo (urlOrDriveMeta) {
     title: userMeta.title,
     description: userMeta.description,
   }
+}
+
+/**
+ * Returns true if all perms in "needed" are handled by "current"
+ * 
+ * @param {Object} needed 
+ * @param {Array<FilePerm>} [needed.publicFiles]
+ * @param {Array<FilePerm>} [needed.privateFiles]
+ * @param {Object} existing 
+ * @param {Array<FilePerm>} [existing.publicFiles]
+ * @param {Array<FilePerm>} [existing.privateFiles]
+ * @returns {Boolean}
+ */
+function hasEnoughPermissions (needed, existing) {
+  for (let k in needed) {
+    if (!(k in existing)) return false
+    for (let perm of needed[k]) {
+      let equiv = existing[k].find(perm2 => perm2.prefix === perm.prefix && perm2.extension === perm.extension)
+      if (!equiv) return false
+      if (perm.access === 'write' && equiv.access === 'read') return false
+    }
+  }
+  return true
 }
