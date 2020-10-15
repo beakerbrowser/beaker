@@ -104,7 +104,13 @@ class ShellWindowTabs extends LitElement {
       || faviconUrl
       || tab.url.startsWith('beaker:')
     )
-    const cls = classMap({tab: true, current: tab.isActive, pinned: tab.isPinned, 'no-favicon': !showFavicon})
+    const cls = classMap({
+      tab: true,
+      current: tab.isActive,
+      pinned: tab.isPinned,
+      'has-icon': tab.isAudioMuted || tab.isCurrentlyAudible,
+      'no-favicon': !showFavicon
+    })
     return html`
       <div
         class="${cls}"
@@ -561,8 +567,9 @@ ${spinnerCSS}
   background: var(--bg-color--tab--hover);
 }
 
-.tab.current:hover .tab-title {
-  padding-right: 40px;
+.tab.has-icon .tab-title,
+.tab:hover .tab-title {
+  padding-right: 30px;
 }
 
 .tab:hover .tab-close {
