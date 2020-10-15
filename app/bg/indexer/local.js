@@ -314,7 +314,7 @@ export async function count (db, opts, {permissions} = {}) {
     .innerJoin('sites', 'sites.rowid', 'records.site_rowid')
     .select(
       'origin',
-      db.raw(`count(records.rowid) as count`)
+      db.raw(`count(distinct records.rowid) as count`)
     )
     .where({'sites.is_indexed': 1})
     .groupBy('origin')
