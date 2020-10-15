@@ -159,7 +159,7 @@ class DriveViewApp extends LitElement {
           ` : ''}
           ${!showSubs ? '' : html`
             <div class="known-subscribers">
-              ${this.info?.isSubscriberToUser ? html`
+              ${!this.info.writable && this.info?.isSubscriberToUser ? html`
                 <span class="subscribed-to-you"><span>Subscribed to you</span></span>
               `: ''}
               <a
