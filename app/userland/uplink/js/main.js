@@ -99,7 +99,7 @@ class UplinkApp extends LitElement {
     }
     let {allSubscriptions} = await beaker.index.gql(`
       query {
-        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: crtime reverse: true) {
+        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: "crtime" reverse: true) {
           metadata
         }
       }

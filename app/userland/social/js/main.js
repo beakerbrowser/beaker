@@ -116,7 +116,7 @@ class SocialApp extends LitElement {
           links: {origin: $profileUrl}
           excludeOrigins: [$profileUrl]
           indexes: ["local", "network"],
-          after: {key: crtime, value: $clearTime}
+          after: {key: "crtime", value: $clearTime}
         )
       }
     `, {profileUrl: this.profile.url, clearTime: this.notificationsClearTime})
@@ -144,7 +144,7 @@ class SocialApp extends LitElement {
     }
     let {allSubscriptions} = await beaker.index.gql(`
       query {
-        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: crtime reverse: true) {
+        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: "crtime" reverse: true) {
           metadata
         }
       }

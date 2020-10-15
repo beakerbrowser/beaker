@@ -7,23 +7,6 @@ enum RecordType {
   folder
 }
 
-enum Sort {
-  mtime,
-  ctime,
-  rtime,
-  crtime,
-  mrtime,
-  origin
-}
-
-enum RangeKey {
-  mtime,
-  ctime,
-  rtime,
-  crtime,
-  mrtime
-}
-
 type Link {
   source: String!
   origin: String!
@@ -55,7 +38,7 @@ type Record {
     indexes: [String],
     before: RangeQuery,
     after: RangeQuery,
-    sort: Sort,
+    sort: String,
     offset: Int,
     limit: Int,
     reverse: Boolean
@@ -88,7 +71,7 @@ type Site {
     indexes: [String],
     before: RangeQuery,
     after: RangeQuery,
-    sort: Sort,
+    sort: String,
     offset: Int,
     limit: Int,
     reverse: Boolean
@@ -114,7 +97,7 @@ type Site {
     indexes: [String],
     before: RangeQuery,
     after: RangeQuery,
-    sort: Sort,
+    sort: String,
     offset: Int,
     limit: Int,
     reverse: Boolean
@@ -151,7 +134,7 @@ input BacklinkQuery {
 }
 
 input RangeQuery {
-  key: RangeKey!
+  key: String!
   value: Long
   inclusive: Boolean
 }
@@ -169,7 +152,7 @@ type Query {
     indexes: [String],
     before: RangeQuery,
     after: RangeQuery,
-    sort: Sort,
+    sort: String,
     offset: Int,
     limit: Int,
     reverse: Boolean

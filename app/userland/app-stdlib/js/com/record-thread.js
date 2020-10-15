@@ -144,7 +144,7 @@ export class RecordThread extends LitElement {
         replies: records (
           links: {url: $href}
           indexes: ["local"]
-          sort: crtime,
+          sort: "crtime",
           reverse: true
         ) {
           type
@@ -187,7 +187,7 @@ export class RecordThread extends LitElement {
         networkReplies: records (
           links: {url: $href}
           indexes: ["network"]
-          sort: crtime,
+          sort: "crtime",
           reverse: true
         ) {
           type

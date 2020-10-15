@@ -67,7 +67,7 @@ class ReaderApp extends LitElement {
     }
     let {allSubscriptions} = await beaker.index.gql(`
       query {
-        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: crtime reverse: true) {
+        allSubscriptions: records(paths: ["/subscriptions/*.goto"] limit: 100 sort: "crtime" reverse: true) {
           metadata
         }
       }
@@ -213,7 +213,7 @@ class ReaderApp extends LitElement {
 
     var {drafts} = await beaker.index.gql(`
       query {
-        drafts: records (paths: ["/blog/*.md"] origins: ["hyper://private"] sort: crtime reverse: true) {
+        drafts: records (paths: ["/blog/*.md"] origins: ["hyper://private"] sort: "crtime" reverse: true) {
           path
           url
           ctime

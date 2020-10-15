@@ -134,7 +134,7 @@ export class RecordFeed extends LitElement {
               indexes: ["local", "network"]
             ` : ''}
             offset: $offset
-            sort: crtime,
+            sort: "crtime",
             reverse: true
           ) {
             type

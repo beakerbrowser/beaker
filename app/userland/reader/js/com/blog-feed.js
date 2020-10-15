@@ -31,7 +31,7 @@ class BlogFeed extends LitElement {
         posts: records (
           paths: ["/blog/*.md"]
           excludeOrigins: ["hyper://private"]
-          sort: crtime
+          sort: "crtime"
           reverse: true
           limit: 100
         ) {
