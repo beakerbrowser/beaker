@@ -109,6 +109,7 @@ class ShellWindowTabs extends LitElement {
       current: tab.isActive,
       pinned: tab.isPinned,
       'has-icon': tab.isAudioMuted || tab.isCurrentlyAudible,
+      'no-hover': this.tabs.length >= 12,
       'no-favicon': !showFavicon
     })
     return html`
@@ -568,8 +569,8 @@ ${spinnerCSS}
 }
 
 .tab.has-icon .tab-title,
-.tab:hover .tab-title {
-  padding-right: 30px;
+.tab:hover:not(.no-hover) .tab-title {
+  padding-right: 28px;
 }
 
 .tab:hover .tab-close {
