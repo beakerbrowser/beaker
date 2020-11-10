@@ -393,21 +393,7 @@ class DesktopApp extends LitElement {
           <a class="dismiss" @click=${this.onCloseWhatsNew}}><span class="fas fa-times"></span> close</a>
         </h3>
         <div class="columns">
-          <div class="column">
-            <div><a href="beaker://social/"><img src="asset:screenshot:beaker://social/"></a></div>
-            <div class="title"><a href="beaker://social/">Beaker Social</a></div>
-            <div class="description">Peer-to-peer social media</div>
-          </div>
-          <div class="column">
-            <div><a href="beaker://uplink/"><img src="asset:screenshot:beaker://uplink/"></a></div>
-            <div class="title"><a href="beaker://uplink/">Beaker Uplink</a></div>
-            <div class="description">The most recent bookmarks in your network</div>
-          </div>
-          <div class="column">
-            <div><a href="beaker://reader/"><img src="asset:screenshot:beaker://reader/"></a></div>
-            <div class="title"><a href="beaker://reader/">Beaker Reader</a></div>
-            <div class="description">Publish and read blogposts</div>
-          </div>
+          todo
         </div>
       </div>
     `

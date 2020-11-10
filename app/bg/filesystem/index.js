@@ -99,14 +99,8 @@ export async function setup () {
   if (isInitialCreation) {
     await rootDrive.pda.mkdir('/bookmarks')
     await rootDrive.pda.writeFile(`/bookmarks/opencollective-com-beaker.goto`, '', {metadata: {href: 'https://opencollective.com/beaker', title: 'Support Beaker'}})
-    await rootDrive.pda.writeFile(`/bookmarks/social.goto`, '', {metadata: {href: 'beaker://social/', title: 'Beaker Social'}})
-    await rootDrive.pda.writeFile(`/bookmarks/uplink.goto`, '', {metadata: {href: 'beaker://uplink/', title: 'Beaker Uplink'}})
-    await rootDrive.pda.writeFile(`/bookmarks/reader.goto`, '', {metadata: {href: 'beaker://reader/', title: 'Beaker Reader'}})
     await rootDrive.pda.mkdir('/beaker')
     await rootDrive.pda.writeFile(`/beaker/pins.json`, JSON.stringify([
-      'beaker://social/',
-      'beaker://uplink/',
-      'beaker://reader/',
       'https://opencollective.com/beaker'
     ], null, 2))
   }
