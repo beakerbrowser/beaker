@@ -7,9 +7,6 @@ export default {
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
-  isProfileListedInBeakerNetwork: 'promise',
-  addProfileToBeakerNetwork: 'promise',
-
   getSettings: 'promise',
   getSetting: 'promise',
   setSetting: 'promise',
@@ -69,9 +66,5 @@ export default {
   openFolder: 'promise',
   doWebcontentsCmd: 'promise',
   doTest: 'promise',
-  closeModal: 'sync',
-
-  getSiteSession: 'promise',
-  listSiteSessions: 'promise',
-  destroySiteSession: 'promise'
+  closeModal: 'sync'
 }

@@ -91,7 +91,7 @@ export class BaseFilesView extends LitElement {
     var inlineMdItem = this.getInlineMdItem()
     var isEmpty = this.itemGroups.reduce((acc, group) => acc && group.length === 0, true)
     return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
+      <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
       <div
         class="container"
         @click=${this.onClickContainer}

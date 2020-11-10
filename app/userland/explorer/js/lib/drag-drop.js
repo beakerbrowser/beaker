@@ -105,7 +105,7 @@ export async function handleDragDropUrls (x, y, targetPath, urls) {
     y,
     roomy: false,
     noBorders: true,
-    fontAwesomeCSSUrl: '/css/font-awesome.css',
+    fontAwesomeCSSUrl: 'beaker://explorer/css/font-awesome.css',
     style: `padding: 4px 0`,
     items
   })

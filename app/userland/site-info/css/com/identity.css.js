@@ -54,53 +54,5 @@ button {
   right: 5px;
 }
 
-.field-group + .subscribers {
-  border-top: 1px solid var(--border-color--default);
-}
-
-.subscribers h4 {
-  font-weight: normal;
-  font-size: 11px;
-  padding: 7px 18px;
-  margin: 0;
-  background: var(--bg-color--light);
-}
-
-.subscribers > div {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  max-height: 150px;
-  overflow: auto;
-  padding: 6px 8px;
-}
-
-.subscriber {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 8px;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-}
-
-.subscriber:hover {
-  text-decoration: none;
-  background: var(--bg-color--light);
-}
-
-.subscriber .thumb {
-  display: block;
-  width: 18px;
-  height: 18px;
-  object-fit: cover;
-  border-radius: 50%;
-  margin-right: 7px;
-}
-
-.subscriber .title {
-  font-size: 12px;
-  color: initial;
-  letter-spacing: 0.3px;
-}
 `
 export default cssStr

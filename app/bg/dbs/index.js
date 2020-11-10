@@ -4,7 +4,6 @@ import * as history from './history'
 import * as profileData from './profile-data-db'
 import * as settings from './settings'
 import * as sitedata from './sitedata'
-import * as siteSessions from './site-sessions'
 import * as watchlist from './watchlist'
 
 export default {
@@ -14,6 +13,5 @@ export default {
   profileData,
   settings,
   sitedata,
-  siteSessions,
   watchlist
 }

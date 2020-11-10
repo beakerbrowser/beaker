@@ -2,24 +2,18 @@ import { fromEventStream, EventTargetFromStream } from './event-target'
 import errors from 'beaker-error-constants'
 import capabilitiesManifest from '../manifests/external/capabilities'
 import contactsManifest from '../manifests/external/contacts'
-import indexManifest from '../manifests/external/index'
 import markdownManifest from '../manifests/external/markdown'
 import panesManifest from '../manifests/external/panes'
 import peersocketsManifest from '../manifests/external/peersockets'
-import sessionManifest from '../manifests/external/session'
 import shellManifest from '../manifests/external/shell'
-import subscriptionsManifest from '../manifests/external/subscriptions'
 
 const RPC_OPTS = { timeout: false, errors }
 
 export const setup = function (rpc) {
   var capabilities = rpc.importAPI('capabilities', capabilitiesManifest, RPC_OPTS)
   var contacts = rpc.importAPI('contacts', contactsManifest, RPC_OPTS)
-  var index = rpc.importAPI('index', indexManifest, RPC_OPTS)
   var markdown = rpc.importAPI('markdown', markdownManifest, RPC_OPTS)
-  var session = rpc.importAPI('session', sessionManifest, RPC_OPTS)
   var shell = rpc.importAPI('shell', shellManifest, RPC_OPTS)
-  const subscriptions = rpc.importAPI('subscriptions', subscriptionsManifest, RPC_OPTS)
 
   if (window.location.protocol !== 'beaker:') {
     delete shell.importFilesAndFolders
@@ -41,10 +35,6 @@ export const setup = function (rpc) {
     watch () {
       return fromEventStream(peersocketsRPC.watch())
     }
-  }
-
-  index.events = () => {
-    return fromEventStream(index.createEventStream())
   }
 
   var panesRPC = rpc.importAPI('panes', panesManifest, RPC_OPTS)
@@ -88,5 +78,5 @@ export const setup = function (rpc) {
     }
   }
 
-  return {capabilities, contacts, index, markdown, panes, peersockets, session, shell, subscriptions, terminal}
+  return {capabilities, contacts, markdown, panes, peersockets, shell, terminal}
 }

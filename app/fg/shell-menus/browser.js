@@ -15,33 +15,23 @@ class BrowserMenu extends LitElement {
     super()
     this.submenu = ''
     this.isDarwin = false
-    this.windowMenuItems = undefined
   }
 
   reset () {
     this.submenu = ''
-    this.daemonStatus = undefined
   }
 
   async init () {
     await this.requestUpdate()
-    let [browserInfo, menuItems] = await Promise.all([
-      bg.beakerBrowser.getInfo(),
-      bg.shellMenus.getWindowMenu()
-    ])
+    let browserInfo = await bg.beakerBrowser.getInfo()
     this.browserInfo = browserInfo
     this.isDarwin = browserInfo.platform === 'darwin'
-    this.windowMenuItems = menuItems
     await this.requestUpdate()
     this.daemonStatus = await bg.beakerBrowser.getDaemonStatus()
     this.requestUpdate()
   }
 
   render () {
-    if (this.submenu) {
-      return this.renderWindowMenu(this.submenu)
-    }
-
     // auto-updater
     var autoUpdaterEl = html``
     if (this.browserInfo && this.browserInfo.updater.isBrowserUpdatesSupported && this.browserInfo.updater.state === 'downloaded') {
@@ -75,7 +65,7 @@ class BrowserMenu extends LitElement {
         <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://private')}>
             <img class="favicon" src="asset:favicon:hyper://private/">
-            <span class="label">My Private Site</span>
+            <span class="label">My Private Drive</span>
           </div>
         </div>
 
@@ -102,10 +92,9 @@ class BrowserMenu extends LitElement {
             <span class="label">Print</span>
           </div>
 
-          <div class="menu-item" @click=${e => this.onShowSubmenu('Help')}>
+          <div class="menu-item" @click=${e => this.onOpenPage(e, 'https://docs.beakerbrowser.com')}>
             <i class="far fa-life-ring"></i>
             <span class="label">Help</span>
-            <span class="more"><span class="fas fa-caret-right"></span></span>
           </div>
         </div>
 
@@ -133,50 +122,6 @@ class BrowserMenu extends LitElement {
         ` : ''}
       </div>
     `
-  }
-
-  renderWindowMenu (menu) {
-    var items = this.windowMenuItems[menu]
-    if (!items) return html``
-    return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="wrapper">
-        <div class="header">
-          <button class="btn" @click=${e => this.onShowSubmenu('')} title="Go back">
-            <i class="fa fa-angle-left"></i>
-          </button>
-          <h2>${menu}</h2>
-        </div>
-        <div class="section">
-          ${repeat(items, (item, i) => item.id || i, item => item.separator
-            ? html`<hr>`
-            : html`
-              <div class="menu-item" @click=${this.onClickMenuItem(menu, item.id)} ?disabled=${!item.enabled}>
-                <span class="label">${item.label}</span>
-                ${item.accelerator ? html`<span class="shortcut">${this.renderAccelerator(item.accelerator)}</span>` : ''}
-              </div>
-            `
-          )}
-        </div>
-      </div>`
-  }
-
-  renderAccelerator (accel) {
-    if (!accel) return
-    const command = '⌘'
-    const control = '^'
-    const commandOrControl = this.isDarwin ? command : control
-    return accel
-      .replace(/\+/g, '')
-      .replace('CmdOrCtrl', commandOrControl)
-      .replace('Alt', '⌥')
-      .replace('Cmd', command)
-      .replace('Ctrl', control)
-      .replace('Shift', '⇧')
-      .replace('Plus', '+')
-      .replace('Left', '←')
-      .replace('Right', '→')
-      .replace('`', '~')
   }
 
   // events

@@ -34,18 +34,8 @@ export async function queryAutocomplete (bg, ctx, onResults) {
     onResults(true)
   }
   
-  var [historyResults, networkQuery, bookmarks] = await Promise.all([
+  var [historyResults, bookmarks] = await Promise.all([
     ctx.inputValue ? bg.history.search(ctx.inputValue) : [],
-    ctx.inputValue ? bg.index.gql(`
-      query Search ($search: String!) {
-        records(search: $search, paths: ["/bookmarks/*.goto"], limit: 10) {
-          url
-          path
-          metadata
-          site { title }
-        }
-      }
-    `, {search: ctx.inputValue}) : undefined,
     ctx.bookmarksFetch
   ])
 
@@ -55,16 +45,10 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   // decorate results with bolded regions
   var searchTerms = ctx.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
   var searchTermsRe = new RegExp(`(${searchTerms.join('|')})`, 'gi')
-  var networkResults = networkQuery.records.map(record => networkResultToItem(record, searchTermsRe)).filter(Boolean)
   historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
   if (ctx.inputValue) {
-    if (historyResults.length > 5 && networkResults.length > 5) {
-      finalResults = networkResults.slice(0, 5).concat(historyResults.slice(0, 5))
-    } else {
-      finalResults = networkResults.concat(historyResults)   
-    }
-    finalResults = _uniqWith(finalResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
+    finalResults = _uniqWith(historyResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
     finalResults = finalResults.slice(0, 10) // apply limit
   } else {
     finalResults = bookmarks
@@ -118,18 +102,6 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   onResults()
 }
 
-function networkResultToItem (record, termsRe) {
-  if (record.path.startsWith('/bookmarks/')) {
-    if (!record.metadata.href) return
-    let title = record.metadata.title || record.metadata.href || ''
-    return {
-      url: record.metadata.href,
-      title,
-      titleDecorated: title.split(termsRe),
-      origin: {icon: 'far fa-star', label: `Bookmarked by ${record.site.title}`}
-    }
-  }
-}
 
 // helper for history search results
 // - takes in the current search (tokenized) and a result object

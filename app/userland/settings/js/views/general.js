@@ -19,7 +19,6 @@ class GeneralSettingsView extends LitElement {
     this.browserInfo = undefined
     this.defaultProtocolSettings = undefined
     this.listingSelfState = undefined
-    this.isProfileListedInBeakerNetwork = false
   }
 
   get isAutoUpdateEnabled () {
@@ -43,7 +42,6 @@ class GeneralSettingsView extends LitElement {
     })
     this.requestUpdate()
 
-    this.isProfileListedInBeakerNetwork = await beaker.browser.isProfileListedInBeakerNetwork()
     this.requestUpdate()
   }
 
@@ -79,10 +77,6 @@ class GeneralSettingsView extends LitElement {
       <div class="form-group">
         <h2>Search Settings</h2>
         ${this.renderSearchSettings()}
-      </div>
-      <div class="form-group">
-        <h2>Extended Network</h2>
-        ${this.renderExtendedNetworkSettings()}
       </div>
       <div class="form-group">
         <h2>Beaker Analytics</h2>
@@ -352,81 +346,6 @@ class GeneralSettingsView extends LitElement {
     `
   }
 
-  renderExtendedNetworkSettings () {
-    return html`
-      <div class="section">
-        <p>Show "extended network" content from</p>
-
-        <div>
-          <div class="radio-item">
-            <input type="radio"
-              id="extended-network-disable"
-              name="extended-network-index"
-              value="disabled"
-              ?checked=${this.settings.extended_network_index === 'disabled'}
-              @change="${this.onExtendedNetworkIndexChange}"
-            >
-            <label for="extended-network-disable">
-              None (disable this feature)
-            </label>
-          </div>
-          <div class="radio-item">
-            <input type="radio"
-              id="extended-network-default"
-              name="extended-network-index"
-              value="default"
-              ?checked=${this.settings.extended_network_index === 'default'}
-              @change="${this.onExtendedNetworkIndexChange}"
-            >
-            <label for="extended-network-default">
-              Beaker Network
-            </label>
-          </div>
-          <div class="radio-item">
-            <input type="radio"
-              id="extended-network-custom"
-              name="extended-network-index"
-              value="custom"
-              ?checked=${this.settings.extended_network_index === 'custom'}
-              @change="${this.onExtendedNetworkIndexChange}"
-            >
-            <label for="extended-network-custom">
-              Custom
-            </label>
-          </div>
-          <input name="extended-network-custom-input"
-                 type="text"
-                 value=${this.settings.extended_network_index_url || ''}
-                 @change=${this.onExtendedNetworkIndexUrlChange}
-                 ?disabled=${this.settings.extended_network_index !== 'custom'}
-                 style="width: 300px; margin-top: 10px" />
-        </div>
-        ${this.settings.extended_network_index === 'default' ? html`
-          <div>
-            ${this.isProfileListedInBeakerNetwork ? html`
-              <p style="margin-bottom: 0">
-                <span class="fas fa-fw fa-check"></span> Your site is listed on Beaker Network
-              </p>
-            ` : this.listingSelfState === 'attempting' ? html`
-              <p style="margin-bottom: 0">
-                <button class="primary" disabled>
-                  <span class="spinner"></span>
-                </button>
-              </p>
-            ` : html`
-              <p>
-                <button class="primary" @click=${this.onClickAddSiteToBeakerNetwork}>
-                  Add your site to Beaker Network
-                </button>
-              </p>
-              <p style="margin-bottom: 0">Get listed on Beaker Network so people can find you.</p>
-            `}
-          </div>
-        ` : ''}
-      </div>
-    `
-  }
-
   renderDefaultZoomSettings () {
     const opt = (v, label) => html`
       <option value=${v} ?selected=${v === this.settings.default_zoom}>${label}</option>
@@ -676,20 +595,6 @@ class GeneralSettingsView extends LitElement {
     beaker.browser.setSetting('search_engines', this.settings.search_engines)
     name.value =""
     url.value=""
-    this.requestUpdate()
-  }
-
-  onExtendedNetworkIndexChange (e) {
-    this.settings.extended_network_index = e.target.value
-    beaker.browser.setSetting('extended_network_index', e.target.value)
-    toast.create('Setting updated')
-    this.requestUpdate()
-  }
-
-  onExtendedNetworkIndexUrlChange (e) {
-    this.settings.extended_network_index_url = e.target.value
-    beaker.browser.setSetting('extended_network_index_url', e.target.value)
-    toast.create('Setting updated')
     this.requestUpdate()
   }
 

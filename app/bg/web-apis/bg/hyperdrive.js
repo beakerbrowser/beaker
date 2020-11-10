@@ -12,13 +12,10 @@ import * as drives from '../../hyper/drives'
 import { gitCloneToTmp } from '../../lib/git'
 import * as archivesDb from '../../dbs/archives'
 import * as auditLog from '../../dbs/audit-log'
-import * as siteSessions from '../../dbs/site-sessions'
 import { timer } from '../../../lib/time'
 import { isSameOrigin } from '../../../lib/urls'
-import { sessionCan } from '../../../lib/session-permissions'
 import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
-import { triggerSiteIndex } from '../../indexer/index'
 import drivesAPI from './drives'
 import { DRIVE_MANIFEST_FILENAME, DRIVE_CONFIGURABLE_FIELDS, HYPERDRIVE_HASH_REGEX, DAT_QUOTA_DEFAULT_BYTES_ALLOWED, DRIVE_VALID_PATH_REGEX, DEFAULT_DRIVE_API_TIMEOUT } from '../../../lib/const'
 import { PermissionsError, UserDeniedError, QuotaExceededError, ArchiveNotWritableError, InvalidURLError, ProtectedFileNotWritableError, InvalidPathError } from 'beaker-error-constants'
@@ -232,8 +229,7 @@ export default {
 
         checkin('updating drive')
         await checkoutFS.pda.updateManifest(manifestUpdates)
-        await drives.pullLatestDriveMeta(drive),
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
+        await drives.pullLatestDriveMeta(drive)
       })
     ))
   },
@@ -317,7 +313,6 @@ export default {
 
         checkin('writing file')
         var res = await checkoutFS.pda.writeFile(filepath, data, opts)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -340,7 +335,6 @@ export default {
 
         checkin('deleting file')
         var res = await checkoutFS.pda.unlink(filepath)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -372,7 +366,6 @@ export default {
 
         checkin('copying')
         var res = await src.checkoutFS.pda.copy(srcpath, dst.checkoutFS.session.drive, dstpath)
-        await triggerSiteIndex(dst.drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -403,14 +396,6 @@ export default {
 
         checkin('renaming file')
         var res = await src.checkoutFS.pda.rename(srcpath, dst.checkoutFS.session.drive, dstpath)
-        if (src.url !== dst.url) {
-          await Promise.all([
-            triggerSiteIndex(src.drive.url, {ifIndexingSite: true}),
-            triggerSiteIndex(dst.drive.url, {ifIndexingSite: true})
-          ])
-        } else {
-          await triggerSiteIndex(src.drive.url, {ifIndexingSite: true})
-        }
         return res
       })
     ))
@@ -433,7 +418,6 @@ export default {
 
         checkin('updating metadata')
         var res = await checkoutFS.pda.updateMetadata(filepath, metadata)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -456,7 +440,6 @@ export default {
 
         checkin('updating metadata')
         var res = await checkoutFS.pda.deleteMetadata(filepath, keys)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -503,7 +486,6 @@ export default {
 
         checkin('making directory')
         var res = await checkoutFS.pda.mkdir(filepath, opts)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -526,7 +508,6 @@ export default {
 
         checkin('removing directory')
         var res = await checkoutFS.pda.rmdir(filepath, opts)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -552,7 +533,6 @@ export default {
 
         checkin('symlinking')
         var res = await checkoutFS.pda.symlink(target, linkname)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -578,7 +558,6 @@ export default {
 
         checkin('mounting drive')
         var res = await checkoutFS.pda.mount(filepath, mount)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -601,7 +580,6 @@ export default {
 
         checkin('unmounting drive')
         var res = await checkoutFS.pda.unmount(filepath)
-        await triggerSiteIndex(drive.url, {ifIndexingSite: true})
         return res
       })
     ))
@@ -704,7 +682,6 @@ export default {
     if (!dst.drive.writable) throw new ArchiveNotWritableError('The destination drive is not writable')
     if (dst.isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
     var res = await pda.merge(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
-    await triggerSiteIndex(dst.drive.url, {ifIndexingSite: true})
     return res
   },
 
@@ -720,7 +697,6 @@ export default {
       inplaceImport: opts.inplaceImport !== false,
       dryRun: opts.dryRun
     })
-    await triggerSiteIndex(opts.dst, {ifIndexingSite: true})
     return res
   },
 
@@ -756,7 +732,6 @@ export default {
       ignore: opts.ignore,
       skipUndownloadedFiles: opts.skipUndownloadedFiles
     })
-    await triggerSiteIndex(opts.dst, {ifIndexingSite: true})
     return res
   }
 }
@@ -808,13 +783,7 @@ async function assertReadPermission (drive, sender, filepath = undefined) {
     if (wcTrust.isWcTrusted(sender) || filesystem.isRootUrl(origin)) {
       return true
     }
-    if (filepath) {
-      let session = await siteSessions.get(sender.getURL())
-      if (session && sessionCan('read', session, driveUrl, filepath)) {
-        return true
-      }
-    }
-    throw new PermissionsError('Cannot read the hyper://private/ drive without a session (see beaker.session API)')
+    throw new PermissionsError('Cannot read the hyper://private/ drive')
   }
 
   return true
@@ -836,21 +805,11 @@ async function assertWritePermission (drive, sender, filepath = undefined) {
     return true
   }
 
-  // session perms
   let ident = filesystem.getDriveIdent(driveUrl)
-  if (filepath && ident.internal) {
-    let session = await siteSessions.get(sender.getURL())
-    let url = ident.system ? 'hyper://private' : driveUrl
-    if (session && sessionCan('write', session, url, filepath)) {
-      return true
-    }
-  }
 
   // cant even ask to write the private drive 
   if (ident.system) {
-    throw new PermissionsError('Cannot write the hyper://private/ drive without a session (see beaker.session API)')
-  } else if (ident.profile) {
-    throw new PermissionsError('Cannot write a profile drive without a session (see beaker.session API)')
+    throw new PermissionsError('Cannot write the hyper://private/ drive')
   }
 
   // ensure the sender is allowed to write

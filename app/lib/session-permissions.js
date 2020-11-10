@@ -102,17 +102,3 @@ export function sessionCan (access, session, driveUrl, filepath) {
   }
   return false
 }
-
-export function getRecordType ({prefix, extension}) {
-  if (extension === '.goto') {
-    if (prefix === '/bookmarks') return 'bookmarks'
-    if (prefix === '/subscriptions') return 'subscriptions'
-    if (prefix === '/votes') return 'votes'
-  } else if (extension === '.md') {
-    if (prefix === '/blog') return 'blogposts'
-    if (prefix === '/comments') return 'comments'
-    if (prefix === '/microblog') return 'microblogposts'
-    if (prefix === '/pages') return 'pages'
-  }
-  return 'unknown'
-}

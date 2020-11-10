@@ -48,25 +48,19 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
 import hyperdriveManifest from './manifests/external/hyperdrive'
-import indexManifest from './manifests/external/index'
 import markdownManifest from './manifests/external/markdown'
 import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
-import sessionManifest from './manifests/external/session'
 import shellManifest from './manifests/external/shell'
-import subscriptionsManifest from './manifests/external/subscriptions'
 
 // external apis
 import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
 import hyperdriveAPI from './bg/hyperdrive'
-import indexAPI from './bg/index'
 import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
-import sessionAPI from './bg/session'
 import shellAPI from './bg/shell'
-import subscriptionsAPI from './bg/subscriptions'
 
 // experimental manifests
 import experimentalCapturePageManifest from './manifests/external/experimental/capture-page'
@@ -100,13 +94,10 @@ export const setup = function () {
   rpc.exportAPI('capabilities', capabilitiesManifest, capabilitiesAPI, secureOnly('capabilities'))
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
-  rpc.exportAPI('index', indexManifest, indexAPI, secureOnly('index'))
   rpc.exportAPI('markdown', markdownManifest, markdownAPI)
   rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
-  rpc.exportAPI('session', sessionManifest, sessionAPI, secureOnly('session'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
-  rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, secureOnly('subscriptions'))
 
   // experimental apis
   rpc.exportAPI('experimental-capture-page', experimentalCapturePageManifest, experimentalCapturePageAPI, secureOnly)

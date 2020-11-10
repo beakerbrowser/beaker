@@ -1,7 +1,6 @@
 import * as filesystem from './index'
 import { query } from './query'
 import { normalizeUrl } from '../../lib/urls'
-import { METADATA_KEYS } from '../indexer/const'
 
 // exported api
 // =

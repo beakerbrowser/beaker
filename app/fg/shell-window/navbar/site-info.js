@@ -15,7 +15,6 @@ class NavbarSiteInfo extends LitElement {
       siteTrust: {type: String},
       driveDomain: {type: String},
       driveIdent: {type: String},
-      isSubscribed: {type: Boolean, attribute: 'is-subscribed'},
       writable: {type: Boolean},
       isPressed: {type: Boolean},
       hideOrigin: {type: Boolean, attribute: 'hide-origin'},
@@ -32,7 +31,6 @@ class NavbarSiteInfo extends LitElement {
     this.siteTrust = ''
     this.driveDomain = ''
     this.driveIdent = ''
-    this.isSubscribed = false
     this.writable = false
     this.isPressed = false
     this.hideOrigin = false
@@ -105,20 +103,6 @@ class NavbarSiteInfo extends LitElement {
       }
       return html`<span class="fas fa-fw fa-pen"></span>`
     }
-    return html`
-      <span
-        class="subscribe-btn"
-        @click=${this.onClickSubscribe}
-        @mouseover=${this.onMouseoverSubscribe}
-        @mouseleave=${this.onMouseleaveSubscribe}
-      >
-        ${this.isSubscribed ? html`
-          <i class="fa fa-check"></i> Subscribed
-        ` : html`
-          <i class="fa fa-rss"></i> Subscribe
-        `}
-      </span>
-    `
   }
 
   // events
@@ -138,45 +122,6 @@ class NavbarSiteInfo extends LitElement {
     })
     this.isPressed = false
     this.lastButtonClick = Date.now()
-  }
-
-  async onClickSubscribe (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (this.isSubscribed) {
-      await bg.subscriptions.remove(`hyper://${this.hostname}`)
-      this.isSubscribed = false
-    } else {
-      let profile = await bg.beakerBrowser.getProfile()
-      await bg.subscriptions.add({
-        href: `hyper://${this.hostname}`,
-        title: this.siteTitle,
-        site: `hyper://${profile.key}`
-      })
-      this.isSubscribed = true
-    }
-    this.requestUpdate()
-    bg.views.refreshState('active')
-  }
-
-  onMouseoverSubscribe (e) {
-    let rect = e.currentTarget.getClientRects()[0]
-    bg.overlay.set({
-      value: 'See posts, comments, links, and more from this site in Beaker apps',
-      topArrow: true,
-      centered: true,
-      multiLine: true,
-      bounds: {
-        x: (rect.left - 50)|0,
-        y: (rect.bottom + 2)|0,
-        width: 200,
-        height: 62
-      }
-    })
-  }
-
-  onMouseleaveSubscribe (e, item) {
-    bg.overlay.set(false)
   }
 }
 NavbarSiteInfo.styles = [buttonResetCSS, css`
@@ -306,32 +251,6 @@ button.hidden {
 
 .untrusted {
   color: var(--text-color--cert--untrusted);
-}
-
-.subscribe-btn {
-  border: 1px solid var(--border-color--location-input);
-  background: var(--bg-color--location-input);
-  border-radius: 4px;
-  line-height: 1;
-  margin: 0 2px;
-  font-size: 11px;
-  letter-spacing: 0.6px;
-  padding: 3px 7px 2px;
-  cursor: pointer;
-}
-
-.trusted .subscribe-btn {
-  border-color: var(--border-color--location-input--trusted);
-}
-
-.subscribe-btn:hover {
-  background: var(--)
-}
-
-.subscribe-btn i {
-  font-size: 9px;
-  position: relative;
-  top: -1px;
 }
 
 `]

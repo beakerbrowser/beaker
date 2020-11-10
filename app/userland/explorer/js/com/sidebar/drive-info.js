@@ -45,9 +45,6 @@ export class DriveInfo extends LitElement {
           ${this.renderType()}
           ${this.renderSize()}
         </p>
-        <div class="bottom-ctrls">
-          <a class="btn" href=${this.realUrl}><span class="fas fa-fw fa-desktop"></span> Open</a>
-        </div>
       </section>
     `
   }

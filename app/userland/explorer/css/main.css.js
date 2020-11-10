@@ -205,7 +205,7 @@ table {
 }
 
 main {
-  margin: 0px 370px 0px 210px;
+  margin: 0px 370px 0px 16px;
   position: relative;
 }
 

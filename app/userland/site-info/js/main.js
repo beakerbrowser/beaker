@@ -6,9 +6,7 @@ import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import _get from 'lodash.get'
 import * as beakerPermissions from '../../../lib/permissions'
-import { enumeratePerms } from '../../../lib/session-permissions'
 import mainCSS from '../css/main.css.js'
-import './com/user-session.js'
 import './com/site-perms.js'
 import './com/identity.js'
 import './com/drive-forks.js'
@@ -24,11 +22,8 @@ class SiteInfoApp extends LitElement {
       isLoading: {type: Boolean},
       info: {type: Object},
       cert: {type: Object},
-      sessionUser: {type: Object},
-      sessionPerms: {type: Object},
       requestedPerms: {type: Object},
-      forks: {type: Array},
-      isBlocked: {type: Boolean}
+      forks: {type: Array}
     }
   }
 
@@ -125,11 +120,8 @@ class SiteInfoApp extends LitElement {
     this.info = undefined
     this.cert = undefined
     this.driveCfg = undefined
-    this.sessionUser = undefined
-    this.sessionPerms = undefined
     this.requestedPerms = undefined
     this.forks = undefined
-    this.isBlocked = false
     contextMenu.destroy()
   }
 
@@ -142,11 +134,10 @@ class SiteInfoApp extends LitElement {
       if (this.isDrive) {
         // get drive info
         let drive = this.drive
-        ;[this.info, this.driveCfg, this.forks, this.isBlocked] = await Promise.all([
+        ;[this.info, this.driveCfg, this.forks] = await Promise.all([
           drive.getInfo(),
           beaker.drives.get(this.url),
-          beaker.drives.getForks(this.url),
-          beaker.subscriptions.isBlocked(this.url)
+          beaker.drives.getForks(this.url)
         ])
       } else {
         this.info = {
@@ -167,22 +158,6 @@ class SiteInfoApp extends LitElement {
       ])
       if (this.cert && this.cert.type === 'hyperdrive') {
         this.cert.driveInfo = this.info
-      }
-      {
-        let session = await beaker.browser.getSiteSession(this.origin)
-        if (session?.userUrl) {
-          this.sessionPerms = enumeratePerms(session.permissions)
-          let {site} = await beaker.index.gql(`
-            query ($url: String!) {
-              site (url: $url){
-                url
-                title
-                description
-              }
-            }
-          `, {url: session.userUrl})
-          this.sessionUser = site
-        }
       }
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
@@ -255,11 +230,6 @@ class SiteInfoApp extends LitElement {
             ` : ''}
           </p>
         </div>
-        ${this.isBlocked ? html`
-          <div class="blocked">
-            <span class="fas fa-fw fa-ban"></span> You have blocked this site
-          </div>
-        ` : ''}
       </div>
     `
   }
@@ -299,10 +269,8 @@ class SiteInfoApp extends LitElement {
         ` : ''}
 
         ${this.view === 'permissions' ? html`
-          <user-session origin=${this.origin} .sessionUser=${this.sessionUser} @logout=${this.onLogoutSession}></user-session>
           <site-perms
             origin=${this.origin}
-            .sessionPerms=${this.sessionPerms}
             .requestedPerms=${this.requestedPerms}
           ></site-perms>
         ` : ''}
@@ -397,12 +365,7 @@ class SiteInfoApp extends LitElement {
           icon: 'far fa-fw fa-list-alt',
           label: 'Site Properties',
           click: () => this.onDriveProps()
-        },
-        !this.info?.writable ? {
-          icon: 'fas fa-fw fa-ban',
-          label: this.isBlocked ? 'Unblock' : 'Block',
-          click: () => this.onToggleBlocked()
-        } : undefined
+        }
       ].filter(Boolean)
     })
   }
@@ -415,21 +378,6 @@ class SiteInfoApp extends LitElement {
   async onDriveProps () {
     await beaker.shell.drivePropertiesDialog(this.url)
     this.load()
-  }
-
-  async onToggleBlocked () {
-    if (this.isBlocked) {
-      await beaker.subscriptions.removeBlock(this.url)
-    } else {
-      await beaker.subscriptions.addBlock({url: this.url, title: this.info.title})
-    }
-    this.isBlocked = !this.isBlocked
-  }
-
-  async onLogoutSession () {
-    await beaker.browser.destroySiteSession(this.origin)
-    this.sessionUser = null
-    this.sessionPerms = null
   }
 }
 

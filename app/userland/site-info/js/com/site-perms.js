@@ -6,7 +6,6 @@ class RequestedPerms extends LitElement {
   static get properties () {
     return {
       origin: {type: String},
-      sessionPerms: {type: Array},
       requestedPerms: {type: Array}
     }
   }
@@ -18,7 +17,6 @@ class RequestedPerms extends LitElement {
   constructor () {
     super()
     this.origin = ''
-    this.sessionPerms = []
     this.requestedPerms = []
   }
   // rendering
@@ -26,25 +24,14 @@ class RequestedPerms extends LitElement {
 
   render () {
     var requestedPerms = this.requestedPerms.map(perm => this.renderRequestedPerm(perm)).filter(el => typeof el !== 'undefined')
-    if (!this.sessionPerms?.length && !requestedPerms.length) {
+    if (!requestedPerms.length) {
       return html`<div class="field-group">No permissions assigned</div>`
     }
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      ${this.sessionPerms?.length ? html`
-        <div class="field-group">
-          <div class="field-group-title">Session Permissions</div>
-          ${this.sessionPerms.map(perm => html`
-            <div>
-              ${perm.access === 'write' ? `Read and write` : `Read`}
-              your ${perm.location} ${perm.recordType}
-            </div>
-          `)}
-        </div>
-      ` : ''}
       ${requestedPerms.length ? html`
         <div class="field-group">
-          <div class="field-group-title">${this.sessionPerms?.length ? 'Additional ' : ''}Permissions</div>
+          <div class="field-group-title">Permissions</div>
           ${requestedPerms}
         </div>
       ` : ''}

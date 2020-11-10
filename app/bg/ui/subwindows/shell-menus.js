@@ -86,14 +86,14 @@ export function reposition (parentWindow) {
         x: view.boundsOpt.rightOffset,
         y: 72,
         width: 250,
-        height: 225
+        height: 195
       })
     } else if (view.menuId === 'bookmark-edit') {
       setBounds({
         x: view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 250,
-        height: 225
+        height: 195
       })
     } else if (view.menuId === 'donate') {
       setBounds({

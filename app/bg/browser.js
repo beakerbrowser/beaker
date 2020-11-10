@@ -14,7 +14,6 @@ import * as logLib from './logger'
 import * as adblocker from './adblocker'
 const logger = logLib.child({category: 'browser'})
 import * as settingsDb from './dbs/settings'
-import * as siteSessions from './dbs/site-sessions'
 import { convertDatArchive } from './dat/index'
 import datDns from './dat/dns'
 import { open as openUrl } from './open-url'
@@ -27,9 +26,7 @@ import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
-import * as subscriptions from './filesystem/subscriptions'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
-import { isProfileListedInBeakerNetwork, addProfileToBeakerNetwork } from './indexer/hyperbees'
 import * as wcTrust from './wc-trust'
 import { spawnAndExecuteJs } from './lib/electron'
 
@@ -183,9 +180,6 @@ export const WEBAPI = {
   checkForUpdates,
   restartBrowser,
 
-  isProfileListedInBeakerNetwork,
-  addProfileToBeakerNetwork,
-
   getSetting,
   getSettings,
   setSetting,
@@ -250,10 +244,6 @@ export const WEBAPI = {
   doWebcontentsCmd,
   doTest,
   closeModal: () => {}, // DEPRECATED, probably safe to remove soon
-
-  getSiteSession: siteSessions.get,
-  listSiteSessions: siteSessions.list,
-  destroySiteSession: siteSessions.destroy
 }
 
 export function fetchBody (url) {
@@ -297,15 +287,8 @@ export async function getCertificate (url) {
   } else if (url.startsWith('beaker:')) {
     return {type: 'beaker'}
   } else if (url.startsWith('hyper://')) {
-    let [ident, subscribers] = await Promise.all([
-      getDriveIdent(url, true),
-      subscriptions.listNetworkFor(url)
-    ])
-    return {
-      type: 'hyperdrive',
-      ident,
-      subscribers: subscribers.map(s => s.site)
-    }
+    let ident = await getDriveIdent(url, true)
+    return {type: 'hyperdrive', ident}
   }
 }
 

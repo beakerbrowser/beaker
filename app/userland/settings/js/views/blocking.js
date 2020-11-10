@@ -23,7 +23,6 @@ class BlockingSettingsView extends LitElement {
     // fetch data
     this.browserInfo = await beaker.browser.getInfo()
     this.settings = await beaker.browser.getSettings()
-    this.blockedSites = await beaker.subscriptions.listBlocked()
     console.log('loaded', {
       browserInfo: this.browserInfo,
       settings: this.settings
@@ -39,40 +38,9 @@ class BlockingSettingsView extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="form-group">
-        <h2>Blocked Sites</h2>
-        ${this.renderSiteBlockList()}
-      </div>
-      <div class="form-group">
         <h2>Adblock Filter Lists</h2>
         ${this.renderAdblockFilterLists()}
       </div>
-    `
-  }
-
-  renderSiteBlockList () {
-    return html`
-      <div class="section">
-        <div class="site-block-list">
-          ${this.blockedSites?.length === 0 ? html`<em>No blocked sites</em>` : ''}
-          ${this.blockedSites.map((blockedSite)=>{
-            return html`
-              <div class="blocked-site">
-                <a class="unblock-btn" @click="${()=>this.onUnblockSite(blockedSite)}" data-tooltip="Unblock" title="Unblock this site">
-                  <span class="fas fa-fw fa-times"></span>
-                </a>
-                <a href=${blockedSite.url} target="_blank">
-                  ${blockedSite.title || fancyUrl(blockedSite.url)}
-                </a>
-              </div>`
-            })
-          }
-        </div>
-      </div>
-      <form @submit=${this.onBlockSite}>
-        <input type="text" placeholder="Name" name="sitetitle" required>
-        <input type="url" placeholder="URL" name="siteurl" required>
-        <button type="submit">Add</button>
-      </form>
     `
   }
 
@@ -113,23 +81,6 @@ class BlockingSettingsView extends LitElement {
 
   // events
   // =
-
-  async onBlockSite (e) {
-    var form = e.target
-    e.preventDefault()
-    await beaker.subscriptions.addBlock({title: form.sitetitle.value, url: form.siteurl.value, selected: true})
-    form.sitetitle.value =""
-    form.siteurl.value=""
-    this.load()
-  }
-
-  async onUnblockSite (blockedSite) {
-    if (!confirm(`Unblock ${blockedSite.title || 'this site'}?`)) {
-      return
-    }
-    await beaker.subscriptions.removeBlock(blockedSite.url)
-    this.load()
-  }
 
   onAdblockListChange (e) {
     const index = e.target.value

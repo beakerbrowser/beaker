@@ -42,7 +42,7 @@ export class SelectionInfo extends LitElement {
     }
     var sel = this.selection[0]
     return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
+      <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
       <section>
         <h3>${sel.path}</h3>
         ${this.renderSize()}

@@ -24,7 +24,6 @@ class NavbarLocation extends LitElement {
       siteTrust: {type: String},
       driveDomain: {type: String},
       driveIdent: {type: String},
-      isSubscribed: {type: Boolean, attribute: 'is-subscribed'},
       writable: {type: Boolean},
       folderSyncPath: {type: String, attribute: 'folder-sync-path'},
       peers: {type: Number},
@@ -53,7 +52,6 @@ class NavbarLocation extends LitElement {
     this.siteTrust = ''
     this.driveDomain = ''
     this.driveIdent = ''
-    this.isSubscribed = false
     this.writable = false
     this.folderSyncPath = undefined
     this.peers = 0
@@ -153,7 +151,6 @@ class NavbarLocation extends LitElement {
         siteTrust=${this.siteTrust}
         driveDomain=${this.driveDomain}
         driveIdent=${this.driveIdent}
-        ?is-subscribed=${this.isSubscribed}
         ?writable=${this.writable}
         .loadError=${this.loadError}
         ?hide-origin=${this.hasExpanded}
@@ -707,45 +704,6 @@ button.folder-sync .fa-sync {
 
 button.folder-sync .fa-folder-open {
   transform: translateY(.5px);
-}
-
-.subscribe-btn-group {
-  display: flex;
-  border: 1px solid var(--border-color--navbar-subscribe-btn);
-  border-radius: 4px;
-  margin: 3px 4px;
-}
-
-.subscribe-btn-group button {
-  width: auto;
-  font-size: 12px;
-}
-
-.subscribe-btn-group button.subscribe {
-  width: auto;
-  font-size: 11px;
-  letter-spacing: 0.6px;
-  line-height: 18px;
-  padding: 0 7px;
-  background: var(--bg-color--navbar-subscribe-btn);
-  color: var(--text-color--navbar-subscribe-btn);
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-
-.subscribe-btn-group button.subscribe:hover {
-  background: var(--bg-color--navbar-subscribe-btn--hover);
-}
-
-.subscribe-btn-group button i {
-  font-size: 9px;
-  position: relative;
-  top: -1px;
-}
-
-.subscribe-btn-group button.subscribers {
-  font-size: 11px;
-  padding: 0 8px;
 }
 
 button.site .fa-angle-down {

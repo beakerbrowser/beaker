@@ -89,20 +89,16 @@ export class BookmarksView extends LitElement {
 
   renderBookmark (bookmark) {
     var {href, title} = bookmark
-    var isPrivate = bookmark.site.url.startsWith('hyper://private')
     return html`
       <a
-        class="bookmark ${isPrivate ? 'private' : 'public'}"
+        class="bookmark"
         href=${href}
         title=${title || ''}
         @contextmenu=${e => this.onContextmenuBookmark(e, bookmark)}
       >
-       <img class="favicon" src="asset:favicon:${href}">
-       <div class="title">${title}</div>
-       <div class="href">${href}</div>
-        <div class="info">
-          ${isPrivate ? 'Private' : 'Public'}
-        </div>
+        <img class="favicon" src="asset:favicon:${href}">
+        <div class="title">${title}</div>
+        <div class="href">${href}</div>
         <div class="ctrls">
           <button class="transparent" @click=${e => this.onClickBookmarkMenuBtn(e, bookmark)}><span class="fas fa-fw fa-ellipsis-h"></span></button>
         </div>

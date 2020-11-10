@@ -1,15 +1,24 @@
-var url = location.pathname.slice(1) // slice past the '/'
-if (url && url.startsWith('hyper://')) {
-  // remove the 'hyper://'
-  history.replaceState(undefined, document.title, window.location.origin + '/' + url.slice('hyper://'.length))
-} else if (url && !url.includes('://')) {
-  url = 'hyper://' + url
-}
+var url
 var urlp
-try {
+var isHyperViewer = false
+
+if (location.protocol === 'hyper:') {
+  isHyperViewer = true
+  url = location.toString()
   urlp = new URL(url)
-} catch (e) {
-  urlp = {hostname: undefined, pathname: undefined}
+} else {
+  url = location.pathname.slice(1) // slice past the '/'
+  if (url && url.startsWith('hyper://')) {
+    // remove the 'hyper://'
+    history.replaceState(undefined, document.title, window.location.origin + '/' + url.slice('hyper://'.length))
+  } else if (url && !url.includes('://')) {
+    url = 'hyper://' + url
+  }
+  try {
+    urlp = new URL(url)
+  } catch (e) {
+    urlp = {hostname: undefined, pathname: undefined}
+  }
 }
 
 export function getUrl () {
@@ -17,7 +26,11 @@ export function getUrl () {
 }
 
 export function setUrl (url) {
-  window.location = `/${url.replace(/^hyper:\/\//, '')}`
+  if (isHyperViewer) {
+    window.location = url
+  } else {
+    window.location = `/${url.replace(/^hyper:\/\//, '')}`
+  }
 }
 
 export function setPath (path) {

@@ -12,7 +12,6 @@ export class EditBookmarkPopup extends BasePopup {
   constructor (bookmark) {
     super()
     this.bookmark = bookmark
-    this.isPublic = this.bookmark ? (this.bookmark?.site?.url !== 'hyper://private') : true
     if (bookmark && typeof beaker.bookmarks === 'undefined') {
       // NOTE
       // we're still migrating beaker-app-stdlib from being a purely internal library
@@ -115,19 +114,6 @@ export class EditBookmarkPopup extends BasePopup {
           <label for="title-input">Title</label>
           <input required type="text" id="title-input" name="title" value="${this.bookmark?.title || ''}" placeholder="E.g. Beaker Browser" />
 
-          <label for="public-input">Visibility</label>
-          <div class="viz-selector">
-            <span>
-              <a class="${this.isPublic ? 'selected' : ''}" @click=${this.onTogglePublic}>
-                <span class="fas fa-fw fa-globe-americas"></span> Public
-              </a>
-              <a class="${!this.isPublic ? 'selected' : ''}" @click=${this.onTogglePublic}>
-                <span class="fas fa-fw fa-lock"></span> Private
-              </a>
-            </span>
-            ${this.isPublic ? 'Visible to everybody' : 'Only visible to you'}
-          </div>
-
           ${typeof beaker.bookmarks === 'undefined' ? '' : html`
             <label class="checkbox" for="pinned-input">
               <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
@@ -139,7 +125,7 @@ export class EditBookmarkPopup extends BasePopup {
         <div class="actions">
           ${this.bookmark ? html`<button type="button" class="btn delete" @click=${this.onDelete} tabindex="3">Delete</button>` : ''}
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="1">${this.isPublic ? 'Publish' : 'Save'}</button>
+          <button type="submit" class="btn primary" tabindex="1">Save</button>
         </div>
       </form>
     `
@@ -152,11 +138,6 @@ export class EditBookmarkPopup extends BasePopup {
   // events
   // =
 
-  onTogglePublic (e) {
-    this.isPublic = !this.isPublic
-    this.requestUpdate()
-  }
-
   async onSubmit (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -164,14 +145,13 @@ export class EditBookmarkPopup extends BasePopup {
     let b = {
       href: e.target.href.value,
       title: e.target.title.value,
-      pinned: e.target.pinned?.checked,
-      site: this.isPublic ? (await beaker.session.get()).user.url : 'hyper://private'
+      pinned: e.target.pinned?.checked
     }
     console.log(b)
     if (typeof beaker.bookmarks === 'undefined') {
       // userland
       b.href = normalizeUrl(b.href)
-      let drive = beaker.hyperdrive.drive(b.site)
+      let drive = beaker.hyperdrive.drive('hyper://private/')
       let slug = createResourceSlug(b.href, b.title)
       let filename = await getAvailableName('/bookmarks', slug, drive, 'goto') // avoid collisions
       let path = joinPath('/bookmarks', filename)

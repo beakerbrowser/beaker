@@ -19,8 +19,6 @@ import * as historyDb from '../../dbs/history'
 import * as folderSyncDb from '../../dbs/folder-sync'
 import * as filesystem from '../../filesystem/index'
 import * as bookmarks from '../../filesystem/bookmarks'
-import * as subscriptions from '../../filesystem/subscriptions'
-import * as indexer from '../../indexer/index'
 import hyper from '../../hyper/index'
 
 const ERR_ABORTED = -3
@@ -78,8 +76,6 @@ const STATE_VARS = [
   // 'isActive', tab sends this
   // 'isPinned', tab sends this
   'isBookmarked',
-  'isSubscribed',
-  'backlinkCount',
   'isLoading',
   'isReceivingAssets',
   'canGoBack',
@@ -152,7 +148,6 @@ export class Pane extends EventEmitter {
     this.folderSyncPath = undefined // current folder sync path
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
-    this.isSubscribed = false // is the active site subscribed?
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
@@ -227,10 +222,7 @@ export class Pane extends EventEmitter {
       }
       if (this.driveInfo) {
         if (this.driveInfo.ident?.system) {
-          return 'My Private Site'
-        }
-        if (this.driveInfo.ident?.profile) {
-          return 'My Profile'
+          return 'My Private Drive'
         }
       }
       if (urlp.protocol === 'beaker:') {
@@ -625,8 +617,6 @@ export class Pane extends EventEmitter {
   async refreshState () {
     await Promise.all([
       this.fetchIsBookmarked(true),
-      this.fetchIsSubscribed(true),
-      this.fetchBacklinkCount(true),
       this.fetchDriveInfo(true)
     ])
     this.emitUpdateState()
@@ -640,44 +630,6 @@ export class Pane extends EventEmitter {
     }
     if (!noEmit) {
       this.emitUpdateState()
-    }
-  }
-
-  async fetchIsSubscribed (noEmit = false) {
-    if (this.url.startsWith('hyper://')) {
-      this.isSubscribed = !!(await subscriptions.get(this.origin))
-    } else {
-      this.isSubscribed = false
-    }
-    if (!noEmit) {
-      this.emitUpdateState()
-    }
-  }
-
-  async fetchBacklinkCount (noEmit = false) {
-    let {backlinkCount} = await indexer.gql(`
-      query BacklinkCount ($href: String!) {
-        backlinkCount: recordCount(links: {url: $href})
-      }
-    `, {href: stripUrlHash(this.url)})
-    this.backlinkCount = backlinkCount
-    if (!noEmit) {
-      this.emitUpdateState()
-    }
-
-    // show comments-pane tip
-    if (typeof _hasSeenCommentsTip === 'undefined') {
-      let v = await sitedataDb.get('beaker://shell/', 'comments-tip-dismissed')
-      _hasSeenCommentsTip = v === '1'
-    }
-    if (!_hasSeenCommentsTip && !this.url.startsWith('beaker:') && this.backlinkCount > 0) {
-      sitedataDb.set('beaker://shell/', 'comments-tip-dismissed', '1')
-      _hasSeenCommentsTip = true
-      overlay.set(this.browserWindow, {
-        value: '<strong>Comments</strong><br>See comments from your network by clicking here.',
-        leftArrow: true,
-        bounds: {x: 34, y: 78, width: 335, height: 46}
-      })
     }
   }
 
@@ -777,8 +729,6 @@ export class Pane extends EventEmitter {
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
     await Promise.all([
       this.fetchIsBookmarked(),
-      this.fetchBacklinkCount(),
-      this.fetchIsSubscribed(),
       this.fetchDriveInfo()
     ])
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
@@ -791,7 +741,6 @@ export class Pane extends EventEmitter {
 
   onDidNavigateInPage (e) {
     this.fetchIsBookmarked()
-    this.fetchBacklinkCount()
     this.updateHistory()
   }
 

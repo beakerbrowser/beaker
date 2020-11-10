@@ -121,10 +121,5 @@ hr {
 .nav .tabs a:not(.active):hover {
   background: var(--bg-color--nav--selected);
 }
-
-.blocked {
-  padding: 5px;
-  color: #d82121;
-}
 `
 export default cssStr

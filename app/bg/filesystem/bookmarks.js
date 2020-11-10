@@ -1,8 +1,7 @@
 import { joinPath } from '../../lib/strings.js'
 import { normalizeUrl, createResourceSlug } from '../../lib/urls'
 import * as drives from '../hyper/drives'
-import * as indexer from '../indexer/index'
-import { METADATA_KEYS } from '../indexer/const'
+import { query } from './query'
 import * as filesystem from './index'
 import * as pinsAPI from './pins'
 import { URL } from 'url'
@@ -15,24 +14,11 @@ import * as profileDb from '../dbs/profile-data-db'
  * @returns {Promise<Object>}
  */
 export async function list () {
-  var {records} = await indexer.gql(`
-    query Bookmarks ($profileUrl: String!) {
-      records (
-        paths: ["/bookmarks/*.goto"]
-        origins: ["hyper://private", $profileUrl]
-      ) {
-        url
-        metadata
-        site {
-          url
-          title
-          description
-        }
-      }
-    }
-  `, {profileUrl: filesystem.getProfileUrl()})
+  var privateDrive = filesystem.get()
+
+  var bookmarks =  await query(privateDrive, {path: '/bookmarks/*.goto'})
   var pins = await pinsAPI.getCurrent()
-  return records.map(r => massageBookmark(r, pins))
+  return bookmarks.map(r => massageBookmark(r, pins))
 }
 
 /**
@@ -41,28 +27,8 @@ export async function list () {
  */
 export async function get (href) {
   href = normalizeUrl(href)
-  var {records} = await indexer.gql(`
-    query Bookmark ($profileUrl: String!, $href: String!) {
-      records (
-        paths: ["/bookmarks/*.goto"]
-        origins: ["hyper://private", $profileUrl]
-        links: {url: $href}
-        limit: 1
-      ) {
-        url
-        metadata
-        site {
-          url
-          title
-          description
-        }
-      }
-    }
-  `, {profileUrl: filesystem.getProfileUrl(), href})
-  if (records[0]) {
-    var pins = await pinsAPI.getCurrent()
-    return massageBookmark(records[0], pins)
-  }
+  var bookmarks = await list()
+  return bookmarks.find(b => b.href === href)
 }
 
 /**
@@ -70,34 +36,19 @@ export async function get (href) {
  * @param {string} bookmark.href
  * @param {string} bookmark.title
  * @param {Boolean} bookmark.pinned
- * @param {String|Object} bookmark.site
  * @returns {Promise<string>}
  */
-export async function add ({href, title, pinned, site}) {
+export async function add ({href, title, pinned}) {
   href = normalizeUrl(href)
-  site = site || 'hyper://private'
-  if (typeof site === 'object' && site.url) {
-    site = site.url
-  }
-  var drive = await drives.getOrLoadDrive(site)
+  var drive = filesystem.get()
 
   let existing = await get(href)
   if (existing) {
     if (typeof title === 'undefined') title = existing.title
     if (typeof pinned === 'undefined') pinned = existing.pinned
-    if (normalizeUrl(existing.site.url) !== normalizeUrl(site)) {
-      // site change, have to remove and add
-      await remove(href)
-      return add({href, title, pinned, site})
-    }
 
-    // same site, just update metadata
     let urlp = new URL(existing.bookmarkUrl)
-    await drive.pda.updateMetadata(urlp.pathname, {
-      [METADATA_KEYS.href]: href,
-      [METADATA_KEYS.title]: title,
-    })
-    await indexer.triggerSiteIndex(site)
+    await drive.pda.updateMetadata(urlp.pathname, {href, title})
     if (pinned !== existing.pinned) {
       if (pinned) await pinsAPI.add(href)
       else await pinsAPI.remove(href)
@@ -110,12 +61,8 @@ export async function add ({href, title, pinned, site}) {
   var filename = await filesystem.getAvailableName('/bookmarks', slug, 'goto', drive) // avoid collisions
   var path = joinPath('/bookmarks', filename)
   await filesystem.ensureDir('/bookmarks', drive)
-  await drive.pda.writeFile(path, '', {metadata: {
-    [METADATA_KEYS.href]: href,
-    [METADATA_KEYS.title]: title
-  }})
+  await drive.pda.writeFile(path, '', {metadata: {href, title}})
   if (pinned) await pinsAPI.add(href)
-  await indexer.triggerSiteIndex(site)
   return path
 }
 
@@ -130,7 +77,6 @@ export async function remove (href) {
   let drive = await drives.getOrLoadDrive(urlp.hostname)
   await drive.pda.unlink(urlp.pathname)
   if (existing.pinned) await pinsAPI.remove(existing.href)
-  await indexer.triggerSiteIndex(urlp.hostname)
 }
 
 export async function migrateBookmarksFromSqlite () {
@@ -140,7 +86,6 @@ export async function migrateBookmarksFromSqlite () {
       href: bookmark.url,
       title: bookmark.title,
       pinned: false, // pinned: bookmark.pinned - DONT migrate this because 0.8 pinned bookmarks are often dat://
-      site: 'hyper://private'
     })
   }
 }
@@ -149,12 +94,11 @@ export async function migrateBookmarksFromSqlite () {
 // =
 
 function massageBookmark (result, pins) {
-  let href = normalizeUrl(result.metadata[METADATA_KEYS.href]) || ''
+  let href = normalizeUrl(result.stat.metadata.href) || ''
   return {
     bookmarkUrl: result.url,
     href,
-    title: result.metadata[METADATA_KEYS.title] || result.metadata[METADATA_KEYS.href] || '',
-    pinned: pins.includes(href),
-    site: result.site
+    title: result.stat.metadata.title || href || '',
+    pinned: pins.includes(href)
   }
 }

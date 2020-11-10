@@ -232,15 +232,16 @@ export async function* fancyUrlAsync (str) {
       return
     }
     yield fancyUrl(str)
-    if (url.protocol === 'hyper:') {
-      let {site} = await beaker.index.gql(`
-        query Site ($origin: String!) {
-          site(url: $origin, cached: true) { title }
-        }
-      `, {origin: url.origin})
-      _fancyUrlAsyncCache[url.origin] = site.title
-      yield fancyUrl(str, site.title)
-    }
+    // TODO
+    // if (url.protocol === 'hyper:') {
+    //   let {site} = await beaker.index.gql(`
+    //     query Site ($origin: String!) {
+    //       site(url: $origin, cached: true) { title }
+    //     }
+    //   `, {origin: url.origin})
+    //   _fancyUrlAsyncCache[url.origin] = site.title
+    //   yield fancyUrl(str, site.title)
+    // }
   } catch (e) {
     return str
   }

@@ -111,14 +111,16 @@ export const protocolHandler = async function (request, respond) {
         'Content-Security-Policy': `default-src beaker:; img-src * data: asset: blob:; media-src * data: asset: blob:; style-src beaker: 'unsafe-inline';`,
         'Beaker-Trusted-Interface': '1' // see wc-trust.js
       },
-      data: intoStream(`<!doctype html>
+      data: intoStream(`<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="beaker://drive-view/css/main.css">
-  <script type="module" src="beaker://drive-view/js/main.js"></script>
-  <script src="beaker://assets/vs/loader.js"></script>
-</head>
+  <head>
+    <title>Loading...</title>
+    <link rel="stylesheet" href="beaker://explorer/index.css">
+  </head>
+  <body>
+    <explorer-app></explorer-app>
+    <script type="module" src="beaker://explorer/js/main.js"></script>
+  </body>
 </html>`)
     })
   }

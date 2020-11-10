@@ -32,7 +32,7 @@ export class ViewfileInfo extends LitElement {
   render () {
     if (!this.viewfileObj) return ''
     return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
+      <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
       <section>
         <h3><a href=${loc.getUrl()}>${loc.getPath().split('/').pop()}</a></h3>
         <p class="facts">
