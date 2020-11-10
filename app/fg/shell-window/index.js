@@ -8,7 +8,6 @@ import './win32'
 import './tabs'
 import './navbar'
 import './panes'
-import './toolbar-menu'
 import './resize-hackfix'
 
 // setup
@@ -36,7 +35,6 @@ class ShellWindowUI extends LitElement {
   constructor () {
     super()
     this.tabs = []
-    this.toolbar = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
@@ -100,7 +98,6 @@ class ShellWindowUI extends LitElement {
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
-    browserEvents.addEventListener('toolbar-changed', this.onToolbarChange.bind(this))
 
     // listen to state updates on the watchlist
     var wlEvents = fromEventStream(bg.watchlist.createEventsStream())
@@ -153,9 +150,6 @@ class ShellWindowUI extends LitElement {
     await this.requestUpdate()
     if (!this.isShellInterfaceHidden) {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
-      if (!this.isSidebarHidden) {
-        this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
-      }
       if (this.activeTab) {
         this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
       }
@@ -182,13 +176,6 @@ class ShellWindowUI extends LitElement {
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>
       `}
-      ${this.isShellInterfaceHidden || this.isSidebarHidden ? '' : html`
-        <shell-window-toolbar-menu
-          .activeTabIndex=${this.activeTabIndex}
-          .activeTab=${this.activeTab}
-          .toolbar=${this.toolbar}
-        ></shell-window-toolbar-menu>
-      `}
       <shell-window-panes .activeTab=${this.activeTab}></shell-window-panes>
     `
   }
@@ -198,13 +185,6 @@ class ShellWindowUI extends LitElement {
 
   onUpdaterStateChange (e) {
     this.isUpdateAvailable = (e && e.state === 'downloaded')
-  }
-
-  onToolbarChange (e) {
-    var el = this.shadowRoot.querySelector('shell-window-toolbar-menu')
-    if (!el) return
-    this.toolbar = el.toolbar = e && e.toolbar
-    el.requestUpdate()
   }
 }
 

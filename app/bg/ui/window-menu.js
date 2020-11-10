@@ -845,35 +845,6 @@ export function buildWindowMenu (opts = {}) {
   return menus
 }
 
-export function getToolbarMenu () {
-  if (!currentMenuTemplate) return {}
-  const get = label => toToolbarItems(currentMenuTemplate.find(menu => menu.label === label).submenu)
-  function toToolbarItems (items){
-    items = items.map(item => {
-      if (item.type === 'separator') {
-        return {separator: true}
-      }
-      if (!item.id) return false
-      return {
-        id: item.id,
-        label: item.label,
-        accelerator: item.accelerator,
-        enabled: typeof item.enabled === 'boolean' ? item.enabled : true
-      }
-    }).filter(Boolean)
-    while (items[0].separator) items.shift()
-    while (items[items.length - 1].separator) items.pop()
-    return items
-  }
-  return {
-    File: get('File'),
-    Drive: get('Drive'),
-    Developer: get('Developer'),
-    Window: get('Window'),
-    Help: get('Help')
-  }
-}
-
 export function triggerMenuItemById (menuLabel, id) {
   if (!currentMenuTemplate) return
   var items = currentMenuTemplate.find(menu => menu.label === menuLabel).submenu

@@ -28,7 +28,6 @@ import { findWebContentsParentWindow } from './lib/electron'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
 import * as subscriptions from './filesystem/subscriptions'
-import * as toolbar from './filesystem/toolbar'
 import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
 import { isProfileListedInBeakerNetwork, addProfileToBeakerNetwork } from './indexer/hyperbees'
 import * as wcTrust from './wc-trust'
@@ -101,7 +100,6 @@ export async function setup () {
 
   // wire up events
   app.on('web-contents-created', onWebContentsCreated)
-  toolbar.on('changed', updateWindowToolbar)
 
   // window.prompt handling
   //  - we have use ipc directly instead of using rpc, because we need custom
@@ -219,7 +217,6 @@ export const WEBAPI = {
   },
 
   executeShellWindowCommand,
-  updateWindowToolbar,
   toggleSiteInfo,
   toggleLiveReloading,
   setWindowDimensions,
@@ -664,11 +661,6 @@ export async function capturePage (url, opts = {}) {
   }
 
   return image
-}
-
-export async function updateWindowToolbar () {
-  let current = await toolbar.getCurrent()
-  browserEvents.emit('toolbar-changed', {toolbar: current})
 }
 
 // rpc methods

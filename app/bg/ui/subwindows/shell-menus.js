@@ -15,7 +15,7 @@ import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
 import * as tabManager from '../tabs/manager'
 import * as modals from './modals'
-import { getToolbarMenu, triggerMenuItemById } from '../window-menu'
+import { triggerMenuItemById } from '../window-menu'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
 import { findWebContentsParentWindow } from '../../lib/electron'
 
@@ -94,13 +94,6 @@ export function reposition (parentWindow) {
         y: view.boundsOpt.top,
         width: 250,
         height: 225
-      })
-    } else if (view.menuId === 'toolbar') {
-      setBounds({
-        x: view.boundsOpt.left,
-        y: view.boundsOpt.top,
-        width: 250,
-        height: 550
       })
     } else if (view.menuId === 'donate') {
       setBounds({
@@ -227,10 +220,6 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
     var win = findWebContentsParentWindow(this.sender)
     var tab = tabManager.getActive(win)
     if (tab) tab.showInpageFind()
-  },
-
-  async getWindowMenu () {
-    return getToolbarMenu()
   },
 
   async triggerWindowMenuItemById (menu, id) {

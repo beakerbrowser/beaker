@@ -5,7 +5,6 @@ import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import './background-tray'
 import './browser'
-import './toolbar'
 import './bookmark'
 import './donate'
 import './peers'
@@ -97,8 +96,6 @@ class MenusWrapper extends LitElement {
         return html`<background-tray-menu active-menu></background-tray-menu>`
       case 'browser':
         return html`<browser-menu active-menu></browser-menu>`
-      case 'toolbar':
-        return html`<toolbar-menu active-menu></toolbar-menu>`
       case 'bookmark':
         return html`<bookmark-menu active-menu></bookmark-menu>`
       case 'bookmark-edit':

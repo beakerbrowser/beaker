@@ -25,7 +25,7 @@ import * as sitedataDb from '../../dbs/sitedata'
 import * as settingsDb from '../../dbs/settings'
 import hyper from '../../hyper/index'
 
-const X_POSITION = 40
+const X_POSITION = 0
 const Y_POSITION = 75
 
 // globals

@@ -9,7 +9,6 @@ import {
   registerGlobalKeybinding
 } from './keybindings'
 import path from 'path'
-import { updateWindowToolbar } from '../browser'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
@@ -228,7 +227,6 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   }, frameSettings))
   win.once('ready-to-show', () => {
     win.show()
-    updateWindowToolbar()
     if (!hasFirstWindowLoaded) {
       hasFirstWindowLoaded = true
       app.emit('custom-ready-to-show')
