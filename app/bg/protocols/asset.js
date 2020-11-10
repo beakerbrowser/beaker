@@ -68,10 +68,6 @@ export function setup () {
       let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
       return servePng(path.join(__dirname, `./assets/img/favicons/${name}.png`), DEFAULTS[asset], cb)
     }
-    if (asset === 'screenshot') {
-      let name = /beaker:\/\/([^\/]+)/.exec(url)[1]
-      return servePng(path.join(__dirname, `./assets/img/thumbs/${name}.png`), DEFAULTS[asset], cb)
-    }
 
     try {
       // look up in db
