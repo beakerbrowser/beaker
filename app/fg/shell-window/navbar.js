@@ -17,7 +17,6 @@ class ShellWindowNavbar extends LitElement {
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
-      userProfile: {type: Object},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -31,7 +30,6 @@ class ShellWindowNavbar extends LitElement {
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
     this.isDaemonActive = false
-    this.userProfile = undefined
     this.isBrowserMenuOpen = false
   }
 
@@ -106,7 +104,6 @@ class ShellWindowNavbar extends LitElement {
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
       <div class="buttons">
-        ${this.profileBtn}
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
         ${this.browserMenuBtn}
@@ -225,16 +222,6 @@ class ShellWindowNavbar extends LitElement {
     `
   }
 
-  get profileBtn () {
-    if (!this.userProfile) return html``
-    return html`
-      <button class="user-profile-btn" @click=${this.onClickUserProfile}>
-        <img src="asset:thumb:${this.userProfile.url}?cache_buster=${Date.now()}">
-        <span class="title">${this.userProfile.title}</span>
-      </button>
-    `
-  }
-
   get browserMenuBtn () {
     const cls = classMap({'browser-menu-btn': true, pressed: this.isBrowserMenuOpen})
     return html`
@@ -290,10 +277,6 @@ class ShellWindowNavbar extends LitElement {
 
   onClickDaemonInactiveBtn (e) {
     bg.views.createTab('beaker://settings', {setActive: true})
-  }
-
-  onClickUserProfile (e) {
-    bg.views.createTab(this.userProfile.url, {setActive: true})
   }
 
   async onClickBrowserMenu (e) {
@@ -386,28 +369,6 @@ svg.icon.refresh {
   bottom: 4px;
   color: var(--text-color--navbar-btn--warning);
   -webkit-text-stroke: 2px var(--bg-color--foreground);
-}
-
-.user-profile-btn {
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-  font-size: 13px;
-  padding: 0 4px;
-  margin: 0;
-  width: auto;
-  color: var(--text-color--navbar-btn--lighter);
-}
-
-.user-profile-btn img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.user-profile-btn span {
-  margin-left: 6px;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)

@@ -28,7 +28,6 @@ class ShellWindowUI extends LitElement {
       isFullscreen: {type: Boolean},
       hasBgTabs: {type: Boolean},
       hasLocationExpanded: {type: Boolean},
-      userProfile: {type: Object}
     }
   }
 
@@ -44,7 +43,6 @@ class ShellWindowUI extends LitElement {
     this.hasBgTabs = false
     this.hasLocationExpanded = false
     this.activeTabIndex = -1
-    this.userProfile = undefined
     this.setup()
   }
 
@@ -117,26 +115,9 @@ class ShellWindowUI extends LitElement {
 
     // fetch initial tab state
     this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
-    ;[this.tabs, this.userProfile] = await Promise.all([
-      bg.views.getState(),
-      bg.beakerBrowser.getProfile()
-    ])
+    this.tabs = await bg.views.getState()
     this.stateHasChanged()
     getDaemonStatus()
-
-    // HACK
-    // periodically check to see if the user profile has changed
-    // or the hole-punchability has changed
-    // (would be better to have an event trigger this!)
-    // -prf
-    setInterval(async () => {
-      getDaemonStatus()
-      var userProfile = await bg.beakerBrowser.getProfile()
-      if (this.userProfile.url !== userProfile.url || this.userProfile.title !== userProfile.title) {
-        this.userProfile = userProfile
-        this.stateHasChanged()
-      }
-    }, 15e3)
   }
 
   get activeTab () {
@@ -168,7 +149,6 @@ class ShellWindowUI extends LitElement {
         <shell-window-navbar
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
-          .userProfile=${this.userProfile}
           ?is-sidebar-hidden=${this.isSidebarHidden}
           ?is-update-available=${this.isUpdateAvailable}
           ?is-holepunchable=${this.isHolepunchable}
