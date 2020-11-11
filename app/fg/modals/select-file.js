@@ -331,7 +331,6 @@ class SelectFileModal extends LitElement {
     this.drives.push({url: 'hyper://private/', info: {title: 'My Private Drive', writable: true}})
     this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
     this.contacts = await bg.contacts.list()
-    this.contacts.push(await bg.hyperdrive.getInfo((await bg.beakerBrowser.getProfile()).key))
     this.contacts.sort((a, b) => (a.title || '').toLowerCase().localeCompare(b.title || ''))
     if (this.isVirtualListing) {
       this.readvirtual()

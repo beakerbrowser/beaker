@@ -249,9 +249,6 @@ export async function mkgoto (opts, location, href) {
 export async function bookmark (opts = {}, href = '.') {
   href = this.env.resolve(href || '.')
   let site = 'hyper://private'
-  if (opts.public) {
-    site = `hyper://${(await beaker.browser.getProfile()).key}`
-  }
   await beaker.bookmarks.add({
     href,
     title: opts.title || href,

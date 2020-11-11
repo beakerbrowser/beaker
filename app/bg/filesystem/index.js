@@ -69,7 +69,7 @@ export function getProfileUrl () {
  * @returns {Promise<DaemonHyperdrive>}
  */
 export function getProfileDrive () {
-  return hyper.drives.getOrLoadDrive(profileDriveUrl)
+  return profileDriveUrl ? hyper.drives.getOrLoadDrive(profileDriveUrl) : undefined
 }
 
 /**
@@ -130,7 +130,7 @@ export async function setup () {
  */
 export function getDriveIdent (url, includeContacts = false) {
   var system = isRootUrl(url)
-  var profile = isSameOrigin(url, profileDriveUrl)
+  var profile = profileDriveUrl && isSameOrigin(url, profileDriveUrl)
   if (!system && includeContacts) {
     return getAddressBook().then(addressBook => {
       var key = /[0-9a-f]{64}/.exec(url)[0]
@@ -147,7 +147,10 @@ export function getDriveIdent (url, includeContacts = false) {
  * @returns {Array<DriveConfig>}
  */
 export function listDrives ({includeSystem} = {includeSystem: false}) {
-  var d = [{key: profileDriveUrl.slice('hyper://'.length, -1)}].concat(drives.slice())
+  var d = drives.slice()
+  if (profileDriveUrl) {
+    d.push({key: profileDriveUrl.slice('hyper://'.length, -1)})
+  }
   if (includeSystem) {
     d.unshift({key: 'private'})
   }

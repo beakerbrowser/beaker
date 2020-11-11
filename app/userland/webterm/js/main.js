@@ -61,7 +61,6 @@ class WebTerm extends LitElement {
     this.tabCompletion = undefined
     this.liveHelp = undefined
     this.envVars = {}
-    this.profile = undefined
 
     var commandHistArray = new LSArray('commandHistory')
     this.commandHist = {
@@ -173,7 +172,6 @@ class WebTerm extends LitElement {
     this.commands = {}
     this.commandModules = {}
     this.pageCommands = {}
-    this.profile = await beaker.browser.getProfile()
     /* dont await */ this.loadEnvVars()
     await this.loadBuiltins()
     await this.loadInstalledCommands()
@@ -407,14 +405,12 @@ class WebTerm extends LitElement {
 
   getAllEnv () {
     return Object.assign({}, this.envVars, {
-      cwd: this.cwd.toString(),
-      home: this.profile.url
+      cwd: this.cwd.toString()
     })
   }
 
   getEnv (key) {
     if (key === 'cwd') return this.cwd.toString()
-    if (key === 'home') return this.profile.url
     return this.envVars[key] || ''
   }
 

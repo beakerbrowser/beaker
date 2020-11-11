@@ -10,7 +10,6 @@ import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
 import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import './com/files-explorer.js'
-import { PublishPopup } from './com/publish-popup.js'
 import { ResizeImagePopup } from './com/resize-image-popup.js'
 
 class EditorApp extends LitElement {
@@ -71,13 +70,6 @@ class EditorApp extends LitElement {
 
   get isPrivate () {
     return this.url.startsWith('hyper://private/')
-  }
-
-  get isPage () {
-    return (
-      /^\/blog\/([^\/]+).md$/i.test(this.resolvedPath) ||
-      /^\/pages\/([^\/]+).md$/i.test(this.resolvedPath)
-    )
   }
 
   get hasChanges () {
@@ -665,12 +657,6 @@ class EditorApp extends LitElement {
         <button title="View file" @click=${this.onClickView} ?disabled=${this.dne || this.isUnloaded}>
           <span class="far fa-fw fa-window-maximize"></span> View file
         </button>
-        <span class="divider"></span>
-        ${!this.readOnly && this.isPrivate && this.isPage ? html`
-          <button class="primary" title="Publish" @click=${this.onClickPublish}>
-            <span class="fas fa-fw fa-globe-africa"></span> Publish
-          </button>
-        ` : ''}
       </div>
     `
   }
@@ -863,23 +849,6 @@ class EditorApp extends LitElement {
       this.attachedPane = await beaker.panes.create(this.url, {attach: true})
     } else {
       beaker.panes.navigate(this.attachedPane.id, this.url)
-    }
-  }
-
-  async onClickPublish (e) {
-    e.preventDefault()
-    var model = this.editor.getModel(this.url)
-    var {url} = await PublishPopup.create({
-      url: this.url,
-      title: this.stat.metadata.title,
-      content: model.getValue()
-    })
-    this.lastSavedVersionId = model.getAlternativeVersionId() // clear changes
-    this.attachedPane = beaker.panes.getAttachedPane()
-    if (this.attachedPane) {
-      beaker.panes.navigate(this.attachedPane.id, url)
-    } else {
-      this.load(url)
     }
   }
 

@@ -172,7 +172,7 @@ header {
 }
 
 .onecol {
-  margin: 20vh auto 0;
+  margin: 30vh auto 0;
   max-width: 900px;
 }
 

@@ -99,15 +99,7 @@ This invokes [the mad king](http://nerdist.com/wp-content/uploads/2016/05/the-ma
 
 If you're doing development, `npm run watch` to have assets build automatically.
 
-## Documentation
-
-Looking to work on Beaker? [Watch this video](https://www.youtube.com/watch?v=YuE9OO-ZDYo) and take a look at [the build notes](./build-notes.md).
-
-- [Documentation site](https://beakerbrowser.com/docs/)
-- **Web APIs**
-  - [DatArchive](https://beakerbrowser.com/docs/apis/dat.html)
-  - [Dat.json site manifest](https://beakerbrowser.com/docs/apis/manifest.html)
-  - [See all](https://beakerbrowser.com/docs/apis/)
+## [Documentation](https://docs.beakerbrowser.com)
 
 ### Env Vars
 

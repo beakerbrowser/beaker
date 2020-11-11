@@ -159,13 +159,6 @@ export default {
           "name": "title",
           "abbr": "t",
           "help": "Specify the title of the bookmark"
-        },
-        {
-          "name": "public",
-          "abbr": "p",
-          "help": "Make the bookmark public",
-          "boolean": true,
-          "default": false
         }
       ]
     },

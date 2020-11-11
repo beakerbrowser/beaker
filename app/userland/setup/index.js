@@ -2,8 +2,6 @@ import './background-run.js'
 import './intro.js'
 import './license.js'
 import './migrating.js'
-import './profile.js'
-import './profile-explainer.js'
 
 function isStageDone (key) {
   var url = new URL(location.toString())
@@ -18,8 +16,6 @@ customElements.define('setup-app', class extends HTMLElement {
     if (!isStageDone('profileSetup')) {
       this.stages.push('intro-view')
       this.stages.push('license-view')
-      this.stages.push('profile-explainer-view')
-      this.stages.push('profile-view')
       this.stages.push('background-run-view')
       document.body.style.background = '#334'
       document.body.style.transition = 'background 0.5s'
