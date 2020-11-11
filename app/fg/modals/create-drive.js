@@ -93,22 +93,6 @@ class CreateDriveModal extends LitElement {
       padding: 0px 4px;
       background: #fff;
     }
-
-    .tip {
-      background: #fafafd;
-      margin: 10px -20px -14px;
-      padding: 10px 18px;
-      color: gray;
-    }
-
-    .tip a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .tip a:hover {
-      text-decoration: underline;
-    }
     `]
   }
 
@@ -199,13 +183,6 @@ class CreateDriveModal extends LitElement {
               ${this.errors.gitUrl ? html`<div class="error">${this.errors.gitUrl}</div>` : ''}
             </div>
           ` : ''}
-
-          <div class="tip">
-            <span class="fas fa-fw fa-info"></span>
-            <a data-href="https://beaker.dev/docs/templates/" @click=${this.onClickLink}>
-              Find templates for sites at Beaker.dev
-            </a>
-          </div>
         </form>
       </div>
     `
@@ -299,11 +276,6 @@ class CreateDriveModal extends LitElement {
   onClickCancelFromFolder (e) {
     e.preventDefault()
     this.fromFolderPath = undefined
-  }
-
-  onClickLink (e) {
-    e.preventDefault()
-    bg.beakerBrowser.openUrl(e.currentTarget.dataset.href, {setActive: true})
   }
 }
 
