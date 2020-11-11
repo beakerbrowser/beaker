@@ -85,7 +85,7 @@ header {
   position: relative;
   display: grid;
   margin: 30px auto 30px;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
   grid-gap: 15px;
   width: 100%;
   max-width: 1000px;
@@ -111,9 +111,9 @@ header {
   display: block;
   margin: 0 auto;
   border-radius: 4px;
-  width: 100px;
-  height: 70px;
-  line-height: 70px;
+  width: 130px;
+  height: 90px;
+  line-height: 90px;
   object-fit: cover;
   object-position: top center;
   border: 1px solid var(--border-color--default);
