@@ -3,6 +3,7 @@ import pda from 'pauls-dat-api2'
 import * as modals from '../../ui/subwindows/modals'
 import * as prompts from '../../ui/subwindows/prompts'
 import * as drives from '../../hyper/drives'
+import { getDriveConfig } from '../../filesystem/index'
 import { lookupDrive } from './hyperdrive'
 import { parseDriveUrl } from '../../../lib/urls'
 import { joinPath } from '../../../lib/strings'
@@ -24,12 +25,12 @@ export default {
    */
   async drivePropertiesDialog (url) {
     assert(url && typeof url === 'string', '`url` must be a string')
-    var drive = await drives.getOrLoadDrive(url)
     var info = await drives.getDriveInfo(url)
+    var cfg = getDriveConfig(info.key)
     await modals.create(this.sender, 'drive-properties', {
       url: info.url,
       writable: info.writable,
-      props: _pick(info, ['title', 'description'])
+      props: Object.assign(_pick(info, ['title', 'description']), {tags: cfg.tags || []})
     })
   },
 
@@ -124,7 +125,7 @@ export default {
    * @param {string} [opts.title]
    * @param {string} [opts.buttonLabel]
    * @param {boolean} [opts.writable]
-   * @param {string} [opts.type]
+   * @param {string} [opts.tag]
    * @returns {Promise<string[]>}
    */
   async selectDriveDialog (opts = {}) {
@@ -132,7 +133,7 @@ export default {
     assert(opts && typeof opts === 'object', 'Must pass an options object')
     assert(!opts.title || typeof opts.title === 'string', '.title must be a string')
     assert(!opts.buttonLabel || typeof opts.buttonLabel === 'string', '.buttonLabel must be a string')
-    assert(!opts.type || typeof opts.type === 'string', '.type must be a string')
+    assert(!opts.tag || typeof opts.tag === 'string', '.tag must be a string')
     assert(!opts.writable || typeof opts.writable === 'boolean', '.writable must be a boolean')
 
     // initiate the modal
@@ -140,7 +141,7 @@ export default {
     try {
       res = await modals.create(this.sender, 'select-drive', opts)
       if (res && res.gotoCreate) {
-        res = await modals.create(this.sender, 'create-drive')
+        res = await modals.create(this.sender, 'create-drive', {tags: [opts.tag]})
         if (res && res.gotoSync) {
           await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
         }

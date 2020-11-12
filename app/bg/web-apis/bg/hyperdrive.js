@@ -13,7 +13,6 @@ import { gitCloneToTmp } from '../../lib/git'
 import * as archivesDb from '../../dbs/archives'
 import * as auditLog from '../../dbs/audit-log'
 import { timer } from '../../../lib/time'
-import { isSameOrigin } from '../../../lib/urls'
 import * as filesystem from '../../filesystem/index'
 import { query } from '../../filesystem/query'
 import drivesAPI from './drives'
@@ -30,7 +29,7 @@ const to = (opts) =>
     : DEFAULT_DRIVE_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, author, visibility, fromGitUrl, prompt} = {}) {
+  async createDrive ({title, description, tags, author, visibility, fromGitUrl, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
@@ -44,7 +43,7 @@ export default {
       // run the creation modal
       let res
       try {
-        res = await modals.create(this.sender, 'create-drive', {title, description, author, visibility})
+        res = await modals.create(this.sender, 'create-drive', {title, description, tags, author, visibility})
         if (res && res.gotoSync) {
           await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
         }
@@ -73,7 +72,7 @@ export default {
       try {
         let manifest = {title, description, /*TODO author,*/}
         newDrive = await drives.createNewDrive(manifest)
-        await filesystem.configDrive(newDrive.url)
+        await filesystem.configDrive(newDrive.url, {tags})
       } catch (e) {
         console.log(e)
         throw e
@@ -101,7 +100,7 @@ export default {
     return newDriveUrl
   },
 
-  async forkDrive (url, {detached, title, description, label, prompt} = {}) {
+  async forkDrive (url, {detached, title, description, tags, label, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
@@ -114,7 +113,7 @@ export default {
       let res
       let forks = await drivesAPI.getForks(url)
       try {
-        res = await modals.create(this.sender, 'fork-drive', {url, title, description, forks, detached, label})
+        res = await modals.create(this.sender, 'fork-drive', {url, title, description, tags, forks, detached, label})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -140,6 +139,7 @@ export default {
         detached
       })
       await filesystem.configDrive(newDrive.url, {
+        tags,
         forkOf: detached ? undefined : {key, label}
       })
       newDriveUrl = newDrive.url
@@ -163,6 +163,7 @@ export default {
         var urlp = parseDriveUrl(url)
         var {driveKey, version} = await lookupDrive(this.sender, urlp.hostname, urlp.version, true)
         var info = await drives.getDriveInfo(driveKey)
+        info.tags = filesystem.getDriveConfig(driveKey)?.tags || []
         var isCap = urlp.hostname.endsWith('.cap')
 
         // request from beaker internal sites: give all data
@@ -203,14 +204,13 @@ export default {
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
         if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
 
-        // handle 'visibility' specially
-        // also, only allow beaker to set 'visibility' for now
-        if (('visibility' in settings) && wcTrust.isWcTrusted(this.sender)) {
-          // TODO uwg await datLibrary.configureDrive(drive, {visibility: settings.visibility})
+        if (('tags' in settings) && wcTrust.isWcTrusted(this.sender)) {
+          await filesystem.configDrive(drive.url, {tags: settings.tags})
         }
 
         // only allow beaker to set these manifest updates for now
         if (!wcTrust.isWcTrusted(this.sender)) {
+          delete settings.tags
           delete settings.author
         }
 

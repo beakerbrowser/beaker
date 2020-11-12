@@ -21,6 +21,7 @@ class ForkDriveModal extends LitElement {
       label: {type: String},
       title: {type: String},
       description: {type: String},
+      tags: {type: String},
       isDetached: {type: Boolean}
     }
   }
@@ -160,6 +161,7 @@ class ForkDriveModal extends LitElement {
     this.label = ''
     this.title = ''
     this.description = ''
+    this.tags = ''
     this.isDetached = false
   }
 
@@ -176,6 +178,7 @@ class ForkDriveModal extends LitElement {
     this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
     this.title =  params.title || this.driveInfo.title || ''
     this.description = params.description || this.driveInfo.description || ''
+    this.tags = params.tags ? (Array.isArray(params.tags) ? params.tags.join(' ') : params.tags) : this.driveInfo.tags?.join(' ') || ''
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -241,6 +244,8 @@ class ForkDriveModal extends LitElement {
             <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} required placeholder="Title" />
             <label for="desc">Description</label>
             <input name="desc" tabindex="2" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+            <label for="tags">Tags</label>
+            <input name="tags" tabindex="3" @change=${this.onChangeTags} value=${this.tags || ''} placeholder="Tags (optional, separated by spaces)">
           ` : html`
             <p class="help with-icon"><span class="fas fa-fw fa-info"></span> A fork is a linked copy of the drive which is used for making changes and then merging into the original.</p>
             <div class="columns">
@@ -268,6 +273,9 @@ class ForkDriveModal extends LitElement {
                   required
                 />
                 <p class="help">The label will help you identify the fork.</p>
+
+                <label for="tags">Tags</label>
+                <input name="tags" tabindex="3" @change=${this.onChangeTags} value=${this.tags || ''} placeholder="Tags (optional, separated by spaces)">
               </div>
             </div>
           `}
@@ -328,6 +336,10 @@ class ForkDriveModal extends LitElement {
     this.description = e.target.value
   }
 
+  onChangeTags (e) {
+    this.tags = e.target.value
+  }
+
   onClickCancel (e) {
     e.preventDefault()
     this.cbs.reject(new Error('Canceled'))
@@ -351,6 +363,7 @@ class ForkDriveModal extends LitElement {
         detached: this.isDetached,
         title: this.isDetached ? this.title : this.driveInfo.title,
         description: this.isDetached ? this.description : this.driveInfo.description,
+        tags: this.tags.split(' '),
         label: this.label,
         prompt: false
       })

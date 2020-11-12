@@ -118,6 +118,7 @@ class DrivePropertiesModal extends LitElement {
     this.props = params.props || {}
     this.props.title = this.props.title || ''
     this.props.description = this.props.description || ''
+    this.props.tags = this.props.tags?.join(' ') || ''
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -189,6 +190,7 @@ class DrivePropertiesModal extends LitElement {
     }
 
     var newProps = Object.fromEntries(new FormData(e.currentTarget))
+    newProps.tags = newProps.tags.split(' ')
 
     // handle thumb file
     var thumbInput = this.shadowRoot.querySelector('#thumb-input')

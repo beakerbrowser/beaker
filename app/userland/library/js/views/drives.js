@@ -197,11 +197,10 @@ export class DrivesView extends LitElement {
         <img class="favicon" src="asset:favicon:${drive.url}">
         <div class="title">
           ${drive.info.title || html`<em>Untitled</em>`}
+          ${drive.forkOf?.label ? html`[${drive.forkOf.label}]` : ''}
+          ${drive.tags.map(tag => html`<span class="tag">${tag}</span>`)}
         </div>
         <div class="description">
-          ${drive.forkOf ? html`
-            <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
-          ` : ''}
           ${drive.info.description.slice(0, 50)}
         </div>
         <div class="owner">${drive.info.writable ? 'Mine' : ''}</div>

@@ -4,9 +4,7 @@ import * as logLib from '../logger'
 const logger = logLib.get().child({category: 'hyper', subcategory: 'filesystem'})
 import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
-import { promises as fsp } from 'fs'
 import * as archivesDb from '../dbs/archives'
-import * as bookmarks from './bookmarks'
 import * as trash from './trash'
 import * as modals from '../ui/subwindows/modals'
 import lock from '../../lib/lock'
@@ -21,6 +19,7 @@ import { isSameOrigin } from '../../lib/urls'
  * 
  * @typedef {Object} DriveConfig
  * @property {string} key
+ * @property {string[]} tags
  * @property {Object} [forkOf]
  * @property {string} [forkOf.key]
  * @property {string} [forkOf.label]
@@ -143,9 +142,10 @@ export function getDriveConfig (key) {
  * @param {string} url
  * @param {Object} [opts]
  * @param {Object} [opts.forkOf]
+ * @param {string[]} [opts.tags]
  * @returns {Promise<void>}
  */
-export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
+export async function configDrive (url, {forkOf, tags} = {forkOf: undefined, tags: undefined}) {
   var release = await lock('filesystem:drives')
   try {
     var key = await hyper.drives.fromURLToKey(url, true)
@@ -155,6 +155,9 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
       let manifest = await drive.pda.readManifest().catch(_ => ({}))
 
       driveCfg = /** @type DriveConfig */({key})
+      if (tags && Array.isArray(tags) && tags.every(t => typeof t === 'string')) {
+        driveCfg.tags = tags.filter(Boolean)
+      }
       if (forkOf && typeof forkOf === 'object') {
         driveCfg.forkOf = forkOf
       }
@@ -189,6 +192,13 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
 
       drives.push(driveCfg)
     } else {
+      if (typeof tags !== 'undefined') {
+        if (tags && Array.isArray(tags) && tags.every(t => typeof t === 'string')) {
+          driveCfg.tags = tags.filter(Boolean)
+        } else {
+          delete driveCfg.tags
+        }
+      }
       if (typeof forkOf !== 'undefined') {
         if (forkOf && typeof forkOf === 'object') {
           driveCfg.forkOf = forkOf
@@ -270,12 +280,12 @@ export async function migrateAddressBook () {
   addressBook.contacts = addressBook.contacts && Array.isArray(addressBook.contacts) ? addressBook.contacts : []
   for (let profile of addressBook.profiles) {
     if (!drives.find(d => d.key === profile.key)) {
-      drives.push({key: profile.key})
+      drives.push({key: profile.key, tags: ['user-profile']})
     }
   }
   for (let contact of addressBook.contacts) {
     if (!drives.find(d => d.key === contact.key)) {
-      drives.push({key: contact.key})
+      drives.push({key: contact.key, tags: ['user-profile']})
     }
   }
   await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))

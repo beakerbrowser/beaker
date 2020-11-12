@@ -152,7 +152,7 @@ a[href]:hover {
   border-left: 40px solid var(--bg-color--light);
 }
 
-.fork-label {
+.tag {
   display: inline-block;
   padding: 1px 5px;
   background: #4CAF50;
@@ -160,6 +160,7 @@ a[href]:hover {
   text-shadow: 0 1px 0px #0004;
   border-radius: 4px;
   font-size: 10px;
+  margin-right: 2px;
 }
 
 @media (max-width: 700px) {

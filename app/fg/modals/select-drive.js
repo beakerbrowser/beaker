@@ -64,7 +64,7 @@ class SelectDriveModal extends LitElement {
         z-index: 3;
       }
 
-      .drive-picker .type-container {
+      .drive-picker .tag-container {
         margin-bottom: 10px;
         background: #eee;
         padding: 10px;
@@ -123,22 +123,14 @@ class SelectDriveModal extends LitElement {
 
       .drive .thumb {
         display: block;
-        width: 32px;
-        height: 32px;
+        width: 16px;
+        height: 16px;
         margin-right: 16px;
       }
 
-      .drives-list .drive .info {
-        flex: 1;
-      }
-      
       .drives-list .drive .title {
-        font-size: 15px;
-        font-weight: 500;
-      }
-      
-      .drives-list .drive .description {
-        letter-spacing: -0.2px;
+        flex: 1;
+        font-size: 13px;
       }
 
       .drives-list .drive.selected {
@@ -146,15 +138,15 @@ class SelectDriveModal extends LitElement {
         color: #fff;
       }
 
-      .drives-list .drive.selected .thumb {
+      .tag {
+        display: inline-block;
+        padding: 1px 5px;
+        background: #4CAF50;
+        color: #fff;
+        text-shadow: 0 1px 0px #0004;
         border-radius: 4px;
-        box-shadow: 0 1px 2px #0003;
-      }
-
-      .drives-list .drive.selected .info .hash,
-      .drives-list .drive.selected .info .readonly {
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 100;
+        font-size: 10px;
+        margin-right: 2px;
       }
     `]
   }
@@ -170,7 +162,7 @@ class SelectDriveModal extends LitElement {
     // params
     this.customTitle = ''
     this.buttonLabel = 'Select'
-    this.type = null
+    this.tag = null
     this.writable = undefined
     this.cbs = null
   }
@@ -179,26 +171,13 @@ class SelectDriveModal extends LitElement {
     this.cbs = cbs
     this.customTitle = params.title || ''
     this.buttonLabel = params.buttonLabel || 'Select'
-    this.type = params.type
+    this.tag = params.tag
     this.writable = params.writable
     await this.requestUpdate()
     this.adjustHeight()
 
-    this.drives = await bg.drives.list({includeSystem: true})
-
-    // move forks onto their parents
-    this.drives = this.drives.filter(drive => {
-      if (drive.forkOf) {
-        let parent = this.drives.find(d => d.key === drive.forkOf.key)
-        if (parent) {
-          parent.forks = parent.forks || []
-          parent.forks.push(drive)
-          return false
-        }
-      }
-      return true
-    })
-    this.drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
+    this.drives = await bg.drives.list({includeSystem: false})
+    this.drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
 
     await this.requestUpdate()
     this.adjustHeight()
@@ -222,7 +201,7 @@ class SelectDriveModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <form @submit=${this.onSubmit}>
-          <h1 class="title">${this.customTitle || 'Select a site'}</h1>
+          <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
 
           <div class="view drive-picker">
             ${this.renderFilters()}
@@ -238,9 +217,11 @@ class SelectDriveModal extends LitElement {
 
           <div class="form-actions">
             <div class="left">
-              <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
-                Create new drive
-              </button>
+              ${this.writable !== false ? html`
+                <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
+                  Create new drive
+                </button>
+              ` : ''}
             </div>
             <div class="right">
               <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
@@ -255,15 +236,16 @@ class SelectDriveModal extends LitElement {
   }
 
   renderFilters () {
-    if (!this.type && typeof this.writable === 'undefined') return ''
+    if (!this.tag && typeof this.writable === 'undefined') return ''
     return html`
-      <div class="type-container">
+      <div class="tag-container">
         <strong>
+          Showing drives which are
           ${typeof this.writable !== 'undefined' ? html`
-            ${this.writable ? 'Editable' : 'Read-only'}
+            ${this.writable ? 'editable' : 'read-only'}
           ` : ''}
-          ${this.type ? Array.isArray(this.type) ? this.type.join(', ') : this.type : ''}
-          only
+          ${typeof this.writable !== 'undefined' && this.tag ? ' and ' : ''}
+          ${this.tag ? html`tagged "${this.tag}"` : ''}
         </strong>
       </div>`
   }
@@ -274,7 +256,7 @@ class SelectDriveModal extends LitElement {
     }
 
     var filtered = this.drives
-    if (this.type) filtered = filtered.filter(drive => drive.info.type === this.type)
+    if (this.tag) filtered = filtered.filter(drive => drive.tags.includes(this.tag))
     if (typeof this.writable === 'boolean') {
       filtered = filtered.filter(drive => drive.info.writable === this.writable)
     }
@@ -298,20 +280,11 @@ class SelectDriveModal extends LitElement {
         @dblclick=${this.onDblClickdrive}
         data-url=${drive.url}
       >
-        <img
-          class="thumb"
-          srcset="
-            beaker://assets/img/drive-types/files.png 1x,
-            beaker://assets/img/drive-types/files-64.png 2x
-          "
-        >
-        <div class="info">
-          <div class="title">
-            ${drive.info.title || html`<em>Untitled</em>`}
-          </div>
-          <div class="details">
-            <div class="description">${drive.info.description.slice(0, 60)}</div>
-          </div>
+        <img class="thumb" src="asset:favicon:${drive.url}">
+        <div class="title">
+          ${drive.info.title || html`<em>Untitled</em>`}
+          ${drive.forkOf?.label ? html`[${drive.forkOf.label}]` : ''}
+          ${drive.tags.map(tag => html`<span class="tag">${tag}</span>`)}
         </div>
       </div>
     `

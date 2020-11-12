@@ -12,6 +12,7 @@ class CreateDriveModal extends LitElement {
       isProcessing: {type: Boolean},
       title: {type: String},
       description: {type: String},
+      tags: {type: String},
       fromFolderPath: {type: String},
       errors: {type: Object},
       fromGit: {type: Boolean},
@@ -102,6 +103,7 @@ class CreateDriveModal extends LitElement {
     this.isProcessing = false
     this.title = ''
     this.description = ''
+    this.tags = ''
     this.author = undefined
     this.fromFolderPath = undefined
     this.fromGit = false
@@ -113,6 +115,7 @@ class CreateDriveModal extends LitElement {
     this.cbs = cbs
     this.title = params.title || ''
     this.description = params.description || ''
+    this.tags = params.tags ? (Array.isArray(params.tags) ? params.tags.join(' ') : params.tags) : ''
     this.author = undefined // this.author = params.author
     await this.requestUpdate()
   }
@@ -141,6 +144,7 @@ class CreateDriveModal extends LitElement {
             <input autofocus name="title" tabindex="2" value=${this.title || ''} @change=${this.onChangeTitle} class="${this.errors.title ? 'has-error' : ''}" placeholder="Title" />
             ${this.errors.title ? html`<div class="error">${this.errors.title}</div>` : ''}
             <input name="desc" tabindex="3" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+            <input name="tags" tabindex="4" @change=${this.onChangeTags} value=${this.tags || ''} placeholder="Tags (optional, separated by spaces)">
             ${this.fromFolderPath ? html`
               <div class="from-folder-path">
                 <strong>Import from folder:</strong> ${this.fromFolderPath} <a href="#" @click=${this.onClickCancelFromFolder}>Cancel</a>
@@ -152,26 +156,26 @@ class CreateDriveModal extends LitElement {
             <button
               type="button"
               @click=${this.onClickFromFolder}
-              tabindex="7"
+              tabindex="8"
               ?disabled=${this.isProcessing || this.fromGit}
             >From Folder</button>
             <button
               type="button"
               @click=${this.onClickFromGit}
-              tabindex="6"
+              tabindex="7"
               ?disabled=${this.isProcessing || !!this.fromFolderPath}
             >From Git Repo ${this.fromGit ? html`<span class="fas fa-times"></span>` : ''}</button>
             <button
               type="button"
               @click=${this.onClickCancel}
               class="cancel"
-              tabindex="5"
+              tabindex="6"
               ?disabled=${this.isProcessing}
             >Cancel</button>
             <button
               type="submit"
               class="primary"
-              tabindex="4"
+              tabindex="5"
               ?disabled=${this.isProcessing}
             >${this.isProcessing ? html`<div class="spinner"></div>` : 'Create'}</button>
           </div>
@@ -197,6 +201,10 @@ class CreateDriveModal extends LitElement {
 
   onChangeDescription (e) {
     this.description = e.target.value.trim()
+  }
+
+  onChangeTags (e) {
+    this.tags = e.target.value.trim()
   }
 
   onChangeGitUrl (e) {
@@ -239,6 +247,7 @@ class CreateDriveModal extends LitElement {
       var url = await bg.hyperdrive.createDrive({
         title: this.title,
         description: this.description,
+        tags: this.tags.split(' '),
         author: this.author,
         fromGitUrl: this.fromGit ? this.gitUrl : undefined,
         prompt: false
