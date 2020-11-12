@@ -111,16 +111,13 @@ export const protocolHandler = async function (request, respond) {
         'Content-Security-Policy': `default-src beaker:; img-src * data: asset: blob:; media-src * data: asset: blob:; style-src beaker: 'unsafe-inline';`,
         'Beaker-Trusted-Interface': '1' // see wc-trust.js
       },
-      data: intoStream(`<!DOCTYPE html>
+      data: intoStream(`<!doctype html>
 <html>
   <head>
-    <title>Loading...</title>
-    <link rel="stylesheet" href="beaker://explorer/index.css">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+    <script type="module" src="beaker://drive-view/index.js"></script>
   </head>
-  <body>
-    <explorer-app></explorer-app>
-    <script type="module" src="beaker://explorer/js/main.js"></script>
-  </body>
 </html>`)
     })
   }
@@ -303,13 +300,18 @@ export const protocolHandler = async function (request, respond) {
     // 404
     if (!entry) {
       logger.silly('Not found', {url: request.url})
-      if (wantsHTML) { 
-        logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
-        return respondBuiltinFrontend()
+      // try to establish what the issue is
+      let res = await checkoutFS.pda.stat('/.ui/ui.html').catch(err => ({err}))
+      if (res?.err && /(not available|connectable)/i.test(res?.err.toString())) {
+        return respondError(404, 'File Not Available', {
+          errorDescription: 'File Not Available',
+          errorInfo: `Beaker could not find any peers to access ${urlp.path}`,
+          title: 'File Not Available'
+        })
       }
       return respondError(404, 'File Not Found', {
         errorDescription: 'File Not Found',
-        errorInfo: `Beaker could not find the file ${urlp.path}`,
+        errorInfo: `Beaker could not find the file at ${urlp.path}`,
         title: 'File Not Found'
       })
     }
@@ -332,12 +334,6 @@ export const protocolHandler = async function (request, respond) {
     }
     if (!canExecuteHTML && mimeType.includes('text/html')) {
       mimeType = 'text/plain'
-    }
-
-    if (wantsHTML && !mimeType.includes('text/html')) {
-      // builtin frontend when not viewing an html file
-      logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
-      return respondBuiltinFrontend()
     }
 
     // handle range

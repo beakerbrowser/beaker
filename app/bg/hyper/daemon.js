@@ -14,7 +14,7 @@ const logger = baseLogger.child({category: 'hyper', subcategory: 'daemon'})
 const SETUP_RETRIES = 100
 const GARBAGE_COLLECT_SESSIONS_INTERVAL = 30e3
 const MAX_SESSION_AGE = 300e3 // 5min
-const HYPERSPACE_BIN_PATH = require.resolve('hyperspace/bin.js')
+const HYPERSPACE_BIN_PATH = require.resolve('hyperspace/bin/index.js')
 const HYPERSPACE_STORAGE_DIR = p.join(os.homedir(), '.hyperspace', 'storage')
 const HYPERDRIVE_STORAGE_DIR = p.join(os.homedir(), '.hyperdrive', 'storage', 'cores')
 
