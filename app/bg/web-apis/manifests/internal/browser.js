@@ -3,7 +3,6 @@ export default {
   getInfo: 'promise',
   getDaemonStatus: 'promise',
   getDaemonNetworkStatus: 'promise',
-  getProfile: 'promise',
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
@@ -12,7 +11,6 @@ export default {
   setSetting: 'promise',
   updateAdblocker: 'promise',
   updateSetupState: 'promise',
-  setupDefaultProfile: 'promise',
   migrate08to09: 'promise',
   setStartPageBackgroundImage: 'promise',
   

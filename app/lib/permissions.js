@@ -150,13 +150,6 @@ export const PERMS = {
     requiresRefresh: false,
     experimental: true
   },
-  contactsList: {
-    persist: 'allow', // dont persist 'deny'
-    idempotent: true,
-    alwaysDisallow: false,
-    requiresRefresh: false,
-    experimental: false
-  },
   panesCreate: {
     persist: 'allow', // dont persist 'deny'
     idempotent: true,
@@ -202,7 +195,6 @@ export const PERM_ICONS = {
   experimentalDatPeers: 'fas fa-exchange-alt',
   experimentalCapturePage: 'fas fa-camera',
   dangerousAppControl: 'fas fa-flask',
-  contactsList: 'fas fa-user-friends',
   panesCreate: 'fas fa-columns',
   panesAttach: 'fas fa-columns',
   panesInject: 'fas fa-columns'
@@ -231,7 +223,6 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'experimentalLibrary': return 'Read and modify your Library'
     case 'experimentalDatPeers': return 'Send and receive messages with peers'
     case 'dangerousAppControl': return 'Read and write your data, including bookmarks, archives, and files'
-    case 'contactsList': return 'Read your address-book in Beaker'
     case 'panesCreate': return 'Open a page in a new pane'
     case 'panesAttach': return 'Attach to other open pages and navigate them'
     case 'panesInject': return 'Inject code into other open pages'

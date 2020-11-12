@@ -26,7 +26,7 @@ import * as siteInfo from './ui/subwindows/site-info'
 import { findWebContentsParentWindow } from './lib/electron'
 import * as hyperDaemon from './hyper/daemon'
 import * as bookmarks from './filesystem/bookmarks'
-import { setupDefaultProfile, getProfile, getDriveIdent } from './filesystem/index'
+import { getDriveIdent } from './filesystem/index'
 import * as wcTrust from './wc-trust'
 import { spawnAndExecuteJs } from './lib/electron'
 
@@ -176,7 +176,6 @@ export const WEBAPI = {
   getInfo,
   getDaemonStatus,
   getDaemonNetworkStatus,
-  getProfile,
   checkForUpdates,
   restartBrowser,
 
@@ -185,7 +184,6 @@ export const WEBAPI = {
   setSetting,
   updateAdblocker,
   updateSetupState,
-  setupDefaultProfile,
   migrate08to09,
   setStartPageBackgroundImage,
 

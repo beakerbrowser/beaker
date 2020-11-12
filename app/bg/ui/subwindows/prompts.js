@@ -122,11 +122,6 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
     close(tabManager.findTab(this.sender))
   },
 
-  async closeEditProfilePromptForever () {
-    close(tabManager.findTab(this.sender))
-    await setupFlow.setHasVisitedProfile()
-  },
-
   async createTab (url) {
     var win = findWebContentsParentWindow(this.sender)
     tabManager.create(win, url, {setActive: true, adjacentActive: true})

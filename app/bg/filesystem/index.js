@@ -28,8 +28,6 @@ import { isSameOrigin } from '../../lib/urls'
  * @typedef {Object} DriveIdent
  * @property {boolean} internal
  * @property {boolean} system
- * @property {boolean} profile
- * @property {boolean?} contact
  */
 
 // globals
@@ -37,7 +35,6 @@ import { isSameOrigin } from '../../lib/urls'
 
 var browsingProfile
 var rootDrive
-var profileDriveUrl
 var drives = []
 
 // exported api
@@ -56,20 +53,6 @@ export function get () {
  */
 export function isRootUrl (url) {
   return isSameOrigin(url, browsingProfile.url) || isSameOrigin(url, 'hyper://private/')
-}
-
-/**
- * @returns {String}
- */
-export function getProfileUrl () {
-  return profileDriveUrl
-}
-
-/**
- * @returns {Promise<DaemonHyperdrive>}
- */
-export function getProfileDrive () {
-  return profileDriveUrl ? hyper.drives.getOrLoadDrive(profileDriveUrl) : undefined
 }
 
 /**
@@ -106,12 +89,7 @@ export async function setup () {
   }
   
   // load drive config
-  let profileObj = await getProfile()
   let hostKeys = []
-  if (profileObj) {
-    hostKeys.push(profileObj.key)
-    profileDriveUrl = `hyper://${profileObj.key}/`
-  }
   try {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
     hostKeys = hostKeys.concat(drives.map(drive => drive.key))
@@ -121,24 +99,16 @@ export async function setup () {
     }
   }
   hyper.drives.ensureHosting(hostKeys)
+  await migrateAddressBook()
 }
 
 /**
  * @param {string} url 
- * @param {boolean} [includeContacts]
  * @returns {DriveIdent | Promise<DriveIdent>}
  */
-export function getDriveIdent (url, includeContacts = false) {
+export function getDriveIdent (url) {
   var system = isRootUrl(url)
-  var profile = profileDriveUrl && isSameOrigin(url, profileDriveUrl)
-  if (!system && includeContacts) {
-    return getAddressBook().then(addressBook => {
-      var key = /[0-9a-f]{64}/.exec(url)[0]
-      var contact = !!addressBook.contacts.find(c => c.key === key)
-      return {system, profile, internal: system || profile, contact}
-    })
-  }
-  return {system, profile, internal: system || profile, contact: undefined}
+  return {system, internal: system}
 }
 
 /**
@@ -148,9 +118,6 @@ export function getDriveIdent (url, includeContacts = false) {
  */
 export function listDrives ({includeSystem} = {includeSystem: false}) {
   var d = drives.slice()
-  if (profileDriveUrl) {
-    d.push({key: profileDriveUrl.slice('hyper://'.length, -1)})
-  }
   if (includeSystem) {
     d.unshift({key: 'private'})
   }
@@ -293,48 +260,26 @@ export async function ensureDir (path, drive = rootDrive) {
   }
 }
 
-export async function setupDefaultProfile ({title, description, thumbBase64, thumbExt}) {
-  var drive = await hyper.drives.createNewDrive({title, description})
-  if (!thumbBase64) {
-    thumbBase64 = await fsp.readFile(joinPath(__dirname, './assets/img/default-user-thumb.jpg'), 'base64')
-    thumbExt = 'jpg'
-  }
-  await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
-  await ensureAddressBook(drive.key.toString('hex'))
-  profileDriveUrl = drive.url
-}
-
-export async function getAddressBook () {
+export async function migrateAddressBook () {
   var addressBook
   try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
-  catch (e) { addressBook = {} }
+  catch (e) {
+    return
+  }
   addressBook.profiles = addressBook.profiles && Array.isArray(addressBook.profiles) ? addressBook.profiles : []
   addressBook.contacts = addressBook.contacts && Array.isArray(addressBook.contacts) ? addressBook.contacts : []
-  return addressBook
-}
-
-export async function ensureAddressBook (profileKey) {
-  var addressBook = await getAddressBook()
-  if (!addressBook.profiles.find(p => p.key === profileKey)) {
-    addressBook.profiles.push({key: profileKey})
-  }
-  await rootDrive.pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
-}
-
-export async function getProfile () {
-  try {
-    var addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse)
-    var profile = addressBook?.profiles?.[0]
-    if (profile) {
-      let info = await hyper.drives.getDriveInfo(profile.key)
-      profile.url = info.url
-      profile.title = info.title
-      profile.description = info.description
-      return profile
+  for (let profile of addressBook.profiles) {
+    if (!drives.find(d => d.key === profile.key)) {
+      drives.push({key: profile.key})
     }
-  } catch (e) {
-    return undefined
   }
+  for (let contact of addressBook.contacts) {
+    if (!drives.find(d => d.key === contact.key)) {
+      drives.push({key: contact.key})
+    }
+  }
+  await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))
+  await rootDrive.pda.unlink('/address-book.json')
 }
 
 // internal methods

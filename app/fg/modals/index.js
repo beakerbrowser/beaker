@@ -14,8 +14,6 @@ import './prompt'
 import './basic-auth'
 import './user-editor'
 import './user-select'
-import './add-contact'
-import './select-contact'
 import './create-session'
 
 class ModalsWrapper extends LitElement {
@@ -94,10 +92,6 @@ class ModalsWrapper extends LitElement {
         return html`<user-editor-modal></user-editor-modal>`
       case 'user-select':
         return html`<user-select-modal></user-select-modal>`
-      case 'add-contact':
-        return html`<add-contact-modal></add-contact-modal>`
-      case 'select-contact':
-        return html`<select-contact-modal></select-contact-modal>`
       case 'create-session':
         return html`<create-session-modal></create-session-modal>`
     }
