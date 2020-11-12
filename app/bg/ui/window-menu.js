@@ -666,6 +666,14 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'toggleHypercoreDevtools',
+        label: 'Toggle Hypercore Devtools',
+        enabled: !noWindows,
+        click: async function (item) {
+          if (tab) tab.togglePaneByOrigin({url: 'beaker://hypercore-tools/'})
+        }
+      },
+      {
         id: 'toggleLiveReloading',
         label: 'Toggle Live Reloading',
         enabled: !!isDriveSite,

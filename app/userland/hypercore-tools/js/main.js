@@ -164,6 +164,7 @@ class HypercoreToolsApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="hover-el"></div>
+      <span id="close-btn" @click=${window.close}><span class="fas fa-times"></span></span>
       <nav>
         ${mainNavItem('hypercores', 'Hypercores')}
         ${mainNavItem('api-calls', 'API Calls')}

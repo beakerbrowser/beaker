@@ -657,6 +657,10 @@ class EditorApp extends LitElement {
         <button title="View file" @click=${this.onClickView} ?disabled=${this.dne || this.isUnloaded}>
           <span class="far fa-fw fa-window-maximize"></span> View file
         </button>
+        <span class="spacer"></span>
+        ${this.attachedPane ? html`
+          <button @click=${window.close}><span class="fas fa-times"></span></button>
+        ` : ''}
       </div>
     `
   }

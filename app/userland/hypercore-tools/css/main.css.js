@@ -22,6 +22,14 @@ a[href]:hover {
   text-decoration: underline;
 }
 
+#close-btn {
+  position: fixed;
+  z-index: 1;
+  top: 3px;
+  right: 8px;
+  cursor: pointer;
+}
+
 #hover-el {
   position: fixed;
   visibility: hidden;
