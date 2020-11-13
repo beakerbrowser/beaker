@@ -160,9 +160,13 @@ export class DrivesView extends LitElement {
         ` : ''}
         <div class="drives">
           ${repeat(drives, drive => this.renderDrive(drive))}
-          ${drives.length === 0 && this.filter ? html`
-            <div class="empty"><div>No matches found for "${this.filter}".</div></div>
-          ` : ''}
+          ${drives.length === 0 ?
+            this.filter ? html`
+              <div class="empty"><div>No matches found for "${this.filter}".</div></div>
+            ` : html`
+              <div class="empty"><span class="fas fa-sitemap"></span><div>You have not created any Hyperdrives.</div></div>
+            `
+          : ''}
         </div>
       ` : html`
         <div class="loading"><span class="spinner"></span></div>
