@@ -73,7 +73,6 @@ class DesktopApp extends LitElement {
         <div class="onecol">
           ${this.renderReleaseNotice()}
           ${this.renderPins()}
-          ${this.renderWhatsNew()}
           ${this.renderLegacyArchivesNotice()}
         </div>
       </main>
@@ -131,23 +130,6 @@ class DesktopApp extends LitElement {
         <a class="pin add" @click=${e => this.onClickNewBookmark(e, true)}>
           <span class="fas fa-fw fa-plus thumb"></span>
         </a>
-      </div>
-    `
-  }
-
-  renderWhatsNew () {
-    if (localStorage.seenWhatsNew === '1.0') {
-      return ''
-    }
-    return html`
-      <div class="whats-new">
-        <h3>
-          What's New in Beaker
-          <a class="dismiss" @click=${this.onCloseWhatsNew}}><span class="fas fa-times"></span> close</a>
-        </h3>
-        <div class="columns">
-          todo
-        </div>
       </div>
     `
   }
@@ -265,11 +247,6 @@ class DesktopApp extends LitElement {
     await beaker.datLegacy.remove(archive.key)
     this.legacyArchives.splice(this.legacyArchives.indexOf(archive), 1)
     toast.create('Archive removed')
-    this.requestUpdate()
-  }
-
-  onCloseWhatsNew (e) {
-    localStorage.seenWhatsNew = '1.0'
     this.requestUpdate()
   }
 }
