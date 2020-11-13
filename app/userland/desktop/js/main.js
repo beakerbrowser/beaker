@@ -81,7 +81,7 @@ class DesktopApp extends LitElement {
   }
 
   renderSupportBanner () {
-    if (localStorage.lastDismissedSupportBanner >= CURRENT_VERSION) {
+    if (localStorage.hasDismissedSupportBanner) {
       return ''
     }
     return html`
@@ -205,7 +205,7 @@ class DesktopApp extends LitElement {
   // =
 
   onCloseSupportBanner (e) {
-    localStorage.lastDismissedSupportBanner = CURRENT_VERSION
+    localStorage.hasDismissedSupportBanner = 1
     this.requestUpdate()
   }
 
