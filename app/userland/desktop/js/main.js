@@ -1,6 +1,5 @@
 import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
 import { repeat } from 'beaker://app-stdlib/vendor/lit-element/lit-html/directives/repeat.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
 import { AddLinkPopup } from './com/add-link-popup.js'
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
@@ -64,9 +63,9 @@ class DesktopApp extends LitElement {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div id="topright">
+        <a href="#" @click=${this.onClickNewHyperdrive}>+ New Hyperdrive</a>
         <a href="beaker://library/" title="Library">My Library</a>
         <a href="https://docs.beakerbrowser.com/" title="Help">Help</a>
-        <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
       </div>
       ${this.renderSupportBanner()}
       <main>
@@ -189,6 +188,12 @@ class DesktopApp extends LitElement {
   onCloseSupportBanner (e) {
     localStorage.hasDismissedSupportBanner = 1
     this.requestUpdate()
+  }
+
+  async onClickNewHyperdrive (e) {
+    var drive = await beaker.hyperdrive.createDrive()
+    toast.create('Drive created')
+    beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
   }
 
   async onClickNewBookmark (e, pinned) {
