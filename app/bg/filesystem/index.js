@@ -278,14 +278,13 @@ export async function migrateAddressBook () {
   }
   addressBook.profiles = addressBook.profiles && Array.isArray(addressBook.profiles) ? addressBook.profiles : []
   addressBook.contacts = addressBook.contacts && Array.isArray(addressBook.contacts) ? addressBook.contacts : []
-  for (let profile of addressBook.profiles) {
-    if (!drives.find(d => d.key === profile.key)) {
-      drives.push({key: profile.key, tags: ['user-profile']})
-    }
-  }
-  for (let contact of addressBook.contacts) {
-    if (!drives.find(d => d.key === contact.key)) {
-      drives.push({key: contact.key, tags: ['user-profile']})
+  var profiles = addressBook.profiles.concat(addressBook.contacts)
+  for (let profile of profiles) {
+    let existing = drives.find(d => d.key === profile.key)
+    if (!existing) {
+      drives.push({key: profile.key, tags: ['contact']})
+    } else {
+      existing.tags = (existing.tags || []).concat(['contact'])
     }
   }
   await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))

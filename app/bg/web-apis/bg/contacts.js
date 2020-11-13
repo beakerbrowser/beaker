@@ -19,7 +19,7 @@ export default {
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
   async requestProfile () {
-    var url = await shellAPI.selectDriveDialog.call(this, {tag: 'user-profile', writable: true})
+    var url = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', writable: true})
     let info = await drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
     return {
       url,
@@ -32,7 +32,7 @@ export default {
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
   async requestContact () {
-    var url = await shellAPI.selectDriveDialog.call(this, {tag: 'user-profile', writable: false})
+    var url = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', writable: false})
     let info = await drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
     return {
       url,
@@ -45,7 +45,7 @@ export default {
    * @returns {Promise<Array<BeakerContactPublicAPIContactRecord>>}
    */
   async requestContacts () {
-    var urls = await shellAPI.selectDriveDialog.call(this, {tag: 'user-profile', multiple: true, writable: false})
+    var urls = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', multiple: true, writable: false})
     let infos = await Promise.all(urls.map(url => (
       drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
     )))
