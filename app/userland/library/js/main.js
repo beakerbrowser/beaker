@@ -28,7 +28,7 @@ export class LibraryApp extends LitElement {
     this.view = ''
     const getView = () => {
       var view = location.pathname.slice(1)
-      return view === '' ? 'sites' : view
+      return view === '' ? 'drives' : view
     }
     this.setView(getView())
     window.addEventListener('popstate', (event) => {
@@ -88,14 +88,14 @@ export class LibraryApp extends LitElement {
       <div class="layout">
         <nav>
           <div class="page-nav">
-            ${pageNav('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
+            ${pageNav('drives', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Hyperdrives</span>`)}
             ${pageNav('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
             ${pageNav('history', html`<span class="fas fa-fw fa-history"></span> <span class="label">History</span>`)}
             ${pageNav('downloads', html`<span class="fas fa-fw fa-arrow-down"></span> <span class="label">Downloads</span>`)}
           </div>
         </nav>
         <main>
-          ${this.view === 'sites' ? html`
+          ${this.view === 'drives' ? html`
             <drives-view class="full-size" .filter=${this.filter} loadable></drives-view>
           ` : ''}
           ${this.view === 'bookmarks' ? html`
@@ -113,9 +113,9 @@ export class LibraryApp extends LitElement {
   }
 
   renderNewBtn () {
-    if (this.view === 'sites') {
+    if (this.view === 'drives') {
       return html`
-        <span class="new-btn"><button @click=${this.onCreateSite}>New Site</button></span>
+        <span class="new-btn"><button @click=${this.onCreateSite}>New Hyperdrive</button></span>
       `
     }
     if (this.view === 'bookmarks') {

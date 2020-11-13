@@ -95,7 +95,7 @@ export class DrivesView extends LitElement {
       },
       {type: 'separator'},
       {
-        label: 'Site Properties',
+        label: 'Drive Properties',
         click: () => this.driveProps(drive)
       },
       {

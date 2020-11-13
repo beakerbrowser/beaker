@@ -52,7 +52,7 @@ class Identity extends LitElement {
             <div class="field-group"><div class="identity">This is your private drive</div></div>
           ` : this.cert.driveInfo.writable ? html`
             <div class="field-group">
-              <div class="identity">You created this site</div>
+              <div class="identity">You created this Hyperdrive</div>
             </div>
           ` : html`
             <div class="field-group">No identity information found</div>

@@ -363,7 +363,7 @@ class SiteInfoApp extends LitElement {
         } : undefined,
         {
           icon: 'far fa-fw fa-list-alt',
-          label: 'Site Properties',
+          label: 'Hyperdrive Properties',
           click: () => this.onDriveProps()
         }
       ].filter(Boolean)

@@ -235,8 +235,8 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
       return html`<span>Download ${permOpts.filename}</span>`
 
     case 'createDrive':
-      if (permOpts.title) return `Create a new Site, "${permOpts.title}"`
-      return 'Create a new Site'
+      if (permOpts.title) return `Create a new hyperdrive, "${permOpts.title}"`
+      return 'Create a new hyperdrive'
 
     case 'modifyDrive':
       {
