@@ -115,7 +115,7 @@ export class LibraryApp extends LitElement {
   renderNewBtn () {
     if (this.view === 'drives') {
       return html`
-        <span class="new-btn"><button @click=${this.onCreateSite}>New Hyperdrive</button></span>
+        <span class="new-btn"><button @click=${this.onCreateDrive}>New Hyperdrive</button></span>
       `
     }
     if (this.view === 'bookmarks') {
@@ -129,10 +129,13 @@ export class LibraryApp extends LitElement {
   // events
   // =
 
-  async onCreateSite () {
+  async onCreateDrive () {
     var drive = await beaker.hyperdrive.createDrive()
     toast.create('Drive created')
     beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
+    if (this.view === 'drives') {
+      this.shadowRoot.querySelector('drives-view').load()
+    }
   }
 
   async onCreateBookmark () {
