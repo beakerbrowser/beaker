@@ -114,6 +114,7 @@ class AddDriveModal extends LitElement {
         this.error = 'Unable to find this site on the network'
       } else {
         this.info = info
+        this.tags = Array.from(new Set(info.tags.concat(this.tags.split(' ')))).join(' ')
       }
     } catch (e) {
       this.cbs.reject(e.message)
@@ -189,7 +190,7 @@ class AddDriveModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
     if (this.info) {
-      this.cbs.resolve({key: this.info.key, tags: this.tags})
+      this.cbs.resolve({key: this.info.key, tags: this.tags.split(' ')})
     } else {
       this.tryFetch()
     }

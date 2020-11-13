@@ -162,10 +162,11 @@ class DrivePropertiesModal extends LitElement {
   }
 
   renderProp (key, value) {
+    var writable = key === 'tags' || this.writable
     return html`
-      <div class="prop ${this.writable ? '.writable' : ''}">
+      <div class="prop ${writable ? 'writable' : ''}">
         <div class="key">${ucfirst(key)}</div>
-        <input type="text" name=${key} value=${value} ?readonly=${!this.writable} @change=${this.onInputChange}>
+        <input type="text" name=${key} value=${value} ?readonly=${!writable} @change=${this.onInputChange}>
       </div>
     `
   }
@@ -184,10 +185,6 @@ class DrivePropertiesModal extends LitElement {
 
   async onSubmit (e) {
     e.preventDefault()
-
-    if (!this.writable) {
-      return this.cbs.resolve()
-    }
 
     var newProps = Object.fromEntries(new FormData(e.currentTarget))
     newProps.tags = newProps.tags.split(' ')

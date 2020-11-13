@@ -216,7 +216,7 @@ export default {
 
         // manifest updates
         let manifestUpdates = pick(settings, DRIVE_CONFIGURABLE_FIELDS)
-        if (Object.keys(manifestUpdates).length === 0) {
+        if (!drive.writable || Object.keys(manifestUpdates).length === 0) {
           // no manifest updates
           return
         }
