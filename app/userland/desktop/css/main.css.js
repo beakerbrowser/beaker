@@ -14,6 +14,10 @@ ${spinnerCSS}
   display: block;
 }
 
+a:hover {
+  text-decoration: underline;
+}
+
 .hidden {
   display: none !important;
 }
@@ -41,19 +45,28 @@ input:focus {
   font-size: 11px;
 }
 
-.no-feed-view {
-  margin: 30vh 0px 0;
+#support-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  text-align: center;
+  padding: 28px;
+  background: var(--bg-color--light);
+  color: var(--text-color--link);
+  font-size: 16px;
+}
+
+#support-banner .dismiss {
+  color: var(--text-color--light);
+  margin-left: 5px;
 }
 
 .release-notice {
-  position: relative;
   width: 100%;
-  padding: 12px 18px;
   font-size: 14px;
   letter-spacing: 0.5px;
   text-align: center;
-  background: var(--bg-color--light);
-  border-top: 1px solid var(--border-color--light);
 }
 
 .release-notice .view-release-notes:hover {
@@ -62,11 +75,6 @@ input:focus {
 
 .release-notice .fa-rocket {
   margin-right: 5px;
-}
-
-.release-notice .close {
-  color: var(--text-color--very-light);
-  float: right;
 }
 
 header {

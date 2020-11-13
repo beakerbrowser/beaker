@@ -12,16 +12,8 @@ import css from '../css/main.css.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
-const CURRENT_VERSION = VERSION_ID(1, 0, 0, 7)
-const RELEASES = [
-  { label: '1.0 - Beta 7', url: 'https://beakerbrowser.com/2020/07/15/beaker-1-0-beta-7.html' },
-  { label: '1.0 - Beta 6', url: 'https://beakerbrowser.com/2020/07/10/beaker-1-0-beta-6.html' },
-  { label: '1.0 - Beta 5', url: 'https://beakerbrowser.com/2020/06/19/beaker-1-0-beta-5.html' },
-  { label: '1.0 - Beta 4', url: 'https://beakerbrowser.com/2020/06/04/beaker-1-0-beta-4.html' },
-  { label: '1.0 - Beta 3', url: 'https://beakerbrowser.com/2020/05/28/beaker-1-0-beta-3.html' },
-  { label: '1.0 - Beta 2', url: 'https://beakerbrowser.com/2020/05/20/beaker-1-0-beta-2.html' },
-  { label: '1.0 - Beta 1', url: 'https://beakerbrowser.com/2020/05/14/beaker-1-0-beta.html' }
-]
+const CURRENT_VERSION = VERSION_ID(1, 0, 0, 8)
+const RELEASE = { label: '1.0', url: 'https://beakerbrowser.com/2020/11/30/beaker-1-0.html' }
 
 class DesktopApp extends LitElement {
   static get properties () {
@@ -44,9 +36,8 @@ class DesktopApp extends LitElement {
 
     this.load()
 
-    if (!localStorage.lastDismissedReleaseNotice) {
-      localStorage.lastDismissedReleaseNotice = CURRENT_VERSION
-    }
+    this.lastDismissedReleaseNotice = localStorage.lastDismissedReleaseNotice
+    localStorage.lastDismissedReleaseNotice = CURRENT_VERSION
 
     window.addEventListener('focus', e => {
       this.load()
@@ -77,9 +68,10 @@ class DesktopApp extends LitElement {
         <a href="https://docs.beakerbrowser.com/" title="Help">Help</a>
         <a href="beaker://settings/" title="Settings"><span class="fas fa-fw fa-cog"></span></a>
       </div>
-      ${this.renderReleaseNotice()}
+      ${this.renderSupportBanner()}
       <main>
         <div class="onecol">
+          ${this.renderReleaseNotice()}
           ${this.renderPins()}
           ${this.renderWhatsNew()}
           ${this.renderLegacyArchivesNotice()}
@@ -88,18 +80,32 @@ class DesktopApp extends LitElement {
     `
   }
 
+  renderSupportBanner () {
+    if (localStorage.lastDismissedSupportBanner >= CURRENT_VERSION) {
+      return ''
+    }
+    return html`
+      <div id="support-banner">
+        <a href="https://patreon.com/andrew_maf_and_paul" title="Support Beaker" target="_blank">
+          <span class="far fa-fw fa-heart"></span>
+          Support Beaker through Patreon and help us build peer-to-peer software!
+        </a>
+        <a class="dismiss" href="#" @click=${this.onCloseSupportBanner}><span class="fas fa-times"></span></a>
+      </div>
+    `
+  }
+
   renderReleaseNotice () {
-    if (localStorage.lastDismissedReleaseNotice >= CURRENT_VERSION) {
+    if (this.lastDismissedReleaseNotice >= CURRENT_VERSION) {
       return ''
     }
     return html`
       <div class="release-notice">
-        <a href=${RELEASES[0].url} class="view-release-notes" @click=${this.onCloseReleaseNotes} target="_blank">
+        <a href=${RELEASE.url} class="view-release-notes" target="_blank">
           <span class="fas fa-fw fa-rocket"></span>
-          <strong>Welcome to Beaker ${RELEASES[0].label}!</strong>
+          <strong>Welcome to Beaker ${RELEASE.label}!</strong>
           Click here to see what's new.
         </a>
-        <a class="close" @click=${this.onCloseReleaseNotes}><span class="fas fa-times"></span></a>
       </div>
     `
   }
@@ -198,25 +204,9 @@ class DesktopApp extends LitElement {
   // events
   // =
 
-  onClickReleaseNotes (e) {
-    e.preventDefault()
-    e.stopPropagation()
-    const items = RELEASES.slice().reverse().map(({label, url}) => ({
-      icon: false,
-      label: `Beaker ${label}`,
-      click: () => window.open(url)
-    }))
-    var rect = e.currentTarget.getClientRects()[0]
-    contextMenu.create({
-      x: rect.left - 5,
-      y: rect.bottom + 15,
-      noBorders: true,
-      roomy: true,
-      top: true,
-      right: true,
-      items,
-      fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css'
-    })
+  onCloseSupportBanner (e) {
+    localStorage.lastDismissedSupportBanner = CURRENT_VERSION
+    this.requestUpdate()
   }
 
   async onClickNewBookmark (e, pinned) {
