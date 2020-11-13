@@ -61,17 +61,17 @@ export default {
    * @returns {Promise<void>}
    */
   async requestAddContact (url) {
-    throw new Error('The beaker.contacts API has been deprecated')
+    return shellAPI.saveDriveDialog.call(this, url, {tags: 'contact'})
   },
 
   /**
    * @returns {Promise<Array<BeakerContactPublicAPIContactRecord>>}
    */
   async list () {
-    throw new Error('The beaker.contacts API has been deprecated')
+    return shellAPI.listDrives.call(this, {tag: 'contact', writable: false})
   },
 
   async remove (url) {
-    throw new Error('The beaker.contacts API has been deprecated')
+    return shellAPI.unsaveDrive.call(this, url)
   }
 }

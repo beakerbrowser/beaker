@@ -4,6 +4,7 @@ import * as bg from './bg-process-rpc'
 import _debounce from 'lodash.debounce'
 import { ipcRenderer } from 'electron'
 import './setup'
+import './add-drive'
 import './create-drive'
 import './fork-drive'
 import './folder-sync'
@@ -72,6 +73,8 @@ class ModalsWrapper extends LitElement {
     switch (this.currentModal) {
       case 'setup':
         return html`<setup-modal></setup-modal>`
+      case 'add-drive':
+        return html`<add-drive-modal></add-drive-modal>`
       case 'create-drive':
         return html`<create-drive-modal></create-drive-modal>`
       case 'fork-drive':

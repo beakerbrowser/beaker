@@ -3,10 +3,11 @@ import pda from 'pauls-dat-api2'
 import * as modals from '../../ui/subwindows/modals'
 import * as prompts from '../../ui/subwindows/prompts'
 import * as drives from '../../hyper/drives'
-import { getDriveConfig } from '../../filesystem/index'
+import { getDriveConfig, configDrive, listDrives, removeDrive } from '../../filesystem/index'
 import { lookupDrive } from './hyperdrive'
 import { parseDriveUrl } from '../../../lib/urls'
 import { joinPath } from '../../../lib/strings'
+import * as permissions from '../../ui/permissions'
 import assert from 'assert'
 import { UserDeniedError, ArchiveNotWritableError } from 'beaker-error-constants'
 import _pick from 'lodash.pick'
@@ -14,6 +15,13 @@ import * as wcTrust from '../../wc-trust'
 
 // typedefs
 // =
+
+/**
+ * @typedef {Object} BeakerShellPublicAPIDriveRecord
+ * @prop {string} url
+ * @prop {string} title
+ * @prop {string} description
+ */
 
 // exported api
 // =
@@ -126,7 +134,8 @@ export default {
    * @param {string} [opts.buttonLabel]
    * @param {boolean} [opts.writable]
    * @param {string} [opts.tag]
-   * @returns {Promise<string[]>}
+   * @param {boolean} [opts.multiple]
+   * @returns {Promise<string|string[]>}
    */
   async selectDriveDialog (opts = {}) {
     // validate
@@ -135,6 +144,7 @@ export default {
     assert(!opts.buttonLabel || typeof opts.buttonLabel === 'string', '.buttonLabel must be a string')
     assert(!opts.tag || typeof opts.tag === 'string', '.tag must be a string')
     assert(!opts.writable || typeof opts.writable === 'boolean', '.writable must be a boolean')
+    assert(!opts.multiple || typeof opts.multiple === 'boolean', '.multiple must be a boolean')
 
     // initiate the modal
     var res
@@ -151,8 +161,80 @@ export default {
         throw e // only rethrow if a specific error
       }
     }
-    if (!res || !res.url) throw new UserDeniedError()
-    return res.url
+    if (!res) throw new UserDeniedError()
+    return res.urls || res.url
+  },
+
+  /**
+   * @param {Object} [opts]
+   * @param {string} [opts.tags]
+   * @returns {Promise<void>}
+   */
+  async saveDriveDialog (url, {tags} = {tags: ''}) {
+    if (Array.isArray(tags)) {
+      tags = tags.filter(t => typeof t === 'string').join(' ')
+    } else if (typeof tags !== 'string') {
+      tags = ''
+    }
+
+    var res
+    try {
+      res = await modals.create(this.sender, 'add-drive', {url, tags})
+    } catch (e) {
+      if (e.name !== 'Error') {
+        throw e // only rethrow if a specific error
+      }
+    }
+    if (!res) throw new UserDeniedError()
+    await configDrive(res.key, {tags: res.tags})
+  },
+
+  /**
+   * @param {Object} [opts]
+   * @param {boolean} [opts.writable]
+   * @param {string} [opts.tag]
+   * @returns {Promise<BeakerShellPublicAPIDriveRecord[]>}
+   */
+  async listDrives (opts = {}) {
+    // validate
+    assert(opts && typeof opts === 'object', 'Must pass an options object')
+    assert(!opts.tag || typeof opts.tag === 'string', '.tag must be a string')
+    assert(!opts.writable || typeof opts.writable === 'boolean', '.writable must be a boolean')
+
+    let perm = opts.tag ? `listDrives:${opts.tag || ''}` : 'listDrives'
+    if (!(await permissions.requestPermission(perm, this.sender))) {
+      throw new UserDeniedError()
+    }
+
+    let drivesList = listDrives()
+    let records = []
+    for (let drive of drivesList) {
+      let url = `hyper://${drive.key}/`
+      let info = await drives.getDriveInfo(drive.key, {onlyCache: true})
+      if (typeof opts.writable === 'boolean' && info.writable !== opts.writable) {
+        continue
+      }
+      if (typeof opts.tag === 'string' && !drive.tags?.includes?.(opts.tag)) {
+        continue
+      }
+      records.push({url, title: info.title, description: info.description})
+    }
+    return records
+  },
+
+  async unsaveDrive (url) {
+    // validate
+    assert(url && typeof url === 'string', 'Must provide a URL string')
+
+    var key = await drives.fromURLToKey(url, true)
+    var cfg = getDriveConfig(key)
+    if (cfg) {
+      var info = await drives.getDriveInfo(key, {onlyCache: true})
+      if (!(await permissions.requestPermission(`deleteDrive:${key}`, this.sender, { title: info.title }))) {
+        throw new UserDeniedError()
+      }
+      await removeDrive(key)
+    }
   },
 
   async importFilesAndFolders (url, filePaths) {

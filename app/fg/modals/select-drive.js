@@ -12,7 +12,7 @@ class SelectDriveModal extends LitElement {
       currentTitleFilter: {type: String},
       title: {type: String},
       description: {type: String},
-      selectedDriveUrl: {type: String}
+      selection: {type: Array}
     }
   }
 
@@ -156,7 +156,7 @@ class SelectDriveModal extends LitElement {
 
     // state
     this.currentTitleFilter = ''
-    this.selectedDriveUrl = ''
+    this.selection = []
     this.drives = undefined
 
     // params
@@ -164,6 +164,7 @@ class SelectDriveModal extends LitElement {
     this.buttonLabel = 'Select'
     this.tag = null
     this.writable = undefined
+    this.multiple = undefined
     this.cbs = null
   }
 
@@ -173,6 +174,7 @@ class SelectDriveModal extends LitElement {
     this.buttonLabel = params.buttonLabel || 'Select'
     this.tag = params.tag
     this.writable = params.writable
+    this.multiple = params.multiple
     await this.requestUpdate()
     this.adjustHeight()
 
@@ -190,7 +192,7 @@ class SelectDriveModal extends LitElement {
   }
 
   get hasValidSelection () {
-    return !!this.selectedDriveUrl || isDriveUrl(this.currentTitleFilter)
+    return this.selection.length > 0 || isDriveUrl(this.currentTitleFilter)
   }
 
   // rendering
@@ -207,7 +209,7 @@ class SelectDriveModal extends LitElement {
             ${this.renderFilters()}
             <div class="filter-container">
               <i class="fa fa-search"></i>
-              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a site">
+              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a hyperdrive">
             </div>
             ${isDriveUrl(this.currentTitleFilter) ? html`
             ` : html`
@@ -217,7 +219,7 @@ class SelectDriveModal extends LitElement {
 
           <div class="form-actions">
             <div class="left">
-              ${this.writable !== false ? html`
+              ${this.writable !== false && !this.multiple ? html`
                 <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
                   Create new drive
                 </button>
@@ -272,7 +274,7 @@ class SelectDriveModal extends LitElement {
   }
 
   renderDrive (drive) {
-    var isSelected = this.selectedDriveUrl === drive.url
+    var isSelected = this.selection.includes(drive.url)
     return html`
       <div
         class="drive ${isSelected ? 'selected' : ''}"
@@ -295,18 +297,24 @@ class SelectDriveModal extends LitElement {
 
   onChangeTitleFilter (e) {
     this.currentTitleFilter = e.target.value.toLowerCase()
-    if (this.selectedDriveUrl && isDriveUrl(this.currentTitleFilter)) {
-      this.selectedDriveUrl = undefined
-    }
   }
 
   onChangeSelecteddrive (e) {
-    this.selectedDriveUrl = e.currentTarget.dataset.url
+    var url = e.currentTarget.dataset.url
+    if (this.multiple) {
+      if (this.selection.includes(url)) {
+        this.selection = this.selection.filter(u => u !== url)
+      } else {
+        this.selection = this.selection.concat([url])
+      }
+    } else {
+      this.selection = [url]
+    }
   }
 
   onDblClickdrive (e) {
     e.preventDefault()
-    this.selectedDriveUrl = e.currentTarget.dataset.url
+    this.selection = [e.currentTarget.dataset.url]
     this.onSubmit()
   }
 
@@ -321,7 +329,20 @@ class SelectDriveModal extends LitElement {
 
   onSubmit (e) {
     if (e) e.preventDefault()
-    this.cbs.resolve({url: this.selectedDriveUrl ? this.selectedDriveUrl : (new URL(this.currentTitleFilter)).origin})
+    if (this.selection.length) {
+      if (this.multiple) {
+        this.cbs.resolve({urls: this.selection})
+      } else {
+        this.cbs.resolve({url: this.selection[0]})
+      }
+    } else {
+      let url = (new URL(this.currentTitleFilter)).origin
+      if (this.multiple) {
+        this.cbs.resolve({urls: [url]})
+      } else {
+        this.cbs.resolve({url})
+      }
+    }
   }
 }
 
@@ -333,14 +354,5 @@ function isDriveUrl (v = '') {
     return urlp.protocol === 'hyper:'
   } catch (e) {
     return false
-  }
-}
-
-function toOrigin (v = '') {
-  try {
-    var urlp = new URL(v)
-    return urlp.protocol + '//' + urlp.hostname
-  } catch (e) {
-    return ''
   }
 }

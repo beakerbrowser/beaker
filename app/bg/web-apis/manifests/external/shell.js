@@ -3,6 +3,9 @@ export default {
   selectFileDialog: 'promise',
   saveFileDialog: 'promise',
   selectDriveDialog: 'promise',
+  saveDriveDialog: 'promise',
+  listDrives: 'promise',
+  unsaveDrive: 'promise',
 
   // internal
   importFilesAndFolders: 'promise',
