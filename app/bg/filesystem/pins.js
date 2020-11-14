@@ -15,7 +15,7 @@ export async function setup () {
   var pins = []
   for (let bookmark of await query(privateDrive, {path: '/bookmarks/*.goto'})) {
     if (bookmark.stat.metadata.pinned || bookmark.stat.metadata['beaker/pinned']) {
-      pins.push(normalizeUrl(bookmark.stat.metadata[METADATA_KEYS.href]))
+      pins.push(normalizeUrl(bookmark.stat.metadata.href))
       await privateDrive.pda.deleteMetadata(bookmark.path, ['pinned', 'beaker/pinned'])
     }
   }
