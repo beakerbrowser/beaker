@@ -214,9 +214,10 @@ class LocationBar extends LitElement {
 }
 LocationBar.styles = [css`
 .wrapper {
-  background: #fff;
+  background: var(--bg-color--default);
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+  color: var(--text-color--default);
 }
 
 .autocomplete-results {
@@ -250,7 +251,7 @@ LocationBar.styles = [css`
 .result .icon .fas,
 .result .icon .far {
   font-size: 13px;
-  color: #707070;
+  color: var(--text-color--result-icon);
 }
 
 .result .icon .fa-arrow-right {
@@ -268,7 +269,7 @@ LocationBar.styles = [css`
 }
 
 .result .title {
-  color: #222;
+  color: var(--text-color--result-title);
   font-size: 14px;
   letter-spacing: 0.2px;
 }
@@ -278,21 +279,21 @@ LocationBar.styles = [css`
 }
 
 .result .provenance {
-  color: #1f55c1;
+  color: var(--text-color--result-provenance);
   font-size: 12px;
 }
 
 .result .origin {
   margin-left: 6px;
-  color: #888;
+  color: var(--text-color--result-origin);
 }
 
 .result:hover {
-  background: #f0f0f0;
+  background: var(--bg-color--result--hover);
 }
 
 .result.selected {
-  background: #105de8;
+  background: var(--bg-color--result--selected);
   color: #fff;
 }
 
@@ -329,7 +330,7 @@ LocationBar.styles = [css`
 }
 
 .search-engines .list a:hover {
-  background: #f0f0f8;
+  background: var(--bg-color--search-engine--hover);
 }
 
 .search-engines .list a img {

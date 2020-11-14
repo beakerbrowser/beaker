@@ -64,7 +64,7 @@ class BrowserMenu extends LitElement {
 
         <div class="section">
           <div class="menu-item" @click=${e => this.onOpenPage(e, 'hyper://private')}>
-            <img class="favicon" src="asset:favicon:hyper://private/">
+            <i class="fas fa-lock"></i>
             <span class="label">My Private Drive</span>
           </div>
         </div>
@@ -289,7 +289,7 @@ BrowserMenu.styles = [commonCSS, css`
 
 .network-status {
   padding: 8px;
-  background: #fafafd;
+  background: var(--bg-color--bgtabs--main);
 }
 
 .network-status-title {

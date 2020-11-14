@@ -22,15 +22,15 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    --bg-color--main: #334;
-    --bg-color--light: #445;
-    --bg-color--nav--selected: #446;
-    --text-color--default: #ccd;
-    --text-color--link: #88c;
-    --text-color--verifier: #88a;
-    --border-color--default: #668;
-    --border-color--main: #557;
-    --border-color--forks: #557;
+    --bg-color--main: #333;
+    --bg-color--light: #444;
+    --bg-color--nav--selected: #444;
+    --text-color--default: #ccc;
+    --text-color--link: #888;
+    --text-color--verifier: #888;
+    --border-color--default: #666;
+    --border-color--main: #555;
+    --border-color--forks: #555;
     --box-shadow-color--main: rgba(0,0,0,.3);
   }
 }

@@ -41,7 +41,7 @@ button {
   button {
     --bg-color--button: #333;
     --bg-color--button--hover: #444;
-    --bg-color--button--active: #eee;
+    --bg-color--button--active: #555;
     --bg-color--button--pressed: #6d6d6d;
     --bg-color--button--disabled: #444;
     --bg-color--primary-button: #5289f7;

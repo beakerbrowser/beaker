@@ -10,7 +10,8 @@ textarea {
   border-radius: 4px;
   color: var(--text-color--default);
   background: var(--bg-color--default);
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--border-color--light);
+  box-sizing: border-box;
 }
 textarea {
   padding: 7px;

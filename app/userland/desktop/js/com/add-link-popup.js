@@ -16,6 +16,7 @@ export class AddLinkPopup extends BasePopup {
     return [buttonsCSS, popupsCSS, css`
     .popup-inner {
       width: 1000px;
+      background: var(--bg-color--default);
     }
 
     .popup-inner .body {
@@ -28,8 +29,8 @@ export class AddLinkPopup extends BasePopup {
 
     .filter-control {
       padding: 8px 10px;
-      background: #f1f1f6;
-      border-bottom: 1px solid #e0e0ee;
+      background: var(--bg-color--light);
+      border-bottom: 1px solid var(--border-color--light);
     }
 
     .filter-control input {
@@ -45,8 +46,8 @@ export class AddLinkPopup extends BasePopup {
 
     footer {
       padding: 8px 10px;
-      background: #f1f1f6;
-      border-top: 1px solid #e0e0ee;
+      background: var(--bg-color--light);
+      border-top: 1px solid var(--border-color--light);
       text-align: right;
     }
 
@@ -98,9 +99,8 @@ export class AddLinkPopup extends BasePopup {
       width: 80px;
       height: 64px;
       object-fit: scale-down;
-      background: #fff;
       margin: 0 20px 0 10px;
-      border: 1px solid #aaa;
+      border: 1px solid var(--border-color--light);
       border-radius: 3px;
     }
 
@@ -130,7 +130,7 @@ export class AddLinkPopup extends BasePopup {
     }
 
     .suggestion:hover {
-      background: #eee;
+      background: var(--bg-color--secondary);
     }
     `]
   }

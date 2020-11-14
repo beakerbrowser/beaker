@@ -8,6 +8,7 @@ textarea {
   color: var(--text-color--default);
   background: var(--bg-color--default);
   border: 1px solid #d9d9d9;
+  box-sizing: border-box;
 }
 textarea {
   padding: 7px;

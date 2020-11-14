@@ -396,7 +396,7 @@ class NavbarLocation extends LitElement {
     if (!this.dontShowAutocompleteOnNextFocus) {
       var rect = this.getClientRects()[0]
       bg.views.runLocationBarCmd('show', {
-        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0) + 1},
+        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0)},
         results: (await this.autocompleteState.bookmarksFetch).slice(0, 10)
       })
       this.isAutocompleteOpen = true

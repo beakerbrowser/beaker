@@ -1,5 +1,5 @@
 import {css} from '../../vendor/lit-element/lit-element.js'
-import buttonscss from '../buttons.css.js'
+import buttonscss from '../buttons2.css.js'
 import inputscss from '../inputs.css.js'
 const cssStr = css`
 ${buttonscss}
@@ -18,7 +18,7 @@ ${inputscss}
 }
 
 .popup-inner {
-  background: #fff;
+  background: var(--bg-color--default);
   box-shadow: 0 2px 25px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.55);
   border-radius: 4px;
@@ -97,7 +97,7 @@ ${inputscss}
 
 .popup-inner label {
   margin-bottom: 3px;
-  color: rgba(51, 51, 51, 0.9);
+  color: var(--text-color--light);
 }
 
 .popup-inner textarea,
@@ -116,7 +116,7 @@ ${inputscss}
   align-items: center;
   margin-top: 15px;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color--light);
 }
 
 .popup-inner .actions .left,
