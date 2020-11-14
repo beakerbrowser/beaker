@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost } from './windows'
 import { runSelectFileDialog, runForkFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
+import { getEnvVar } from '../lib/env'
 import * as tabManager from './tabs/manager'
 import * as viewZoom from './tabs/zoom'
 import * as shellMenus from './subwindows/shell-menus'
@@ -618,26 +619,6 @@ export function buildWindowMenu (opts = {}) {
     label: 'Developer',
     submenu: [
       {
-        type: 'submenu',
-        label: 'Advanced Tools',
-        submenu: [
-          {
-            label: 'Reload Shell-Window',
-            enabled: !noWindows,
-            click: function () {
-              win.webContents.reloadIgnoringCache()
-            }
-          },
-          {
-            label: 'Toggle Shell-Window DevTools',
-            enabled: !noWindows,
-            click: function () {
-              win.webContents.openDevTools({mode: 'detach'})
-            }
-          }
-        ]
-      },
-      {
         id: 'toggleDevTools',
         label: 'Toggle DevTools',
         enabled: !noWindows,
@@ -682,6 +663,29 @@ export function buildWindowMenu (opts = {}) {
         }
       }
     ]
+  }
+
+  if (getEnvVar('BEAKER_DEV_MODE')) {
+    developerMenu.submenu.unshift({
+      type: 'submenu',
+      label: 'Advanced Tools',
+      submenu: [
+        {
+          label: 'Reload Shell-Window',
+          enabled: !noWindows,
+          click: function () {
+            win.webContents.reloadIgnoringCache()
+          }
+        },
+        {
+          label: 'Toggle Shell-Window DevTools',
+          enabled: !noWindows,
+          click: function () {
+            win.webContents.openDevTools({mode: 'detach'})
+          }
+        }
+      ]
+    })
   }
 
   const gotoTabShortcut = index => ({
