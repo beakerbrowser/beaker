@@ -72,7 +72,7 @@ In Windows, you'll need to install [Python 2.7](https://www.python.org/downloads
 
 ```powershell
 npm config set python c:/python27
-npm config set msvs_version 2015
+npm config set msvs_version 2017
 npm install -g node-gyp
 npm install -g gulp
 ```
