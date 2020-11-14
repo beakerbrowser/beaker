@@ -25,21 +25,21 @@ body {
 @media (prefers-color-scheme: dark) {
   body {
     --blue: #88c;
-    --border-color--default: #669;
-    --border-color--light: #558;
-    --text-color--default: #ccd;
-    --text-color--dark: #eef;
-    --text-color--lightish: #bbc;
-    --text-color--light: #aab;
-    --text-color--very-light: #557;
-    --text-color--subnav-item: #bbc;
-    --bg-color--default: #223;
-    --bg-color--light: #334;
-    --bg-color--message: #334;
-    --bg-color--subnav-item--hover: #445;
-    --bg-color--subnav-item--current: #556;
+    --border-color--default: #666;
+    --border-color--light: #555;
+    --text-color--default: #ccc;
+    --text-color--dark: #eee;
+    --text-color--lightish: #bbb;
+    --text-color--light: #aaa;
+    --text-color--very-light: #555;
+    --text-color--subnav-item: #bbb;
+    --bg-color--default: #222;
+    --bg-color--light: #333;
+    --bg-color--message: #333;
+    --bg-color--subnav-item--hover: #444;
+    --bg-color--subnav-item--current: #555;
 
-    background: #223;
-    color: #ccd;
+    background: #222;
+    color: #ccc;
   }
 }

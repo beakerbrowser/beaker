@@ -30,30 +30,30 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    --border-color--default: #669;
-    --border-color--light: #558;
-    --border-color--dark: #88a;
-    --border-color--semi-light: #447;
-    --border-color--very-light: #334;
+    --border-color--default: #666;
+    --border-color--light: #555;
+    --border-color--dark: #888;
+    --border-color--semi-light: #444;
+    --border-color--very-light: #333;
     --border-color--private-light: #3a5a4c;
     --border-color--unread: #9497f5;
-    --text-color--default: #ccd;
-    --text-color--lightish: #bbc;
-    --text-color--light: #aab;
-    --text-color--pretty-light: #99a;
-    --text-color--very-light: #557;
+    --text-color--default: #ccc;
+    --text-color--lightish: #bbb;
+    --text-color--light: #aaa;
+    --text-color--pretty-light: #999;
+    --text-color--very-light: #555;
     --text-color--link: #5d80ff;
     --text-color--result-link: #587bfb;
     --text-color--markdown-link: #5d80ff;
     --text-color--private-default: #69a59e;
     --text-color--private-link: #04a294;
-    --bg-color--default: #223;
-    --bg-color--secondary: #1b1b2b;
-    --bg-color--light: #334;
-    --bg-color--semi-light: #445;
+    --bg-color--default: #222;
+    --bg-color--secondary: #1b1b1b;
+    --bg-color--light: #333;
+    --bg-color--semi-light: #444;
     --bg-color--private-light: #202f2f;
     --bg-color--private-semi-light: #354a48;
-    --bg-color--light-highlight: #3e3e5a;
+    --bg-color--light-highlight: #3e3e3a;
     --bg-color--selected: var(--text-color--link);
     --bg-color--unread: #333658;
   }

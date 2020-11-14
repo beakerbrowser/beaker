@@ -39,23 +39,23 @@ button {
 
 @media (prefers-color-scheme: dark) {
   button {
-    --bg-color--button: #335;
-    --bg-color--button--hover: #446;
+    --bg-color--button: #333;
+    --bg-color--button--hover: #444;
     --bg-color--button--active: #eee;
-    --bg-color--button--pressed: #6d6d79;
-    --bg-color--button--disabled: #445;
+    --bg-color--button--pressed: #6d6d6d;
+    --bg-color--button--disabled: #444;
     --bg-color--primary-button: #5289f7;
     --bg-color--primary-button--hover: rgb(73, 126, 234);
     --bg-color--transparent-button: transparent;
-    --bg-color--transparent-button--hover: #445;
+    --bg-color--transparent-button--hover: #444;
     --bg-color--transparent-button--pressed: rgba(0,0,0,.1);
     --bg-color--button-gray: #fafafa;
     --bg-color--button-gray--hover: #f5f5f5;
-    --text-color--button: #ccd;
+    --text-color--button: #ccc;
     --text-color--button--pressed: #fff;
-    --text-color--button--disabled: #aac;
+    --text-color--button--disabled: #aaa;
     --text-color--primary-button: #fff;
-    --border-color--button: #779;
+    --border-color--button: #777;
     --border-color--primary-button: #2864dc;
     --box-shadow-color--button: rgba(0,0,0,.05);
     --box-shadow-color--button--hover: rgba(0,0,0,.5);
