@@ -195,7 +195,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   var frameSettings = {
     titleBarStyle: 'hidden',
     trafficLightPosition: {x: 12, y: 20},
-    frame: IS_LINUX,
+    frame: IS_LINUX || IS_WIN,
     title: undefined
   }
   var win = new BrowserWindow(Object.assign({

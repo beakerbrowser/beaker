@@ -162,6 +162,7 @@ class ShellWindowTabs extends LitElement {
   }
 
   get backgroundTrayBtn () {
+    if (!this.hasBgTabs) return ''
     const cls = classMap({
       'background-tray-btn': true,
       pressed: this.isBackgroundTrayOpen,
@@ -219,29 +220,30 @@ class ShellWindowTabs extends LitElement {
   }
 
   doMinimizeToBgAnim () {
-    var srcEl = this.shadowRoot.querySelector('.tab.current')
-    var dstEl = this.shadowRoot.querySelector('.tabs')
-    if (!srcEl) return console.warn('Minimize anim aborted; source element not found')
-    if (!dstEl) return console.warn('Minimize anim aborted; target element not found')
+    // DISABLED
+    // var srcEl = this.shadowRoot.querySelector('.tab.current')
+    // var dstEl = this.shadowRoot.querySelector('.tabs')
+    // if (!srcEl) return console.warn('Minimize anim aborted; source element not found')
+    // if (!dstEl) return console.warn('Minimize anim aborted; target element not found')
 
-    var src = srcEl.getClientRects()[0]
-    var dst = dstEl.getClientRects()[0]
-    var dist = Math.abs(src.left - dst.left)
-    var animElem = document.createElement('div')
-    animElem.classList.add('minimize-to-bg-anim-elem')
-    this.shadowRoot.append(animElem)
-    const px = v => `${v}px`
-    animElem.animate([
-      {left: px(src.left), top: px(src.top), width: px(src.width), height: px(src.height)},
-      {left: px(dst.left), top: px(dst.top), width: px(dst.width), height: px(dst.height)}
-    ], {iterations: 1, duration: Math.max(Math.min(dist / 6, 400), 100)}).onfinish = () => {
-      animElem.remove()
-      dstEl.animate([
-        {background: 'var(--bg-color--background)'},
-        {background: 'var(--bg-color--tab--hover)'},
-        {background: 'var(--bg-color--background)'}
-      ], {duration: 250, iterations: 1})
-    }
+    // var src = srcEl.getClientRects()[0]
+    // var dst = dstEl.getClientRects()[0]
+    // var dist = Math.abs(src.left - dst.left)
+    // var animElem = document.createElement('div')
+    // animElem.classList.add('minimize-to-bg-anim-elem')
+    // this.shadowRoot.append(animElem)
+    // const px = v => `${v}px`
+    // animElem.animate([
+    //   {left: px(src.left), top: px(src.top), width: px(src.width), height: px(src.height)},
+    //   {left: px(dst.left), top: px(dst.top), width: px(dst.width), height: px(dst.height)}
+    // ], {iterations: 1, duration: Math.max(Math.min(dist / 6, 400), 100)}).onfinish = () => {
+    //   animElem.remove()
+    //   dstEl.animate([
+    //     {background: 'var(--bg-color--background)'},
+    //     {background: 'var(--bg-color--tab--hover)'},
+    //     {background: 'var(--bg-color--background)'}
+    //   ], {duration: 250, iterations: 1})
+    // }
   }
 
   // events
@@ -390,16 +392,15 @@ ${spinnerCSS}
   height: 34px;
 }
 
-.shell.win32 {
-  padding-right: 140px;
-}
-
 .tabs {
   display: flex;
-  padding: 0 18px 0 10px;
+  padding: 0 18px 0 0;
   border-bottom: 1px solid var(--border-color--tab);
   height: 33px;
-  max-width: calc(100% - 38px);
+}
+
+.shell:not(.darwin) .tabs > :first-child {
+  border-left: 0;
 }
 
 .background-tray-btn {
@@ -644,7 +645,7 @@ ${spinnerCSS}
   padding-left: 75px;
 }
 .darwin.fullscreen .tabs {
-  padding-left: 10px; /* not during fullscreen */
+  padding-left: 0px; /* not during fullscreen */
 }
 
 .minimize-to-bg-anim-elem {
