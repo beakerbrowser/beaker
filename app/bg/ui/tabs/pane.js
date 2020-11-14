@@ -118,8 +118,7 @@ export class Pane extends EventEmitter {
         safeDialogs: true
       }
     })
-    // NOTE doesnt actually work yet, see https://github.com/electron/electron/issues/20447
-    this.browserView.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#223' : '#fff')
+    this.browserView.setBackgroundColor('#fff')
 
     // webview state
     this.loadingURL = null // URL being loaded, if any
