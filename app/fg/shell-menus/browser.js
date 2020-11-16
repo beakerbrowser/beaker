@@ -191,7 +191,7 @@ class BrowserMenu extends LitElement {
 }
 BrowserMenu.styles = [commonCSS, css`
 .wrapper {
-  width: 220px;
+  width: 250px;
 }
 
 .wrapper::-webkit-scrollbar {
