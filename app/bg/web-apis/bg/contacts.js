@@ -45,7 +45,7 @@ export default {
    * @returns {Promise<Array<BeakerContactPublicAPIContactRecord>>}
    */
   async requestContacts () {
-    var urls = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', multiple: true, writable: false})
+    var urls = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', allowMultiple: true, writable: false})
     let infos = await Promise.all(urls.map(url => (
       drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
     )))

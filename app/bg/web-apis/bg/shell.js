@@ -134,7 +134,7 @@ export default {
    * @param {string} [opts.buttonLabel]
    * @param {boolean} [opts.writable]
    * @param {string} [opts.tag]
-   * @param {boolean} [opts.multiple]
+   * @param {boolean} [opts.allowMultiple]
    * @returns {Promise<string|string[]>}
    */
   async selectDriveDialog (opts = {}) {
@@ -144,7 +144,7 @@ export default {
     assert(!opts.buttonLabel || typeof opts.buttonLabel === 'string', '.buttonLabel must be a string')
     assert(!opts.tag || typeof opts.tag === 'string', '.tag must be a string')
     assert(!opts.writable || typeof opts.writable === 'boolean', '.writable must be a boolean')
-    assert(!opts.multiple || typeof opts.multiple === 'boolean', '.multiple must be a boolean')
+    assert(!opts.allowMultiple || typeof opts.allowMultiple === 'boolean', '.allowMultiple must be a boolean')
 
     // initiate the modal
     var res

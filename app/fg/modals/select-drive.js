@@ -164,7 +164,7 @@ class SelectDriveModal extends LitElement {
     this.buttonLabel = 'Select'
     this.tag = null
     this.writable = undefined
-    this.multiple = undefined
+    this.allowMultiple = undefined
     this.cbs = null
   }
 
@@ -174,7 +174,7 @@ class SelectDriveModal extends LitElement {
     this.buttonLabel = params.buttonLabel || 'Select'
     this.tag = params.tag
     this.writable = params.writable
-    this.multiple = params.multiple
+    this.allowMultiple = params.allowMultiple
     await this.requestUpdate()
     this.adjustHeight()
 
@@ -219,7 +219,7 @@ class SelectDriveModal extends LitElement {
 
           <div class="form-actions">
             <div class="left">
-              ${this.writable !== false && !this.multiple ? html`
+              ${this.writable !== false && !this.allowMultiple ? html`
                 <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
                   Create new drive
                 </button>
@@ -301,7 +301,7 @@ class SelectDriveModal extends LitElement {
 
   onChangeSelecteddrive (e) {
     var url = e.currentTarget.dataset.url
-    if (this.multiple) {
+    if (this.allowMultiple) {
       if (this.selection.includes(url)) {
         this.selection = this.selection.filter(u => u !== url)
       } else {
@@ -330,14 +330,14 @@ class SelectDriveModal extends LitElement {
   onSubmit (e) {
     if (e) e.preventDefault()
     if (this.selection.length) {
-      if (this.multiple) {
+      if (this.allowMultiple) {
         this.cbs.resolve({urls: this.selection})
       } else {
         this.cbs.resolve({url: this.selection[0]})
       }
     } else {
       let url = (new URL(this.currentTitleFilter)).origin
-      if (this.multiple) {
+      if (this.allowMultiple) {
         this.cbs.resolve({urls: [url]})
       } else {
         this.cbs.resolve({url})
