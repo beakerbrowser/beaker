@@ -6,15 +6,43 @@
 @import "beaker://app-stdlib/css/com/spinner.css";
 
 body {
+  --color-summary: #445;
   --color-folder: #9ec2e0;
   --color-mount: #9ec2e0;
   --color-file: #9a9aab;
   --color-itemname: #333;
   --color-itemname-selected: #333;
   --color-selected-bg: #d3e2ff;
+  --color-nav-header: #60606c;
   --color-nav-header-bg: #fff;
+  --color-nav-bg: #fff;
+  --color-nav-h4: #60606c;
+  --color-compare-dif-item-content: #445;
+  --color-compare-dif-item-content-bg: #fff;
   font-size: 13px;
   background: #fff;
+}
+
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --color-summary: #ddd;
+    --color-folder: #9ec2e0;
+    --color-mount: #9ec2e0;
+    --color-file: #9a9a9a;
+    --color-itemname: #ddd;
+    --color-itemname-selected: #ddd;
+    --color-selected-bg: #333;
+    --color-nav-header: #ddd;
+    --color-nav-header-bg: #222;
+    --color-nav-bg: #222;
+    --color-nav-h4: #ddd;
+    --color-compare-dif-item-content: #ddd;
+    --color-compare-dif-item-content-bg: #222;
+
+    background: #222;
+    color: #ccc;
+  }
 }
 
 a {
@@ -91,7 +119,7 @@ nav {
   position: relative;
   width: 300px;
   padding-bottom: 10px;
-  background: #fff;
+  background: var(--color-nav-bg);
   border-right: 1px solid var(--border-color--semi-light);
   overflow: auto;
 }
@@ -102,7 +130,7 @@ nav .nav-header {
   top: 0;
   height: 35px;
   background-color: var(--color-nav-header-bg);
-  color: #60606c;
+  color: var(--color-nav-header);
   line-height: 35px;
   padding: 0 12px;
 }
@@ -119,9 +147,8 @@ nav h4 {
   position: sticky;
   z-index: 1;
   top: 35px;
-  color: #60606c;
+  color: var(--color-nav-h4);
   font-weight: normal;
-  background: #fff;
   padding: 5px 10px;
   margin: 0;
   user-select: none;
@@ -210,7 +237,7 @@ compare-diff-item .item.selected .path {
   padding: 4px 24px;
   font-size: 19px;
   letter-spacing: 1.2px;
-  color: #445;
+  color: var(--color-summary);
 }
 
 .summary.error {
@@ -303,7 +330,7 @@ compare-diff-item .item.selected .revision-indicator {
 
 compare-diff-item-content {
   display: block;
-  background: #fff;
+  background: var(--color-compare-dif-item-content-bg);
 }
 
 compare-diff-item-content .info {
@@ -313,7 +340,7 @@ compare-diff-item-content .info {
   line-height: 35px;
   padding: 0 12px;
   border-bottom: 1px solid var(--border-color--semi-light);
-  color: #445;
+  color: var(--color-compare-dif-item-content);
 }
 
 compare-diff-item-content .info button {
