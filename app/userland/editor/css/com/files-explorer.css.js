@@ -13,7 +13,7 @@ ${spinnercss}
 
 .empty {
   font-style: italic;
-  color: #eef7;
+  color: #eee7;
   padding: 10px 16px;
 }
 
@@ -24,8 +24,8 @@ ${spinnercss}
   color: #bbb;
   overflow-x: auto;
   white-space: nowrap;
-  border: 1px solid #556;
-  background: #445;
+  border: 1px solid #555;
+  background: #444;
 }
 
 .path a {

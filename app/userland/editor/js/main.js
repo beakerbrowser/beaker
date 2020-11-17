@@ -198,9 +198,9 @@ class EditorApp extends LitElement {
         monaco.editor.defineTheme('custom-dark', {
           base: 'vs-dark',
           inherit: true,
-          rules: [{ background: '222233' }],
+          rules: [{ background: '222222' }],
           colors: {
-            'editor.background': '#222233'
+            'editor.background': '#222222'
           }
         })
         let opts = {

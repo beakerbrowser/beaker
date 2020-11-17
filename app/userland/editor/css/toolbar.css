@@ -4,7 +4,7 @@ editor-app .toolbar {
   height: 26px;
   background: var(--background);
   color: var(--default);
-  border-bottom: 1px solid #445;
+  border-bottom: 1px solid #444;
 }
 
 editor-app .toolbar > :first-child {

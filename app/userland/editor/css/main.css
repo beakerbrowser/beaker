@@ -2,8 +2,8 @@
 @import "beaker://assets/font-awesome.css";
 
 body {
-  --default: #eef;
-  --background: #334;
+  --default: #eee;
+  --background: #333;
 
   font-size: 12px;
   background: var(--background);
