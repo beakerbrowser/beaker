@@ -81,12 +81,14 @@ export async function setup () {
   if (isInitialCreation) {
     await rootDrive.pda.mkdir('/bookmarks')
     await rootDrive.pda.writeFile(`/bookmarks/patreon-com-andrew_maf_and_paul.goto`, '', {metadata: {href: 'https://patreon.com/andrew_maf_and_paul', title: 'Support Beaker'}})
+    await rootDrive.pda.writeFile(`/bookmarks/beaker-dev-docs-templates.goto`, '', {metadata: {href: 'https://beaker.dev/docs/templates/', title: 'Hyperdrive Templates'}})
     await rootDrive.pda.writeFile(`/bookmarks/twitter.goto`, '', {metadata: {href: 'https://twitter.com/', title: 'Twitter'}})
     await rootDrive.pda.writeFile(`/bookmarks/reddit.goto`, '', {metadata: {href: 'https://reddit.com/', title: 'Reddit'}})
     await rootDrive.pda.writeFile(`/bookmarks/youtube.goto`, '', {metadata: {href: 'https://youtube.com/', title: 'YouTube'}})
     await rootDrive.pda.mkdir('/beaker')
     await rootDrive.pda.writeFile(`/beaker/pins.json`, JSON.stringify([
       'https://patreon.com/andrew_maf_and_paul',
+      'https://beaker.dev/docs/templates/',
       'https://twitter.com/',
       'https://reddit.com/',
       'https://youtube.com/'
