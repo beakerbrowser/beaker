@@ -470,7 +470,7 @@ class FolderSyncModal extends LitElement {
             <div class="change ${change.type === 'dir' ? 'clickable' : ''} ${isIgnored ? 'ignored' : ''}">
               ${subdirSpacers()}
               <span class="path" @click=${onClick}>
-                ${!isIgnored ? html`<span class="revision-indicator ${change.change}"></span>` : ''}
+                ${!isIgnored ? html`<span class="revision-indicator ${change.change} tooltip-right" data-tooltip=${changeAsLabel(change.change)}></span>` : ''}
                 ${icon()}
                 ${filename}
               </span>
@@ -559,6 +559,14 @@ class FolderSyncModal extends LitElement {
 }
 
 customElements.define('folder-sync-modal', FolderSyncModal)
+
+function changeAsLabel (change) {
+  return ({
+    add: 'Add',
+    mod: 'Modify',
+    del: 'Delete'
+  })[change] || change
+}
 
 function sortAlphaAndFolders (a, b) {
   for (let i = 0; i < Math.min(a.path.length, b.path.length); i++) {
