@@ -181,8 +181,8 @@ class SelectDriveModal extends LitElement {
     this.drives = await bg.drives.list({includeSystem: false})
     this.drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
 
-    if (!!params.template && this.filteredDrives.length === 0) {
-      // bounce to create
+    if (this.writable !== false && !!params.template && this.filteredDrives.length === 0) {
+      // autobounce to create
       return this.cbs.resolve({gotoCreate: true})
     }
 
