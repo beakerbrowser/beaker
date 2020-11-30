@@ -2,7 +2,7 @@ const isNode = typeof window === 'undefined'
 const parse = isNode ? require('url').parse : browserParse
 import { slugify } from './strings'
 
-export const isDatHashRegex = /^[a-z0-9]{64}/i
+export const isHyperHashRegex = /^[a-z0-9]{64}/i
 const isIPAddressRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
 const isPath = /^\//
 const URL_RE = /^[\S]+:\/\/[\S]+$/i
@@ -14,7 +14,7 @@ export function examineLocationInput (v) {
     isPath.test(v) ||
     /\.[A-z]/.test(v) ||
     isIPAddressRegex.test(v) ||
-    isDatHashRegex.test(v) ||
+    isHyperHashRegex.test(v) ||
     v.startsWith('localhost') ||
     v.includes('://') ||
     v.startsWith('beaker:') ||
@@ -25,7 +25,7 @@ export function examineLocationInput (v) {
   var vWithProtocol = v
   var isGuessingTheScheme = false
   if (isProbablyUrl && !isPath.test(v) && !v.includes('://') && !(v.startsWith('beaker:') || v.startsWith('data:') || v.startsWith('intent:') || v.startsWith('about:'))) {
-    if (isDatHashRegex.test(v)) {
+    if (isHyperHashRegex.test(v)) {
       vWithProtocol = 'hyper://' + v
     } else if (v.startsWith('localhost') || isIPAddressRegex.test(v)) {
       vWithProtocol = 'http://' + v
@@ -134,6 +134,16 @@ export function normalizeUrl (url, base = undefined) {
  */
 export function isUrlLike (url) {
   return typeof url === 'string' && URL_RE.test(url)
+}
+
+/**
+ * @param {String} url 
+ * @returns {Boolean}
+ */
+export function isHyperUrl (url) {
+  if (url.length === 64 && isHyperHashRegex.test(url)) return true
+  if (url.startsWith('hyper://')) return true
+  return false
 }
 
 /**

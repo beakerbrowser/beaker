@@ -181,6 +181,11 @@ class SelectDriveModal extends LitElement {
     this.drives = await bg.drives.list({includeSystem: false})
     this.drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
 
+    if (!!params.template && this.filteredDrives.length === 0) {
+      // bounce to create
+      return this.cbs.resolve({gotoCreate: true})
+    }
+
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -189,6 +194,18 @@ class SelectDriveModal extends LitElement {
     // adjust height based on rendering
     var height = this.shadowRoot.querySelector('div').clientHeight|0
     bg.modals.resizeSelf({height})
+  }
+
+  get filteredDrives () {
+    var filtered = this.drives
+    if (this.tag) filtered = filtered.filter(drive => drive.tags.includes(this.tag))
+    if (typeof this.writable === 'boolean') {
+      filtered = filtered.filter(drive => drive.info.writable === this.writable)
+    }
+    if (this.currentTitleFilter) {
+      filtered = filtered.filter(a => a.info.title && a.info.title.toLowerCase().includes(this.currentTitleFilter))
+    }
+    return filtered
   }
 
   get hasValidSelection () {
@@ -257,14 +274,7 @@ class SelectDriveModal extends LitElement {
       return html`<ul class="drives-list"><li class="loading"><span class="spinner"></span> Loading...</li></ul>`
     }
 
-    var filtered = this.drives
-    if (this.tag) filtered = filtered.filter(drive => drive.tags.includes(this.tag))
-    if (typeof this.writable === 'boolean') {
-      filtered = filtered.filter(drive => drive.info.writable === this.writable)
-    }
-    if (this.currentTitleFilter) {
-      filtered = filtered.filter(a => a.info.title && a.info.title.toLowerCase().includes(this.currentTitleFilter))
-    }
+    var filtered = this.filteredDrives
 
     if (!filtered.length) {
       return html`<div class="drives-list"><div class="empty">No drives found</div></div>`

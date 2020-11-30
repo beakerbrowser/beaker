@@ -5,7 +5,7 @@ import * as prompts from '../../ui/subwindows/prompts'
 import * as drives from '../../hyper/drives'
 import { getDriveConfig, configDrive, listDrives, removeDrive } from '../../filesystem/index'
 import { lookupDrive } from './hyperdrive'
-import { parseDriveUrl } from '../../../lib/urls'
+import { isHyperUrl, parseDriveUrl } from '../../../lib/urls'
 import { joinPath } from '../../../lib/strings'
 import * as permissions from '../../ui/permissions'
 import assert from 'assert'
@@ -135,6 +135,7 @@ export default {
    * @param {boolean} [opts.writable]
    * @param {string} [opts.tag]
    * @param {boolean} [opts.allowMultiple]
+   * @param {string} [opts.template]
    * @returns {Promise<string|string[]>}
    */
   async selectDriveDialog (opts = {}) {
@@ -145,15 +146,31 @@ export default {
     assert(!opts.tag || typeof opts.tag === 'string', '.tag must be a string')
     assert(!opts.writable || typeof opts.writable === 'boolean', '.writable must be a boolean')
     assert(!opts.allowMultiple || typeof opts.allowMultiple === 'boolean', '.allowMultiple must be a boolean')
+    assert(!opts.template || typeof opts.template === 'string', '.template must be a string')
+    if (opts.template && !isHyperUrl(opts.template)) {
+      throw new Error('.template must be a hyper:// URL')
+    }
 
     // initiate the modal
     var res
     try {
       res = await modals.create(this.sender, 'select-drive', opts)
       if (res && res.gotoCreate) {
-        res = await modals.create(this.sender, 'create-drive', {tags: [opts.tag]})
-        if (res && res.gotoSync) {
-          await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
+        if (opts.template) {
+          res = await modals.create(this.sender, 'fork-drive', {
+            url: opts.template,
+            forks: [{url: opts.template}],
+            detached: true,
+            isTemplate: true,
+            title: '',
+            description: '',
+            tags: [opts.tag]
+          })
+        } else {
+          res = await modals.create(this.sender, 'create-drive', {tags: [opts.tag]})
+          if (res && res.gotoSync) {
+            await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
+          }
         }
       }
     } catch (e) {

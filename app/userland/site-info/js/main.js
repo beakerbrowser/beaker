@@ -11,7 +11,7 @@ import './com/site-perms.js'
 import './com/identity.js'
 import './com/drive-forks.js'
 
-const isDatHashRegex = /^[a-z0-9]{64}/i
+const isHyperHashRegex = /^[a-z0-9]{64}/i
 
 class SiteInfoApp extends LitElement {
   static get properties () {
@@ -162,7 +162,7 @@ class SiteInfoApp extends LitElement {
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
         var permParam = beakerPermissions.getPermParam(perm)
-        if (isDatHashRegex.test(permParam)) {
+        if (isHyperHashRegex.test(permParam)) {
           let driveInfo
           try { driveInfo = await beaker.beaker.hyperdrive.drive(permParam).getInfo() }
           catch (e) { /* ignore */ }

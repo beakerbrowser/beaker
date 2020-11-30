@@ -5,7 +5,7 @@ import hyper from '../../hyper/index'
 // exported api
 // =
 
-export default {
+export default {  
   async listCores (url) {
     var drive = await hyper.drives.getOrLoadDrive(url)
     return (await drive.session.drive.stats()).stats

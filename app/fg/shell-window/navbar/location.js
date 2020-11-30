@@ -9,7 +9,7 @@ import buttonResetCSS from './button-reset.css'
 import tooltipCSS from './tooltip.css'
 import './site-info'
 
-const isDatHashRegex = /^[a-z0-9]{64}/i
+const isHyperHashRegex = /^[a-z0-9]{64}/i
 const NETWORK_STATS_POLL_INTERVAL = 5000 // ms
 
 class NavbarLocation extends LitElement {
@@ -213,7 +213,7 @@ class NavbarLocation extends LitElement {
             host = match[1]
             hostVersion = '+' + match[2]
           }
-          if (isDatHashRegex.test(host)) {
+          if (isHyperHashRegex.test(host)) {
             host = prettyHash(host)
           }
         }
