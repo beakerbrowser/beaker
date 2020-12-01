@@ -392,6 +392,10 @@ ${spinnerCSS}
   height: 34px;
 }
 
+.shell:not(.darwin) {
+  box-shadow: inset 0 2px 4px #0001;
+}
+
 .tabs {
   display: flex;
   padding: 0 18px 0 0;
@@ -450,7 +454,7 @@ ${spinnerCSS}
   height: 30px;
   width: 200px;
   min-width: 0; /* HACK: https://stackoverflow.com/questions/38223879/white-space-nowrap-breaks-flexbox-layout */
-  background: var(--bg-color--background);
+  background: transparent;
   transition: background 0.3s;
   border-left: 1px solid var(--border-color--tab);
 }
