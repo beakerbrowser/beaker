@@ -84,7 +84,7 @@ class DesktopApp extends LitElement {
     }
     return html`
       <div id="support-banner">
-        <a href="https://patreon.com/andrew_maf_and_paul" title="Support Beaker" target="_blank">
+        <a href="https://www.patreon.com/paul_maf_and_andrew" title="Support Beaker" target="_blank">
           <span class="far fa-fw fa-heart"></span>
           Support Beaker through Patreon and help us build peer-to-peer software!
         </a>
