@@ -503,7 +503,7 @@ class WebTerm extends LitElement {
       await this.loadPageCommands()
       command = this.pageCommands[commandName.slice(1)]
       if (command) {
-        command.fn = (...args) => beaker.panes.executeJavaScript(this.attachedPane.id, `
+        command.fn = (...args) => beaker.panes.executeJavaScript(attachedPane.id, `
           ;(() => {
             let command = beaker.terminal.getCommands().find(c => c.name === ${JSON.stringify(commandName.slice(1))});
             if (command) {
