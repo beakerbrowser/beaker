@@ -23,11 +23,12 @@ h1 strong {
   font-size: 32px;
 }
 .license {
+  -webkit-app-region: no-drag;
   max-height: calc(100vh - 150px);
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 0 10px;
-  overflow: auto;
+  overflow-y: scroll;
   text-align: left;
   line-height: 1.4;
 }
@@ -39,7 +40,7 @@ h1 strong {
     <li>Beaker Browser is distributed under the MIT license.</li>
     <li>You are personally responsible for the content you share.</li>
     <li>Your IP address is publicly available while using Beaker Browser.</li>
-    <li>We collect anonymized usage statistics if you don't opt opt.</li>
+    <li>We collect anonymized usage statistics if you don't opt out.</li>
   </ul>
   <h2>MIT License</h2>
   <p>Copyright (c) 2018 Blue Link Labs</p>
