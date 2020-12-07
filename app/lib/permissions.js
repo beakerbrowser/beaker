@@ -36,6 +36,13 @@ export const PERMS = {
     requiresRefresh: false,
     experimental: false
   },
+  tagDrive: {
+    persist: false,
+    idempotent: false,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: false
+  },
   listDrives: {
     persist: 'allow', // dont persist 'deny'
     idempotent: true,
@@ -186,6 +193,7 @@ export const PERM_ICONS = {
   createDrive: 'fas fa-folder-open',
   modifyDrive: 'fas fa-folder-open',
   deleteDrive: 'fas fa-folder-open',
+  tagDrive: 'fas fa-tag',
   listDrives: 'fas fa-folder-open',
   media: 'fas fa-video',
   geolocation: 'fas fa-map-marked',
@@ -257,6 +265,12 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
       {
         let viewArchive = openUrl(permParam)
         return html`<span>Remove the hyperdrive <a @click=${viewArchive}>${permOpts.title}</a> from your library</span>`
+      }
+
+    case 'tagDrive':
+      {
+        let viewArchive = openUrl(permParam)
+        return html`<span>Add the tags "${permOpts.tags.join(', ')}" to the hyperdrive <a @click=${viewArchive}>${permOpts.title}</a></span>`
       }
 
     case 'listDrives':

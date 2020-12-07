@@ -138,7 +138,7 @@ class AddDriveModal extends LitElement {
             <div class="drive">
               <beaker-img-fallbacks>
                 <img src="${this.info.url}/thumb" slot="img1">
-                <img src="beaker://assets/default-user-thumb" slot="img2">
+                <img src="beaker://assets/default-thumb" slot="img2">
               </beaker-img-fallbacks>
               <div class="info">
                 <div class="title"><span>${this.info.title}</span></div>

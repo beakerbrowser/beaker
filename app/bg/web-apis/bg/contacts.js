@@ -1,5 +1,5 @@
 import * as drives from '../../hyper/drives'
-import shellAPI from './shell.js'
+import * as shellAPI from './shell.js'
 
 // typedefs
 // =

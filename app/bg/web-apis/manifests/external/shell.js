@@ -6,6 +6,7 @@ export default {
   saveDriveDialog: 'promise',
   listDrives: 'promise',
   unsaveDrive: 'promise',
+  tagDrive: 'promise',
 
   // internal
   importFilesAndFolders: 'promise',

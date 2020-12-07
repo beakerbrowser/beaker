@@ -60,7 +60,7 @@ import hyperdriveAPI from './bg/hyperdrive'
 import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
-import shellAPI from './bg/shell'
+import * as shellAPI from './bg/shell'
 
 // experimental manifests
 import experimentalCapturePageManifest from './manifests/external/experimental/capture-page'
