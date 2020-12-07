@@ -11,8 +11,7 @@ import buttonsCSS from './buttons2.css'
 const SHORTCUTS = [
   {url: 'virtual:my-device', title: 'My Device', icon: 'fas fa-laptop'},
   {url: 'virtual:my-drives', title: 'My Drives', icon: 'far fa-hdd'},
-  {url: 'virtual:hosting', title: 'Hosting', icon: 'fas fa-share-alt'},
-  {url: 'virtual:contacts', title: 'Contacts', icon: 'fas fa-users'},
+  {url: 'virtual:hosting', title: 'Hosting', icon: 'fas fa-share-alt'}
 ]
 
 class SelectFileModal extends LitElement {
@@ -252,7 +251,6 @@ class SelectFileModal extends LitElement {
 
     // state
     this.drives = []
-    this.contacts = []
     this.path = '/'
     this.files = []
     this.selectedPaths = []
@@ -272,7 +270,6 @@ class SelectFileModal extends LitElement {
       networked: undefined
     }
     this.allowMultiple = false
-    this.disallowCreate = false
     this.cbs = null
   }
 
@@ -297,7 +294,6 @@ class SelectFileModal extends LitElement {
       }
     }
     this.allowMultiple = !this.saveMode && params.allowMultiple
-    this.disallowCreate = params.disallowCreate
     if (!this.title) {
       if (this.saveMode) {
         this.title = 'Save file...'
@@ -330,8 +326,6 @@ class SelectFileModal extends LitElement {
     this.drives = await bg.drives.list()
     this.drives.push({url: 'hyper://private/', info: {title: 'My Private Drive', writable: true}})
     this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
-    this.contacts = await bg.contacts.list()
-    this.contacts.sort((a, b) => (a.title || '').toLowerCase().localeCompare(b.title || ''))
     if (this.isVirtualListing) {
       this.readvirtual()
     }
@@ -375,8 +369,7 @@ class SelectFileModal extends LitElement {
       case 'virtual:my-device':
         this.files = [
           vfile('virtual:my-drives', 'far fa-hdd', 'My Drives'),
-          vfile('virtual:hosting', 'fas fa-share-alt', 'Hosting'),
-          vfile('virtual:contacts', 'fas fa-users', 'Contacts')
+          vfile('virtual:hosting', 'fas fa-share-alt', 'Hosting')
         ]
         break
       case 'virtual:my-drives':
@@ -384,9 +377,6 @@ class SelectFileModal extends LitElement {
         break
       case 'virtual:hosting':
         this.files = this.drives.filter(d => !d.info.writable).map(drive => vfile(drive.url, undefined, drive.info.title))
-        break
-      case 'virtual:contacts':
-        this.files = this.contacts.map(contact => vfile(contact.url, undefined, contact.title || 'Anonymous'))
         break
     }
   }
