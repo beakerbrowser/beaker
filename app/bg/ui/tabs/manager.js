@@ -60,7 +60,6 @@ class Tab extends EventEmitter {
     definePrimaryPanePassthroughGetter(this, 'browserView')
     definePrimaryPanePassthroughFn(this, 'loadURL')
     definePrimaryPanePassthroughFn(this, 'reload')
-    definePrimaryPanePassthroughFn(this, 'focus')
     definePrimaryPanePassthroughFn(this, 'captureScreenshot')
     definePrimaryPanePassthroughFn(this, 'showInpageFind')
     definePrimaryPanePassthroughFn(this, 'hideInpageFind')
@@ -175,6 +174,14 @@ class Tab extends EventEmitter {
 
   // management
   // =
+
+  focus () {
+    if (this.activePane) {
+      this.activePane.focus()
+    } else if (this.panes.length) {
+      this.panes[0].focus()
+    }
+  }
 
   resize () {
     if (this.isHidden || !this.isActive) return
