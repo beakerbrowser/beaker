@@ -158,6 +158,7 @@ class SelectDriveModal extends LitElement {
     this.currentTitleFilter = ''
     this.selection = []
     this.drives = undefined
+    this.reloadInterval = undefined
 
     // params
     this.customTitle = ''
@@ -188,6 +189,24 @@ class SelectDriveModal extends LitElement {
 
     await this.requestUpdate()
     this.adjustHeight()
+
+    if (!this.reloadInterval) {
+      // periodically reload to keep listing updated
+      this.reloadInterval = setInterval(this.reload.bind(this), 3e3)
+    }
+  }
+
+  async reload () {
+    this.drives = await bg.drives.list({includeSystem: false})
+    this.drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
+    this.requestUpdate()
+  }
+
+  cleanup () {
+    if (this.reloadInterval) {
+      clearInterval(this.reloadInterval)
+      this.reloadInterval = undefined
+    }
   }
 
   adjustHeight () {
@@ -330,15 +349,18 @@ class SelectDriveModal extends LitElement {
 
   onClickCancel (e) {
     e.preventDefault()
+    this.cleanup()
     this.cbs.reject(new Error('Canceled'))
   }
 
   onClickCreate (e) {
+    this.cleanup()
     this.cbs.resolve({gotoCreate: true})
   }
 
   onSubmit (e) {
     if (e) e.preventDefault()
+    this.cleanup()
     if (this.selection.length) {
       if (this.allowMultiple) {
         this.cbs.resolve({urls: this.selection})
