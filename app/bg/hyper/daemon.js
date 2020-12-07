@@ -183,9 +183,13 @@ export function requiresShutdown () {
 }
 
 export async function shutdown () {
-  if (isControllingDaemonProcess) {
+  if (isControllingDaemonProcess && isDaemonActive) {
+    let promise = new Promise((resolve) => {
+      daemonProcess.on('close', () => resolve())
+    })
     isShuttingDown = true
     daemonProcess.kill()
+    
     // HACK: the daemon has a bug that causes it to stay open sometimes, give it the double tap -prf
     let i = setInterval(() => {
       if (!isDaemonActive) {
@@ -193,7 +197,10 @@ export async function shutdown () {
       } else {
         daemonProcess.kill()
       }
-    }, 5)
+    }, 2e3)
+    i.unref()
+
+    await promise
   }
 }
 

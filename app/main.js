@@ -167,10 +167,8 @@ app.on('window-all-closed', () => {
 app.on('will-quit', async (e) => {
   if (hyper.daemon.requiresShutdown()) {
     e.preventDefault()
-    initWindow.open({isShutdown: true})
     log.info('Delaying shutdown to teardown the daemon')
     await hyper.daemon.shutdown()
-    initWindow.close()
     app.quit()
   }
 })
