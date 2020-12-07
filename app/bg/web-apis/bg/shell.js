@@ -76,7 +76,18 @@ export async function selectFileDialog (opts = {}) {
   // initiate the modal
   var res
   try {
-    res = await modals.create(this.sender, 'select-file', opts)
+    while (true) {
+      res = await modals.create(this.sender, 'select-file', opts)
+      if (res && res.gotoCreateDrive) {
+        res = await modals.create(this.sender, 'create-drive').catch(e => undefined)
+        if (res && res.gotoSync) {
+          await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
+        }
+        if (res) opts.drive = res.url
+      } else {
+        break
+      }
+    }
   } catch (e) {
     if (e.name !== 'Error') {
       throw e // only rethrow if a specific error
@@ -117,7 +128,18 @@ export async function saveFileDialog (opts = {}) {
   opts.saveMode = true
   var res
   try {
-    res = await modals.create(this.sender, 'select-file', opts)
+    while (true) {
+      res = await modals.create(this.sender, 'select-file', opts)
+      if (res && res.gotoCreateDrive) {
+        res = await modals.create(this.sender, 'create-drive').catch(e => undefined)
+        if (res && res.gotoSync) {
+          await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
+        }
+        if (res) opts.drive = res.url
+      } else {
+        break
+      }
+    }
   } catch (e) {
     if (e.name !== 'Error') {
       throw e // only rethrow if a specific error

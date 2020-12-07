@@ -491,7 +491,9 @@ class SelectFileModal extends LitElement {
             </div>
 
             <div class="form-actions">
-              <div class="left"></div>
+              <div class="left">
+              <button type="button" @click=${this.onClickNewDrive} class="btn">Create new drive</button>
+              </div>
               <div class="right">
                 <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
                 <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
@@ -612,6 +614,11 @@ class SelectFileModal extends LitElement {
       this.selectedPaths = [file.path]
       this.onSubmit()
     }
+  }
+
+  onClickNewDrive (e) {
+    e.preventDefault()
+    this.cbs.resolve({gotoCreateDrive: true})
   }
 
   onClickCancel (e) {
