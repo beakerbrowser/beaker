@@ -255,6 +255,7 @@ class SelectFileModal extends LitElement {
     this.files = []
     this.selectedPaths = []
     this.driveInfo = null
+    this.reloadInterval = undefined
 
     // params
     this.saveMode = false
@@ -328,6 +329,25 @@ class SelectFileModal extends LitElement {
     this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
     if (this.isVirtualListing) {
       this.readvirtual()
+    }
+
+    if (!this.reloadInterval) {
+      // periodically reload to keep listing updated
+      this.reloadInterval = setInterval(this.reload.bind(this), 3e3)
+    }
+  }
+
+  async reload () {
+    this.drives = await bg.drives.list()
+    this.drives.push({url: 'hyper://private/', info: {title: 'My Private Drive', writable: true}})
+    this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
+    this.requestUpdate()
+  }
+
+  cleanup () {
+    if (this.reloadInterval) {
+      clearInterval(this.reloadInterval)
+      this.reloadInterval = undefined
     }
   }
 
@@ -618,11 +638,13 @@ class SelectFileModal extends LitElement {
 
   onClickNewDrive (e) {
     e.preventDefault()
+    this.cleanup()
     this.cbs.resolve({gotoCreateDrive: true})
   }
 
   onClickCancel (e) {
     e.preventDefault()
+    this.cleanup()
     this.cbs.reject(new Error('Canceled'))
   }
 
@@ -645,12 +667,14 @@ class SelectFileModal extends LitElement {
           return
         }
       }
+      this.cleanup()
       this.cbs.resolve(makeSelectionObj(path))
     } else {
       if (this.select.includes('folder') && this.selectedPaths.length === 0) {
         // use current location
         this.selectedPaths = [this.path]
       }
+      this.cleanup()
       this.cbs.resolve(this.selectedPaths.map(makeSelectionObj))
     }
   }
