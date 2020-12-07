@@ -55,8 +55,15 @@ export default {
       if (!res || !res.url) throw new UserDeniedError()
       newDriveUrl = res.url
     } else {
+      if (tags && typeof tags === 'string') {
+        tags = tags.split(' ')
+      } else if (tags && !Array.isArray(tags)) {
+        tags = undefined
+      }
+      tags = tags.filter(v => typeof v === 'string')
+
       // no modal, ask for permission
-      await assertCreateDrivePermission(this.sender)
+      await assertCreateDrivePermission(this.sender, {title, tags})
 
       let importFolder = undefined
       if (fromGitUrl) {
@@ -122,8 +129,15 @@ export default {
       if (!res || !res.url) throw new UserDeniedError()
       newDriveUrl = res.url
     } else {
+      if (tags && typeof tags === 'string') {
+        tags = tags.split(' ')
+      } else if (tags && !Array.isArray(tags)) {
+        tags = undefined
+      }
+      tags = tags.filter(v => typeof v === 'string')
+
       // no modal, ask for permission
-      await assertCreateDrivePermission(this.sender)
+      await assertCreateDrivePermission(this.sender, {title, tags})
 
       let key = await lookupUrlDriveKey(url)
 
@@ -756,14 +770,14 @@ function assertBeakerOnly (sender) {
   }
 }
 
-async function assertCreateDrivePermission (sender) {
+async function assertCreateDrivePermission (sender, opts) {
   // beaker: always allowed
   if (wcTrust.isWcTrusted(sender)) {
     return true
   }
 
   // ask the user
-  let allowed = await permissions.requestPermission('createDrive', sender)
+  let allowed = await permissions.requestPermission('createDrive', sender, opts)
   if (!allowed) {
     throw new UserDeniedError()
   }
