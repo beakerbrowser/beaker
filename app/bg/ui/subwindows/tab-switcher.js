@@ -105,7 +105,9 @@ export async function hide (parentWindow) {
     `)
     if (selectedTab && typeof selectedTab === 'object') {
       let win = BrowserWindow.fromId(selectedTab.winId)
-      win.show()
+      if (!win.isFocused()) {
+        win.focus()
+      }
       tabManager.setActive(win, selectedTab.tabIndex)
     }
     parentWindow.removeBrowserView(view)
