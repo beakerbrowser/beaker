@@ -41,19 +41,12 @@ appleId=pfrazee@gmail.com
 appleIdPassword={be paul to have this}
 ```
 
-## Windows signing
+On Windows, these two env vars:
 
 ```
-& 'C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe' sign /t http://timestamp.digicert.com /f .\..\BLLWindowsCodeSignCert.pfx /p {WINDOWS_CERT_PASSWORD} .\dist\beaker-browser-setup-{VERSION}.exe
+$env:CSC_LINK = "\path\to\.pfx"
+$env:CSC_KEY_PASSWORD = "{be paul to have this}"
 ```
-
-This will modify the checksum, so now run
-
-```
-node .\scripts\gen-bin-hash.js beaker-browser-setup-{VERSION}.exe
-```
-
-And update `latest.yml` so that it's correct.
 
 ## It's just that easy
 
