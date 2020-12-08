@@ -11,8 +11,8 @@ import css from '../css/main.css.js'
 import 'beaker://app-stdlib/js/com/img-fallbacks.js'
 
 const VERSION_ID = (major, minor, patch, pre) => major * 1e9 + minor * 1e6 + patch * 1e3 + pre
-const CURRENT_VERSION = VERSION_ID(1, 0, 0, 8)
-const RELEASE = { label: '1.0', url: 'https://beakerbrowser.com/2020/12/02/beaker-1-0.html' }
+const CURRENT_VERSION = VERSION_ID(1, 1, 0, 0)
+const RELEASE = { label: '1.1', url: 'https://beakerbrowser.com/2020/12/08/beaker-1.1.html' }
 
 class DesktopApp extends LitElement {
   static get properties () {
