@@ -74,20 +74,27 @@ export function setup () {
       let data
       if (asset === 'screenshot') {
         data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
-        if (!data && !url.startsWith('dat:')) {
-          // try to fetch the screenshot
-          let p = activeCaptures[url]
-          if (!p) {
-            p = activeCaptures[url] = capturePage(url)
-          }
-          let nativeImg = await p
-          delete activeCaptures[url]
-          if (nativeImg) {
-            data = nativeImg.toDataURL()
-            await sitedata.set(url, 'screenshot', data, {dontExtractOrigin: true, normalizeUrl: true})
-          } else {
-            return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
-          }
+
+        // DISABLED- seems to generate some pretty bad error behaviors on win7
+        // see https://github.com/beakerbrowser/beaker/issues/1872#issuecomment-739463243
+        // -prf
+        // if (!data && !url.startsWith('dat:')) {
+        //   // try to fetch the screenshot
+        //   let p = activeCaptures[url]
+        //   if (!p) {
+        //     p = activeCaptures[url] = capturePage(url)
+        //   }
+        //   let nativeImg = await p
+        //   delete activeCaptures[url]
+        //   if (nativeImg) {
+        //     data = nativeImg.toDataURL()
+        //     await sitedata.set(url, 'screenshot', data, {dontExtractOrigin: true, normalizeUrl: true})
+        //   } else {
+        //     return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
+        //   }
+        // }
+        if (!data) {
+          return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
         }
       } else {
         data = await sitedata.get(url, asset)
