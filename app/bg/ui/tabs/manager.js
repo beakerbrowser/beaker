@@ -884,6 +884,13 @@ export async function remove (win, tab) {
   emitReplaceState(win)
 }
 
+export async function destroyAll (win) {
+  for (let t of (activeTabs[win.id] || [])) {
+    t.destroy()
+  }
+  delete activeTabs[win.id]
+}
+
 export async function removeAllExcept (win, tab) {
   win = getTopWindow(win)
   var tabs = getAll(win).slice() // .slice() to duplicate the list

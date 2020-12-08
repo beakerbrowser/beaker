@@ -240,6 +240,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     for (let k in subwindows) {
       subwindows[k].destroy(win)
     }
+    tabManager.destroyAll(win)
   })
 
   async function handlePagesReady ({ sender }) {
