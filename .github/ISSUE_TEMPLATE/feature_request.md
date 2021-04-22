@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-<!-- If you have a general question, use the discussions at https://github.com/beakerbrowser/beaker/discussions instead. -->
+<!-- If you have a general question, use the discussions at https://github.com/PirateForge/JollyBrowser/discussions instead. -->
 
 <!-- NOTE -- Please don't open issues which might indicate that laws (such as copyright) might be broken in your use of our software. While you may be operating within your legal rights with the content, it's hard for us to know at a glance, and so for simplicity it's best to steer clear of legal issues such as copyrighted material. -->
 

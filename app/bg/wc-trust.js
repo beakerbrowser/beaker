@@ -8,7 +8,7 @@
  * interface injected as the response (ie when it's not HTML and there's no custom frontend).
  * 
  * The way we determine whether a trusted interface was served by hyper:// is by examining the
- * response headers, which Beaker has control over for hyper:// requests. If 'Beaker-Trusted-Interface'
+ * response headers, which Jolly has control over for hyper:// requests. If 'Beaker-Trusted-Interface'
  * is present, then we know to mark the WC as viewing a trusted interface.
  * 
  * This knowledge needs to be tracked by each specific WC because there's the possibility that

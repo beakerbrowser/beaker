@@ -1,11 +1,11 @@
 {
-  "name": "beaker-browser",
-  "productName": "Beaker Browser",
-  "description": "An Experimental Peer-to-Peer Web Browser.",
-  "homepage": "https://beakerbrowser.com/",
-  "version": "1.1.0",
-  "author": "Blue Link Labs <support@beakerbrowser.com>",
-  "copyright": "© 2020, Blue Link Labs",
+  "name": "jolly-browser",
+  "productName": "Jolly Browser",
+  "description": "An Experimental, pirate, peer-2-peer Web Browser.",
+  "homepage": "https://jolly.polskapartiapiratow.pl/",
+  "version": "0.1.1",
+  "author": "Kuba Błądek <kubab@polskapartiapiratow.pl>",
+  "copyright": "© 2021, Polska Partia Piratów",
   "main": "main.build.js",
   "dependencies": {
     "@beaker/dat-serve-resolve-path": "^1.0.0",

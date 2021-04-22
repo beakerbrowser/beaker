@@ -35,7 +35,7 @@ import { spawnAndExecuteJs } from './lib/electron'
 
 const IS_FROM_SOURCE = (process.defaultApp || /node_modules[\\/]electron[\\/]/.test(process.execPath))
 const IS_LINUX = !(/^win/.test(process.platform)) && process.platform !== 'darwin'
-const DOT_DESKTOP_FILENAME = 'appimagekit-beaker-browser.desktop'
+const DOT_DESKTOP_FILENAME = 'appimagekit-jolly-browser.desktop'
 const isBrowserUpdatesSupported = !(IS_LINUX || IS_FROM_SOURCE) // linux is temporarily not supported
 
 // how long between scheduled auto updates?
@@ -789,8 +789,8 @@ function setUpdaterState (state) {
 function getAutoUpdaterFeedSettings () {
   return {
     provider: 'github',
-    repo: 'beaker',
-    owner: 'beakerbrowser',
+    repo: 'jollybrowser',
+    owner: 'pirateforge',
     vPrefixedTagName: false
   }
 }

@@ -1,5 +1,5 @@
 {
-  "name": "beakerbrowser",
+  "name": "jolly-browser",
   "devDependencies": {
     "browserify": "^16.0.0",
     "electron": "11.0.0-beta.18",
@@ -29,7 +29,7 @@
   },
   "build": {
     "afterSign": "./afterSignHook.js",
-    "appId": "com.bluelinklabs.beaker-browser",
+    "appId": "pl.polskapartiapiratow.jolly-browser",
     "asar": false,
     "asarUnpack": [
       "./fg/json-renderer/index.build.js",
@@ -38,7 +38,7 @@
       "./node_modules/sodium-native/**",
       "./node_modules/hyperdrive-daemon/**"
     ],
-    "copyright": "© 2020, Blue Link Labs",
+    "copyright": "© 2021, Polska Partia Piratów",
     "directories": {
       "app": "../app",
       "buildResources": "../build",
@@ -69,7 +69,7 @@
     "appImage": {
       "category": "Network",
       "desktop": {
-        "Name": "Beaker Browser",
+        "Name": "Jolly Browser",
         "GenericName": "Web Browser",
         "Type": "Application",
         "Terminal": false,
@@ -84,8 +84,8 @@
       "entitlements": "../build/entitlements.plist",
       "entitlementsInherit": "../build/entitlements.plist",
       "extendInfo": {
-        "NSCameraUsageDescription": "This app requires camera access to record video.",
-        "NSMicrophoneUsageDescription": "This app requires microphone access to record audio."
+        "NSCameraUsageDescription": "Jolly Browser requires camera access to record video.",
+        "NSMicrophoneUsageDescription": "Jolly Browser requires microphone access to record audio."
       }
     },
     "publish": {
@@ -104,16 +104,16 @@
   },
   "collective": {
     "type": "opencollective",
-    "url": "https://opencollective.com/beaker",
-    "logo": "https://opencollective.com/opencollective/logo.txt"
+    "url": "",
+    "logo": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/beakerbrowser/beaker"
+    "url": ""
   },
   "bugs": {
-    "url": "https://github.com/beakerbrowser/beaker/issues"
+    "url": ""
   },
-  "homepage": "https://beakerbrowser.com/",
+  "homepage": "https://polskapartiapiratow.pl/",
   "dependencies": {}
 }

@@ -99,7 +99,7 @@ app.on('ready', async function () {
   }
 
   await logger.setup(join(commonOpts.userDataPath, 'beaker.log'))
-  log.info('Welcome to Beaker')
+  log.info('Welcome to Jolly Browser')
   beakerProtocol.register(protocol)
   webapis.setup()
   initWindow.open()

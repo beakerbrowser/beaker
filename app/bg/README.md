@@ -1,6 +1,6 @@
 # BG (background)
 
-This folder contains backend code that drives Beaker's main electron process.
+This folder contains backend code that drives Jolly's main electron process.
 
 Notable folders:
 

@@ -4,7 +4,7 @@ import { join as joinPath } from 'path'
 
 // native FS file paths
 export const ANALYTICS_DATA_FILE = 'analytics-ping.json'
-export const ANALYTICS_SERVER = 'analytics.beakerbrowser.com'
+export const ANALYTICS_SERVER = 'analytics.piraci.pl'
 export const ANALYTICS_CHECKIN_INTERVAL = ms('6h')
 
 // hyperdrive FS file paths

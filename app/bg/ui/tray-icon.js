@@ -40,11 +40,12 @@ function updateIcon () {
 async function buildMenu () {
   var runBackground = !!(await settingsDb.get('run_background'))
   const contextMenu = Menu.buildFromTemplate([
+    {label: 'Open Compass', click: onClickOpen},
     {label: 'Open new tab', click: onClickOpen},
     {label: 'Restore last window', click: onClickRestore},
     {type: 'separator'},
-    {type: 'checkbox', label: 'Let Beaker run in the background', checked: runBackground, click: () => onTogglePersist(!runBackground)},
-    {label: 'Quit Beaker', click: () => app.quit()}
+    {type: 'checkbox', label: 'Let Jolly run in the background', checked: runBackground, click: () => onTogglePersist(!runBackground)},
+    {label: 'Quit Jolly', click: () => app.quit()}
   ])
   tray.setContextMenu(contextMenu)
 }

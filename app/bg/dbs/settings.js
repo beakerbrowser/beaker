@@ -47,7 +47,7 @@ export const setup = async function (opts) {
     extended_network_index_url: '',
     search_engines: [
       {name: 'DuckDuckGo', url: 'https://www.duckduckgo.com/', selected: true},
-      {name: 'Beaker', url: 'beaker://desktop/'},
+      {name: 'Pirater', url: 'beaker://desktop/'},
       {name: 'Google', url: 'https://www.google.com/search'}
     ],
     adblock_lists: [
