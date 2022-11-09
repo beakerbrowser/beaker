@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+function os_report() {
+#ENV VARS
+OS=$(uname)
+OS_VERSION=$(uname -r)
+UNAME_M=$(uname -m)
+ARCH=$(uname -m)
+export OS
+export OS_VERSION
+export UNAME_M
+export ARCH
+echo OS:
+echo "$OS" | awk '{print tolower($0)}'
+echo OS_VERSION:
+echo "$OS_VERSION" | awk '{print tolower($0)}'
+echo UNAME_M:
+echo "$UNAME_M" | awk '{print tolower($0)}'
+echo ARCH:
+echo "$ARCH" | awk '{print tolower($0)}'
+echo OSTYPE:
+echo "$OSTYPE" | awk '{print tolower($0)}'
+}
+function checkbrew() {
+    if hash brew 2>/dev/null; then
+        if ! hash "$AWK" 2>/dev/null; then
+            brew install "$AWK"
+        fi
+        if ! hash git 2>/dev/null; then
+            brew install git
+        fi
+        if ! hash node 2>/dev/null; then
+            brew install node@12 yarn
+						brew link --overwrite node@12
+						npm install npm@6 #npm@8
+				else
+						echo
+						npm install npm@6 #npm@8
+						#npm install gulp gulp-watch q
+        fi
+
+				#brew install node@12 # we are using nvm - alias 12 to 14
+				checknvm
+
+    else
+
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+        checkbrew
+    fi
+}
+function checknvm() {
+    if hash brew 2>/dev/null; then
+        if ! hash curl 2>/dev/null; then
+            brew install curl
+        fi
+        if ! hash nvm 2>/dev/null; then
+						echo
+            #brew install nvm #yarn
+        fi
+    else
+
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.2/install.sh)"
+				checknvm
+
+    fi
+}
+function checkraspi(){
+    echo 'Checking Raspi'
+    if [ -e /etc/rpi-issue ]; then
+    echo "- Original Installation"
+    cat /etc/rpi-issue
+    fi
+    if [ -e /usr/bin/lsb_release ]; then
+    echo "- Current OS"
+    lsb_release -irdc
+    fi
+    echo "- Kernel"
+    uname -r
+    echo "- Model"
+    cat /proc/device-tree/model && echo
+    echo "- hostname"
+    hostname
+    echo "- Firmware"
+    /opt/vc/bin/vcgencmd version
+}
+if [[ "$OSTYPE" == "linux"* ]]; then
+    #CHECK APT
+    if [[ "$OSTYPE" == "linux-gnu" ]]; then
+        PACKAGE_MANAGER=apt
+        export PACKAGE_MANAGER
+        INSTALL=install
+        export INSTALL
+        AWK=gawk
+        export AWK
+        if hash apt 2>/dev/null; then
+            $PACKAGE_MANAGER $INSTALL $AWK
+            report
+        fi
+    fi
+    if [[ "$OSTYPE" == "linux-musl" ]]; then
+        PACKAGE_MANAGER=apk
+        export PACKAGE_MANAGER
+        INSTALL=install
+        export INSTALL
+        AWK=gawk
+        export AWK
+        if hash apk 2>/dev/null; then
+            $PACKAGE_MANAGER $INSTALL $AWK
+            report
+        fi
+    fi
+    if [[ "$OSTYPE" == "linux-arm"* ]]; then
+        PACKAGE_MANAGER=apt
+        export PACKAGE_MANAGER
+        INSTALL=install
+        export INSTALL
+        AWK=gawk
+        echo $AWK
+        export AWK
+        checkraspi
+        if hash apt 2>/dev/null; then
+            $PACKAGE_MANAGER $INSTALL $AWK
+            report
+        fi
+    fi
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+        os_report
+        PACKAGE_MANAGER=brew
+        export PACKAGE_MANAGER
+        INSTALL=install
+        export INSTALL
+        AWK="awk"
+        export AWK
+        checkbrew
+        # checknvm
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+    echo TODO add support for "$OSTYPE"
+elif [[ "$OSTYPE" == "msys" ]]; then
+    echo TODO add support for "$OSTYPE"
+elif [[ "$OSTYPE" == "win32" ]]; then
+    echo TODO add support for "$OSTYPE"
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+    echo TODO add support for "$OSTYPE"
+else
+    echo TODO add support for "$OSTYPE"
+fi
+source ~/.bashrc
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
+
+
+function yarn-adds(){
+
+node -v
+yarn -v
+
+#nvm alias <name> <version> Set an alias named <name> pointing to <version>
+yarn add node-pre-gyp
+yarn add gulp
+yarn add gulp-cli@^2.3.0
+yarn add node-gyp
+#sqlite3@"^4.1.0
+yarn add sqlite3@4.1.0@npm:sqlite3@5.1.2
+yarn add sqlite3@4.2.0@npm:sqlite3@5.1.2
+
+#yarn add knex-on-conflict-do-nothing@1.0.0
+yarn add knex@^2@npm:knex@2.3.0
+yarn add knex-on-conflict-do-nothing@1.0.0
+
+yarn add winston
+yarn add isbinaryfile
+yarn add app-builder-lib
+yarn add electron-builder
+yarn add @npmcli/fs@3.1.0
+yarn add macos-alias@0.1
+
+yarn add -g fs
+yarn add -g fs/promises
+cd ./node_modules && yarn add -g --default https://github.com/timechain-academy/fs.promises.git && cd ..
+#nvm alias fs/promises  fs.promises
+#cd node_modules &&  ln -s fs.promises/ fs-promises && cd ..
+#yarn add -g fs.promises
+
+#fs-xattr@0.1.17
+
+yarn add npm@8
+#npm add --force fs-xattr
+#npm install fs-xattr@0.4.0
+yarn add fs-xattr@0.1.17
+#yarn add fs-xattr@0.3.1
+#npm add --force fs-xattr@0.4.0?
+#npm install fs-xattr@0.4.0
+#nvm alias fs-xattr@0.1.17 fs-xattr@0.4.0
+
+}
+
+function build-sequence(){
+
+yarn rebuild
+
+}
+
+#nvm environment config
+nvm install 12.21 && nvm use 12.21
+nvm install 12.22 && nvm use 12.22
+##yarn add npm@8
+#nvm alias 12.21 12.22
+nvm alias 12.22 12.21
+
+#yarn add --default --force gulp-cli
+
+#yarn add # don't worry about v8 api errors building native modules - rebuild will fix
+#yarn run rebuild # needed after each add. see https://github.com/electron/electron/issues/5851
+#yarn start
+
+yarn-adds
+
+#yarn add # don't worry about v8 api errors building native modules - rebuild will fix
+#yarn run rebuild # needed after each add. see https://github.com/electron/electron/issues/5851
+#yarn start
+
+
+
