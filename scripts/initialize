@@ -32,7 +32,9 @@ npm -v
 #npm install -h
 #npm install <alias>@npm:<name>
 
-
+echo "macOS_Catalina_acid_test.sh"
+curl -sL https://github.com/nodejs/node-gyp/raw/main/macOS_Catalina_acid_test.sh | bash
+echo "macOS_Catalina_acid_test.sh"
 ##npm install node-pre-gyp
 ##npm install gulp
 ##npm install gulp-cli@^2.3.0
@@ -88,12 +90,23 @@ npm rebuild
 }
 
 checkbrew
+source nodecheck.sh
+nodecheck
+
+NODE_VERSION=$(node -e "const v = process.version.match(/(\\d+)\.(\\d+)\.(\\d+)/).slice(1).map(_ => parseInt(_)); console.log(v[0] >= 13 || (v[0] >= 12 && v[1] >= 12))")
+if $NODE_VERSION -eq "true" ;
+then
+    echo "NodeJS is at least v12.12.0."
+		echo $NODE_VERSION
+fi
 
 #nvm environment config
-#nvm install 12.21 && nvm use 12.21
-nvm install 12.22 && nvm use 12.22
+source ~/.bashrc
+nvm install v12.21
+nvm install v12.22
+nvm use 12.22
 #nvm alias 12.21 12.22
-nvm alias 12.22 12.21
+#nvm alias 12.22 12.21
 
 npm-installs
 
