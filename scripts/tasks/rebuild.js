@@ -13,6 +13,7 @@ const MODULES_NEEDING_REBUILD = ['sqlite3']
 
 //(cd app && HOME=~/.electron-gyp npm rebuild --runtime=electron --target=10.0.0 --disturl=https://atom.io/download/atom-shell --build-from-source); gulp build
 
+
 gulp.task('rebuild', gulp.series(async () => {
   // TODO read electron version
   var cwd = path.join(process.cwd(), '../app')
