@@ -32,12 +32,18 @@ npm -v
 #npm install -h
 #npm install <alias>@npm:<name>
 
+npm install electron@10.0.0
+npm install mkdirp@0.5.1
+
+npm install https://github.com/timechain-academy/beaker-virtual-fs.git
+npm install https://github.com/timechain-academy/builtin-pages-lib.git#b23ed29856324d6036bc08bc19d653d98de52003
+
 echo "macOS_Catalina_acid_test.sh"
 curl -sL https://github.com/nodejs/node-gyp/raw/main/macOS_Catalina_acid_test.sh | bash
 echo "macOS_Catalina_acid_test.sh"
 ##npm install node-pre-gyp
-##npm install gulp
-##npm install gulp-cli@^2.3.0
+npm install gulp
+npm install gulp-cli@^2.3.0
 ##npm install node-gyp
 ###sqlite3@"^4.1.0
 #npm install <alias>@npm:<name>
@@ -105,6 +111,7 @@ source ~/.bashrc
 nvm install v12.21
 nvm install v12.22
 nvm use 12.22
+npm install
 #nvm alias 12.21 12.22
 #nvm alias 12.22 12.21
 

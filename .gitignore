@@ -10,5 +10,3 @@ Thumbs.db
 *.build.js.map
 app/stylesheets/*.css
 app/stylesheets/builtin-pages/*.css
-package-lock.json
-app/package-lock.json
