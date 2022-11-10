@@ -19,11 +19,11 @@ button {
 }
 
 button:hover {
-  background: #f5f5f5;
+  background: #0001;
 }
 
 button:active {
-  background: #eee;
+  background: #0001;
 }
 
 button.big {
@@ -88,7 +88,7 @@ button.transparent {
 }
 
 button.transparent:hover {
-  background: #f5f5fa;
+  background: #0002;
 }
 
 button.transparent.pressed {

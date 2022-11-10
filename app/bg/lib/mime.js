@@ -33,7 +33,11 @@ export function identify (name, chunk) {
   if (identifiedExt) { mimeType = mime.lookup(identifiedExt, 'text/plain') }
   if (!mimeType) {
     // fallback to using the entry name
-    mimeType = mime.lookup(name, 'text/plain')
+    if (name.endsWith('.goto')) {
+      mimeType = 'application/goto' // this one's a little new
+    } else {
+      mimeType = mime.lookup(name, 'text/plain')
+    }
   }
   mimeType = correctSomeMimeTypes(mimeType, name)
 

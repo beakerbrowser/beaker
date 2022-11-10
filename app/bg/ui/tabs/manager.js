@@ -1,4 +1,4 @@
-import { app, dialog, BrowserView, BrowserWindow, Menu, clipboard, ipcMain, screen } from 'electron'
+import { app, dialog, BrowserWindow, Menu, clipboard, ipcMain, screen } from 'electron'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
 import emitStream from 'emit-stream'
@@ -13,18 +13,19 @@ import * as shellMenus from '../subwindows/shell-menus'
 import * as locationBar from '../subwindows/location-bar'
 import * as prompts from '../subwindows/prompts'
 import * as permPrompt from '../subwindows/perm-prompt'
+import * as overlay from '../subwindows/overlay'
 import * as modals from '../subwindows/modals'
 import * as siteInfo from '../subwindows/site-info'
 import * as contextMenu from '../context-menu'
 import * as windowMenu from '../window-menu'
-import { createShellWindow, getAddedWindowSettings } from '../windows'
+import { createShellWindow, getAddedWindowSettings, toggleSidebarHidden } from '../windows'
 import { examineLocationInput } from '../../../lib/urls'
 import { findWebContentsParentWindow } from '../../lib/electron'
 import * as sitedataDb from '../../dbs/sitedata'
 import * as settingsDb from '../../dbs/settings'
 import hyper from '../../hyper/index'
 
-const X_POSITION = 40
+const X_POSITION = 0
 const Y_POSITION = 75
 
 // globals
@@ -51,22 +52,21 @@ class Tab extends EventEmitter {
     this.layout = new PaneLayout()
     this.layout.on('changed', this.resize.bind(this))
 
-    defineActivePanePassthroughGetter(this, 'url')
-    defineActivePanePassthroughGetter(this, 'loadingURL')
-    defineActivePanePassthroughGetter(this, 'origin')
-    defineActivePanePassthroughGetter(this, 'title')
-    defineActivePanePassthroughGetter(this, 'webContents')
-    defineActivePanePassthroughGetter(this, 'browserView')
-    defineActivePanePassthroughFn(this, 'loadURL')
-    defineActivePanePassthroughFn(this, 'reload')
-    defineActivePanePassthroughFn(this, 'focus')
-    defineActivePanePassthroughFn(this, 'captureScreenshot')
-    defineActivePanePassthroughFn(this, 'showInpageFind')
-    defineActivePanePassthroughFn(this, 'hideInpageFind')
-    defineActivePanePassthroughFn(this, 'setInpageFindString')
-    defineActivePanePassthroughFn(this, 'moveInpageFind')
-    defineActivePanePassthroughFn(this, 'toggleLiveReloading')
-    defineActivePanePassthroughFn(this, 'stopLiveReloading')
+    definePrimaryPanePassthroughGetter(this, 'url')
+    definePrimaryPanePassthroughGetter(this, 'loadingURL')
+    definePrimaryPanePassthroughGetter(this, 'origin')
+    definePrimaryPanePassthroughGetter(this, 'title')
+    definePrimaryPanePassthroughGetter(this, 'webContents')
+    definePrimaryPanePassthroughGetter(this, 'browserView')
+    definePrimaryPanePassthroughFn(this, 'loadURL')
+    definePrimaryPanePassthroughFn(this, 'reload')
+    definePrimaryPanePassthroughFn(this, 'captureScreenshot')
+    definePrimaryPanePassthroughFn(this, 'showInpageFind')
+    definePrimaryPanePassthroughFn(this, 'hideInpageFind')
+    definePrimaryPanePassthroughFn(this, 'setInpageFindString')
+    definePrimaryPanePassthroughFn(this, 'moveInpageFind')
+    definePrimaryPanePassthroughFn(this, 'toggleLiveReloading')
+    definePrimaryPanePassthroughFn(this, 'stopLiveReloading')
 
     // browser state
     this.isHidden = opts.isHidden // is this tab hidden from the user? used for the preloaded tab and background tabs
@@ -125,9 +125,11 @@ class Tab extends EventEmitter {
         pane.setTab(this)
 
         if (stack) {
-          this.layout.addPaneToStack(stack, pane, {layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
+          let after = stack.panes[stack.panes.length - 1]
+          this.layout.addPaneToStack(stack, pane, {after, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
         } else {
-          this.layout.addPane(pane, {layoutWidth: stackSnapshot.layoutWidth, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
+          let after = this.layout.stacks[this.layout.stacks.length - 1]
+          this.layout.addPane(pane, {after, layoutWidth: stackSnapshot.layoutWidth, layoutHeight: paneSnapshot.layoutHeight, noRebalance: true})
           stack = this.layout.stacks[this.layout.stacks.length - 1]
         }
 
@@ -149,12 +151,15 @@ class Tab extends EventEmitter {
   }
 
   get tabBounds () {
+    var addedWindowSettings = getAddedWindowSettings(this.browserWindow)
     var x = X_POSITION
     var y = Y_POSITION
     var {width, height} = this.browserWindow.getContentBounds()
-    if (getAddedWindowSettings(this.browserWindow).isShellInterfaceHidden) {
+    if (addedWindowSettings.isShellInterfaceHidden) {
       x = 0
       y = 0
+    } else if (addedWindowSettings.isSidebarHidden) {
+      x = 0
     }
     return {x, y: y, width: width - x, height: height - y}
   }
@@ -169,6 +174,14 @@ class Tab extends EventEmitter {
 
   // management
   // =
+
+  focus () {
+    if (this.activePane) {
+      this.activePane.focus()
+    } else if (this.panes.length) {
+      this.panes[0].focus()
+    }
+  }
 
   resize () {
     if (this.isHidden || !this.isActive) return
@@ -211,6 +224,7 @@ class Tab extends EventEmitter {
     prompts.hide(this)
     permPrompt.hide(this)
     modals.hide(this)
+    overlay.hide(this.browserWindow)
     if (this.browserWindow) siteInfo.hide(this.browserWindow)
 
     var wasActive = this.isActive
@@ -380,8 +394,8 @@ class Tab extends EventEmitter {
     return this.lastActivePane
   }
 
-  findPane (browserView) {
-    return this.panes.find(p => p.browserView === browserView)
+  findPane (webContents) {
+    return this.panes.find(p => p.webContents === webContents)
   }
 
   findPaneByOrigin (url) {
@@ -579,24 +593,19 @@ export async function setup () {
 
   // listen for webContents messages
   ipcMain.on('BEAKER_SCRIPTCLOSE_SELF', e => {
-    var browserView = BrowserView.fromWebContents(e.sender)
-    if (browserView) {
-      var tab = findTab(browserView)
-      if (tab) {
-        var pane = tab.findPane(browserView)
-        if (pane) tab.removePane(pane)
-      }
+    var tab = findTab(e.sender)
+    if (tab) {
+      var pane = tab.findPane(e.sender)
+      if (pane) tab.removePane(pane)
     }
     e.returnValue = false
   })
   ipcMain.on('BEAKER_WC_FOCUSED', e => {
     // when a pane is focused, we want to set it as the
     // active pane of its tab
-    var browserView = BrowserView.fromWebContents(e.sender)
-    if (!browserView) return
     for (let winId in activeTabs) {
       for (let tab of activeTabs[winId]) {
-        var pane = tab.findPane(browserView)
+        var pane = tab.findPane(e.sender)
         if (pane) {
           if (tab.activePane !== pane) {
             tab.setActivePane(pane)
@@ -658,42 +667,32 @@ export function getActive (win) {
   return getAll(win).find(tab => tab.isActive)
 }
 
-export function findTab (browserView) {
+export function findTab (webContents) {
   for (let winId in activeTabs) {
     for (let tab of activeTabs[winId]) {
-      if (tab.findPane(browserView)) {
+      if (tab.findPane(webContents)) {
         return tab
       }
     }
   }
   for (let tab of backgroundTabs) {
-    if (tab.findPane(browserView)) {
+    if (tab.findPane(webContents)) {
       return tab
     }
   }
 }
 
-export function findContainingWindow (browserView) {
+export function findContainingWindow (webContents) {
   for (let winId in activeTabs) {
     for (let v of activeTabs[winId]) {
-      if (v.browserView === browserView) {
+      if (v.findPane(webContents)) {
         return v.browserWindow
       }
     }
   }
   for (let winId in preloadedNewTabs) {
-    if (preloadedNewTabs[winId].browserView === browserView) {
+    if (preloadedNewTabs[winId].findPane(webContents)) {
       return preloadedNewTabs[winId].browserWindow
-    }
-  }
-}
-
-export function findContainingTab (browserView) {
-  for (let winId in activeTabs) {
-    for (let tab of activeTabs[winId]) {
-      if (tab.findPane(browserView)) {
-        return tab
-      }
     }
   }
 }
@@ -795,6 +794,9 @@ export function createBg (url, opts = {fromSnapshot: undefined}) {
   if (url && !opts.fromSnapshot) tab.loadURL(url)
   backgroundTabs.push(tab)
   app.emit('custom-background-tabs-update', backgroundTabs)
+  for (let win of BrowserWindow.getAllWindows()) {
+    emitReplaceState(win)
+  }
 }
 
 export async function minimizeToBg (win, tab) {
@@ -842,10 +844,10 @@ export async function restoreBgTabByIndex (win, index) {
   } else {
     tabs.push(tab)
   }
-  tab.tabCreationTime = Date.now()
   tab.isHidden = false
   tab.browserWindow = win
   setActive(win, tab)
+  emitReplaceState(win)
 }
 
 export async function remove (win, tab) {
@@ -880,6 +882,13 @@ export async function remove (win, tab) {
   // close the window if that was the last tab
   if (tabs.length === 0) return win.close()
   emitReplaceState(win)
+}
+
+export async function destroyAll (win) {
+  for (let t of (activeTabs[win.id] || [])) {
+    t.destroy()
+  }
+  delete activeTabs[win.id]
 }
 
 export async function removeAllExcept (win, tab) {
@@ -1126,7 +1135,9 @@ export function emitReplaceState (win) {
     tabs: getWindowTabState(win),
     isFullscreen: win.isFullScreen(),
     isShellInterfaceHidden: getAddedWindowSettings(win).isShellInterfaceHidden,
-    isDaemonActive: hyper.daemon.isActive()
+    isSidebarHidden: getAddedWindowSettings(win).isSidebarHidden,
+    isDaemonActive: hyper.daemon.isActive(),
+    hasBgTabs: backgroundTabs.length > 0
   }
   emit(win, 'replace-state', state)
   triggerSessionSnapshot(win)
@@ -1159,7 +1170,7 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     if (tab) {
       var state = Object.assign({}, tab.state)
       if (opts) {
-        if (opts.driveInfo) state.driveInfo = tab.driveInfo
+        if (opts.driveInfo) state.driveInfo = tab.primaryPane.driveInfo
         if (opts.sitePerms) state.sitePerms = await sitedataDb.getPermissions(tab.url)
       }
       return state
@@ -1169,14 +1180,13 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
   async getNetworkState (tab, opts) {
     var win = getWindow(this.sender)
     tab = getByIndex(win, tab)
-    if (tab && tab.driveInfo) {
-      const keyBuf = Buffer.from(tab.driveInfo.key)
-      let peers = await hyper.daemon.getPeerCount(keyBuf)
-      let peerAddresses = undefined
-      if (opts && opts.includeAddresses) {
-        peerAddresses = await hyper.daemon.listPeerAddresses(keyBuf)
+    if (tab && tab.primaryPane && tab.primaryPane.driveInfo) {
+      let drive = hyper.drives.getDrive(tab.primaryPane.driveInfo.key)
+      if (drive) {
+        return {
+          peers: drive.session.drive.metadata.peers.map(p => ({type: p.type, remoteAddress: p.remoteAddress}))
+        }
       }
-      return {peers, peerAddresses}
     }
   },
 
@@ -1346,6 +1356,10 @@ rpc.exportAPI('background-process-views', viewsRPCManifest, {
     return locationBar.runCmd(getWindow(this.sender), cmd, opts)
   },
 
+  async toggleSidebarHidden () {
+    toggleSidebarHidden(getWindow(this.sender))
+  },
+
   async showMenu (id, opts) {
     await shellMenus.show(getWindow(this.sender), id, opts)
   },
@@ -1454,22 +1468,22 @@ function indexOfLastPinnedTab (win) {
   return index
 }
 
-function defineActivePanePassthroughGetter (obj, name) {
+function definePrimaryPanePassthroughGetter (obj, name) {
   Object.defineProperty(obj, name, {
     enumerable: true,
     get () {
-      var pane = obj.activePane
+      var pane = obj.primaryPane
       return pane ? pane[name] : undefined
     }
   })
 }
 
-function defineActivePanePassthroughFn (obj, name) {
+function definePrimaryPanePassthroughFn (obj, name) {
   obj[name] = (function (...args) {
-    if (!this.activePane) {
+    if (!this.primaryPane) {
       throw new Error('No active pane')
     }
-    return this.activePane[name](...args)
+    return this.primaryPane[name](...args)
   }).bind(obj)
 }
 

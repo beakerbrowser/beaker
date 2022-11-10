@@ -24,7 +24,6 @@ class BookmarkMenu extends LitElement {
     this.href = ''
     this.title = ''
     this.pinned = false
-    this.public = false
     this.existingBookmark = undefined
   }
 
@@ -34,7 +33,6 @@ class BookmarkMenu extends LitElement {
       this.href = this.existingBookmark.href || params.url
       this.title = this.existingBookmark.title || params.metadata.title || ''
       this.pinned = this.existingBookmark.pinned
-      this.public = !this.existingBookmark.site.url.startsWith('hyper://private')
     } else {
       this.href = params.url
       this.title = params.metadata && params.metadata.title ? params.metadata.title : ''
@@ -65,13 +63,6 @@ class BookmarkMenu extends LitElement {
             <input type="text" name="href" placeholder="Title" value="${this.href}" @keyup=${this.onChangeHref}/>
           </div>
 
-          <div class="input-group" style="margin: 15px 0 5px">
-            <label for="public-checkbox" data-tooltip="Share this bookmark publicly">
-              <input id="public-checkbox" type="checkbox" name="public" value="1" ?checked=${this.public} @change=${this.onChangePublic}/>
-              Public
-            </label>
-          </div>
-
           <div class="input-group" style="margin: 5px 0">
             <label for="pinned-checkbox">
               <input id="pinned-checkbox" type="checkbox" name="pinned" value="1" ?checked=${this.pinned} @change=${this.onChangePinned}/>
@@ -97,11 +88,13 @@ class BookmarkMenu extends LitElement {
 
   async onSaveBookmark (e) {
     e.preventDefault()
+    if (this.existingBookmark && this.href !== this.existingBookmark.href) {
+      await bg.bookmarks.remove(this.existingBookmark.href)
+    }
     await bg.bookmarks.add({
       href: this.href,
       title: this.title,
-      pinned: this.pinned,
-      site: this.public ? `hyper://${(await bg.beakerBrowser.getProfile()).key}` : 'hyper://private'
+      pinned: this.pinned
     })
     bg.views.refreshState('active')
     bg.shellMenus.close()
@@ -124,10 +117,6 @@ class BookmarkMenu extends LitElement {
     this.title = e.target.value
   }
 
-  onChangePublic (e) {
-    this.public = !this.public
-  }
-
   onChangePinned (e) {
     this.pinned = !this.pinned
   }
@@ -136,7 +125,7 @@ BookmarkMenu.styles = [commonCSS, inputsCSS, buttonsCSS, css`
 .wrapper {
   box-sizing: border-box;
   padding: 15px 15px 0;
-  height: 225px;
+  height: 195px;
   overflow: hidden;
 }
 
@@ -181,10 +170,6 @@ form {
   margin: 0 5px;
   position: relative;
   top: 2px;
-}
-
-.input-group.public {
-  margin: 14px 0;
 }
 
 .buttons {

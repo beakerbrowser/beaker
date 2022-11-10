@@ -1,6 +1,7 @@
-import { LitElement, html, css } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
+import { LitElement, html } from '../../../app-stdlib/vendor/lit-element/lit-element.js'
 import viewCSS from '../../css/views/general.css.js'
 import * as toast from '../../../app-stdlib/js/com/toast.js'
+
 class GeneralSettingsView extends LitElement {
   static get properties () {
     return {
@@ -17,6 +18,7 @@ class GeneralSettingsView extends LitElement {
     this.settings = undefined
     this.browserInfo = undefined
     this.defaultProtocolSettings = undefined
+    this.listingSelfState = undefined
   }
 
   get isAutoUpdateEnabled () {
@@ -38,6 +40,8 @@ class GeneralSettingsView extends LitElement {
       settings: this.settings,
       defaultProtocolSettings: this.defaultProtocolSettings
     })
+    this.requestUpdate()
+
     this.requestUpdate()
   }
 
@@ -605,6 +609,16 @@ class GeneralSettingsView extends LitElement {
     el.innerHTML = '<span class="spinner"></span>'
     await beaker.browser.reconnectHyperdriveDaemon()
     this.browserInfo = await beaker.browser.getInfo()
+    this.requestUpdate()
+  }
+
+  async onClickAddSiteToBeakerNetwork (e) {
+    this.listingSelfState = 'attempting'
+    this.requestUpdate()
+
+    await beaker.browser.addProfileToBeakerNetwork()
+    this.isProfileListedInBeakerNetwork = true
+    this.listingSelfState = 'done'
     this.requestUpdate()
   }
 }

@@ -12,6 +12,7 @@ import { BrowserWindow, BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import locationBarRPCManifest from '../../rpc-manifests/location-bar'
 import * as tabManager from '../tabs/manager'
+import * as settingsDb from '../../dbs/settings'
 
 // globals
 // =
@@ -24,7 +25,8 @@ var views = {} // map of {[parentWindow.id] => BrowserView}
 // =
 
 export function setup (parentWindow) {
-  var view = views[parentWindow.id] = new BrowserView({
+  var id = parentWindow.id
+  var view = views[id] = new BrowserView({
     webPreferences: {
       defaultEncoding: 'utf-8',
       preload: path.join(__dirname, 'fg', 'location-bar', 'index.build.js')
@@ -35,11 +37,17 @@ export function setup (parentWindow) {
     console.log('Location-Bar window says:', message)
   })
   view.webContents.loadURL('beaker://location-bar/')
+
+  settingsDb.on('set:search_engines', newValue => {
+    if (id in views) {
+      parentWindow.webContents.send('command', 'set-search-engines', newValue)
+    }
+  })
 }
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -77,7 +85,7 @@ export async function show (parentWindow, opts) {
 export function hide (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    view.webContents.executeJavaScript(`invisibilityCloak()`)
+    view.webContents.executeJavaScript(`invisibilityCloak(); undefined`)
     setTimeout(() => {
       parentWindow.removeBrowserView(view)
       view.isVisible = false
@@ -146,10 +154,10 @@ rpc.exportAPI('background-process-location-bar', locationBarRPCManifest, {
 // =
 
 function getParentWindow (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  for (let id in views) {
-    if (views[id] === view) {
-      return BrowserWindow.fromId(+id)
+  for (let win of BrowserWindow.getAllWindows()) {
+    if (win.webContents === sender) return win
+    for (let view of win.getBrowserViews()) {
+      if (view.webContents === sender) return win
     }
   }
   throw new Error('Parent window not found')

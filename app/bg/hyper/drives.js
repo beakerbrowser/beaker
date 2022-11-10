@@ -74,12 +74,16 @@ export async function ensureHosting (keys) {
   for (let key of keys) {
     let cfg = configs.get(key)
     if (!cfg || !cfg.announce || !cfg.lookup) {
-      let drive = await getOrLoadDrive(key)
-      logger.info(`Reconfiguring network behavior for drive ${key}`)
-      await drive.session.drive.configureNetwork({
-        announce: true,
-        lookup: true
-      })
+      try {
+        let drive = await getOrLoadDrive(key)
+        logger.silly(`Reconfiguring network behavior for drive ${key}`)
+        await drive.session.drive.configureNetwork({
+          announce: true,
+          lookup: true
+        })
+      } catch (e) {
+        logger.debug(`Failed to configure behavior for drive ${key}`, {error: e})
+      }
     }
   }
 }
@@ -128,6 +132,8 @@ export async function pullLatestDriveMeta (drive, {updateMTime} = {}) {
           driveAssets.update(drive)
         }
       })
+    } else {
+      driveAssets.update(drive)
     }
 
     // read the drive meta and size on disk
@@ -294,29 +300,37 @@ export async function loadDrive (key, opts) {
 
 // main logic, separated out so we can capture the promise
 async function loadDriveInner (key, opts) {
-  // fetch dns name if known
-  var domain = await hyperDns.reverseResolve(key)
-  // let dnsRecord = await hyperDnsDb.getCurrentByKey(datEncoding.toStr(key)) TODO
-  // drive.domain = dnsRecord ? dnsRecord.name : undefined
-  
-  // create the drive session with the daemon
-  var drive = await daemon.createHyperdriveSession({key, domain})
-  drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
-  key = drive.key
+  try {
+    // fetch dns name if known
+    var domain = await hyperDns.reverseResolve(key)
+    // let dnsRecord = await hyperDnsDb.getCurrentByKey(datEncoding.toStr(key)) TODO
+    // drive.domain = dnsRecord ? dnsRecord.name : undefined
+    
+    // create the drive session with the daemon
+    var drive = await daemon.createHyperdriveSession({key, domain})
+    drive.pullLatestDriveMeta = opts => pullLatestDriveMeta(drive, opts)
+    key = drive.key
 
-  if (opts && opts.persistSession) {
-    drive.persistSession = true
+    if (opts && opts.persistSession) {
+      drive.persistSession = true
+    }
+
+    // update db
+    archivesDb.touch(drive.key).catch(err => console.error('Failed to update lastAccessTime for drive', drive.key, err))
+    if (!drive.writable) {
+      await downloadHack(drive, DRIVE_MANIFEST_FILENAME)
+    }
+    await drive.pullLatestDriveMeta()
+    driveAssets.update(drive)
+
+    return drive
+  } catch (e) {
+    if (e.toString().includes('daemon has shut down') || e.toString().includes('RPC stream destroyed')) {
+      // suppress, beaker is shutting down
+    } else {
+      throw e
+    }
   }
-
-  // update db
-  archivesDb.touch(drive.key).catch(err => console.error('Failed to update lastAccessTime for drive', drive.key, err))
-  if (!drive.writable) {
-    await downloadHack(drive, DRIVE_MANIFEST_FILENAME)
-  }
-  await drive.pullLatestDriveMeta()
-  driveAssets.update(drive)
-
-  return drive
 }
 
 /**
@@ -419,7 +433,7 @@ export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache
     }
     manifest = manifest || {}
     if (filesystem.isRootUrl(url) && !meta.title) {
-      meta.title = 'My Private Site'
+      meta.title = 'My Private Drive'
     }
     meta.key = key
     meta.discoveryKey = drive ? drive.discoveryKey : undefined
@@ -428,7 +442,7 @@ export async function getDriveInfo (key, {ignoreCache, onlyCache} = {ignoreCache
     meta.links = manifest.links || {}
     meta.manifest = manifest
     meta.version = driveInfo.version
-    meta.peers = await daemon.getPeerCount(drive ? drive.key : new Buffer(key, 'hex'))    
+    meta.peers = drive?.session?.drive?.metadata?.peers?.length || 0
   } catch (e) {
     meta = {
       key,

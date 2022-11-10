@@ -9,6 +9,7 @@
 import path from 'path'
 import { BrowserView, BrowserWindow } from 'electron'
 import * as tabManager from '../tabs/manager'
+import * as wcTrust from '../../wc-trust'
 
 // constants
 // =
@@ -33,11 +34,12 @@ export function setup (parentWindow) {
     }
   })
   view.webContents.loadFile(path.join(__dirname, 'fg', 'tab-switcher', 'index.html'))
+  wcTrust.setWcTrust(view.webContents, wcTrust.TRUST.TRUSTED)
 }
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -103,7 +105,9 @@ export async function hide (parentWindow) {
     `)
     if (selectedTab && typeof selectedTab === 'object') {
       let win = BrowserWindow.fromId(selectedTab.winId)
-      win.show()
+      if (!win.isFocused()) {
+        win.focus()
+      }
       tabManager.setActive(win, selectedTab.tabIndex)
     }
     parentWindow.removeBrowserView(view)
@@ -114,7 +118,7 @@ export async function moveSelection (parentWindow, dir) {
   var view = get(parentWindow)
   if (view) {
     await view.webContents.executeJavaScript(`
-      window.moveSelection(${dir})
+      window.moveSelection(${dir}); undefined
     `)
   }
 }

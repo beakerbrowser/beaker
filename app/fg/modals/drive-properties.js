@@ -118,6 +118,7 @@ class DrivePropertiesModal extends LitElement {
     this.props = params.props || {}
     this.props.title = this.props.title || ''
     this.props.description = this.props.description || ''
+    this.props.tags = this.props.tags?.join(' ') || ''
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -135,7 +136,7 @@ class DrivePropertiesModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <h1 class="title">
-          Site Properties
+          Hyperdrive Properties
         </h1>
 
         <form @submit=${this.onSubmit}>
@@ -161,10 +162,11 @@ class DrivePropertiesModal extends LitElement {
   }
 
   renderProp (key, value) {
+    var writable = key === 'tags' || this.writable
     return html`
-      <div class="prop ${this.writable ? '.writable' : ''}">
+      <div class="prop ${writable ? 'writable' : ''}">
         <div class="key">${ucfirst(key)}</div>
-        <input type="text" name=${key} value=${value} ?readonly=${!this.writable} @change=${this.onInputChange}>
+        <input type="text" name=${key} value=${value} ?readonly=${!writable} @change=${this.onInputChange}>
       </div>
     `
   }
@@ -184,11 +186,8 @@ class DrivePropertiesModal extends LitElement {
   async onSubmit (e) {
     e.preventDefault()
 
-    if (!this.writable) {
-      return this.cbs.resolve()
-    }
-
     var newProps = Object.fromEntries(new FormData(e.currentTarget))
+    newProps.tags = newProps.tags.split(' ')
 
     // handle thumb file
     var thumbInput = this.shadowRoot.querySelector('#thumb-input')

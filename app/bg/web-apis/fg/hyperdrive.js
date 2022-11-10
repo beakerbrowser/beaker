@@ -83,10 +83,15 @@ export function setup (rpc) {
       },
 
       async diff (prefix, other, opts = {}) {
+        if (typeof prefix !== 'string') {
+          if (other) opts = other
+          other = prefix
+          prefix = '/'
+        }
         other = other && typeof other === 'object' && other.version ? other.version : other
         var res = await hyperdriveRPC.diff(joinPath(url, prefix), other, prefix, opts)
         for (let change of res) {
-          if (change.value.stat) {
+          if (change.value?.stat) {
             change.value.stat = createStat(change.value.stat)
           }
         }
@@ -232,7 +237,7 @@ export function setup (rpc) {
       other = other && typeof other === 'object' && other.version ? other.version : other
       var res = await hyperdriveRPC.diff(url, other, opts)
       for (let change of res) {
-        if (change.value.stat) {
+        if (change.value?.stat) {
           change.value.stat = createStat(change.value.stat)
         }
       }
@@ -340,12 +345,12 @@ export function setup (rpc) {
     api.exportToDrive = async function (opts = {}) {
       return hyperdriveRPC.exportToDrive(opts)
     }
-    api.diff = async function (srcUrl, dstUrl, opts = {}) {
+    api.driveDiff = async function (srcUrl, dstUrl, opts = {}) {
       if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
       if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
       return hyperdriveRPC.beakerDiff(srcUrl, dstUrl, opts)
     }
-    api.merge = async function (srcUrl, dstUrl, opts = {}) {
+    api.driveMerge = async function (srcUrl, dstUrl, opts = {}) {
       if (srcUrl && typeof srcUrl.url === 'string') srcUrl = srcUrl.url
       if (dstUrl && typeof dstUrl.url === 'string') dstUrl = dstUrl.url
       return hyperdriveRPC.beakerMerge(srcUrl, dstUrl, opts)

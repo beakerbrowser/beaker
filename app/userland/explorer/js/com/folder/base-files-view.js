@@ -80,7 +80,7 @@ export class BaseFilesView extends LitElement {
   }
 
   getInlineMdItem () {
-    var md = this.items.find(item => item.name.toLowerCase() === 'readme.md')
+    var md = this.items.find(item => item.name.toLowerCase() === 'index.md')
     if (md) return md
   }
 
@@ -91,7 +91,7 @@ export class BaseFilesView extends LitElement {
     var inlineMdItem = this.getInlineMdItem()
     var isEmpty = this.itemGroups.reduce((acc, group) => acc && group.length === 0, true)
     return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
+      <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
       <div
         class="container"
         @click=${this.onClickContainer}
@@ -117,7 +117,7 @@ export class BaseFilesView extends LitElement {
           <div class="empty">This folder is empty</div>
         ` : ''}
         ${inlineMdItem ? html`
-          <h4>Readme</h4>
+          <h4>Index.md</h4>
           <div class="readme">
             <file-display
               drive-url=${inlineMdItem.drive.url}

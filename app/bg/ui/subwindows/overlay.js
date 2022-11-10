@@ -29,7 +29,7 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -62,10 +62,10 @@ export function set (parentWindow, opts) {
     if (opts) {
       show(parentWindow)
       view.setBounds(opts.bounds)
-      view.webContents.executeJavaScript(`set(${JSON.stringify(opts)})`)
+      view.webContents.executeJavaScript(`set(${JSON.stringify(opts)}); undefined`)
     } else { 
       hide(parentWindow)
-      view.webContents.executeJavaScript(`set({})`)
+      view.webContents.executeJavaScript(`set({}); undefined`)
     }
   }
 } 

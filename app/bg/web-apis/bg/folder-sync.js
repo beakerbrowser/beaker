@@ -9,7 +9,7 @@ import { UserDeniedError } from 'beaker-error-constants'
 import bytes from 'bytes'
 import { globToRegex } from '../../../lib/strings'
 
-const DEFAULT_IGNORED_FILES = '/index.json'
+const DEFAULT_IGNORED_FILES = '/index.json\n/.git\n/node_modules\n.DS_Store'
 const COMPARE_SIZE_LIMIT = {maxSize: bytes('5mb'), assumeEq: false}
 
 // globals
@@ -165,7 +165,7 @@ async function getDrive (url) {
 async function sync (url) {
   var drive = await getDrive(url)
   var current = await folderSyncDb.get(drive.key.toString('hex'))
-  if (!current || !current.localPath) return []
+  if (!current || !current.localPath) return
   var diff = await dft.diff(
     current.localPath,
     {fs: drive.session.drive, path: '/'},
@@ -175,7 +175,7 @@ async function sync (url) {
       filter: createIgnoreFilter(current.ignoredFiles)
     }
   )
-  return dft.applyRight(current.localPath, {fs: drive.session.drive, path: '/'}, diff)
+  return dft.applyRightStream(current.localPath, {fs: drive.session.drive, path: '/'}, diff)
 }
 
 function startAutosync (key, current) {

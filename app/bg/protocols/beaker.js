@@ -21,7 +21,7 @@ const BEAKER_CSP = `
   style-src 'self' 'unsafe-inline' beaker:;
   child-src 'self';
 `.replace(/\n/g, '')
-const BEAKER_DESKTOP_CSP = `
+const BEAKER_APP_CSP = `
   default-src 'self' beaker:;
   img-src beaker: asset: data: blob: hyper: http: https;
   script-src 'self' beaker: hyper: 'unsafe-eval';
@@ -131,9 +131,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://assets/syntax-highlight.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/css/syntax-highlight.css'))
   }
-  if (requestUrl === 'beaker://assets/icons.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/icons.css'))
-  }
   if (requestUrl === 'beaker://assets/font-awesome.css') {
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'assets/css/fa-all.min.css'))
   }
@@ -176,6 +173,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://assets/logo-black.svg') {
     return cb(200, 'OK', 'image/svg+xml', path.join(__dirname, 'assets/img/logo-black.svg'))
   }
+  if (requestUrl === 'beaker://assets/spinner.gif') {
+    return cb(200, 'OK', 'image/gif', path.join(__dirname, 'assets/img/spinner.gif'))
+  }
   if (requestUrl.startsWith('beaker://assets/logo2')) {
     return cb(200, 'OK', 'image/png', path.join(__dirname, 'assets/img/logo2.png'))
   }
@@ -185,9 +185,8 @@ async function beakerProtocol (request, respond) {
   if (requestUrl.startsWith('beaker://assets/default-user-thumb')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
   }
-  if (requestUrl.startsWith('beaker://setup/default-user-thumb')) {
-    // rehost under beaker://setup because there's a CSP bug stopping beaker://setup from accessing beaker://assets
-    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-user-thumb.jpg'))
+  if (requestUrl.startsWith('beaker://assets/default-thumb')) {
+    return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-thumb.jpg'))
   }
   if (requestUrl.startsWith('beaker://assets/default-frontend-thumb')) {
     return cb(200, 'OK', 'image/jpeg', path.join(__dirname, 'assets/img/default-frontend-thumb.jpg'))
@@ -230,9 +229,6 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://cmd-pkg' || requestUrl.startsWith('beaker://cmd-pkg/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'cmd-pkg'), cb)
   }
-  if (requestUrl === 'beaker://std-cmds' || requestUrl.startsWith('beaker://std-cmds/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'std-cmds'), cb)
-  }
   if (requestUrl === 'beaker://site-info' || requestUrl.startsWith('beaker://site-info/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'site-info'), cb, {fallbackToIndexHTML: true})
   }
@@ -243,16 +239,13 @@ async function beakerProtocol (request, respond) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'init'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://editor' || requestUrl.startsWith('beaker://editor/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb, {fallbackToIndexHTML: true})
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'editor'), cb)
   }
   if (requestUrl === 'beaker://explorer' || requestUrl.startsWith('beaker://explorer/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'explorer'), cb, {fallbackToIndexHTML: true})
   }
-  if (requestUrl === 'beaker://about' || requestUrl.startsWith('beaker://about/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'about'), cb, {fallbackToIndexHTML: true})
-  }
-  if (requestUrl === 'beaker://activity' || requestUrl.startsWith('beaker://activity/')) {
-    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'activity'), cb, {fallbackToIndexHTML: true})
+  if (requestUrl === 'beaker://hypercore-tools' || requestUrl.startsWith('beaker://hypercore-tools/')) {
+    return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'hypercore-tools'), cb, {fallbackToIndexHTML: true})
   }
   if (requestUrl === 'beaker://webterm' || requestUrl.startsWith('beaker://webterm/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'webterm'), cb, {
@@ -262,7 +255,7 @@ async function beakerProtocol (request, respond) {
   }
   if (requestUrl === 'beaker://desktop' || requestUrl.startsWith('beaker://desktop/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'desktop'), cb, {
-      CSP: BEAKER_DESKTOP_CSP,
+      CSP: BEAKER_APP_CSP,
       fallbackToIndexHTML: true,
     })
   }
@@ -272,38 +265,9 @@ async function beakerProtocol (request, respond) {
   if (requestUrl === 'beaker://settings' || requestUrl.startsWith('beaker://settings/')) {
     return serveAppAsset(requestUrl, path.join(__dirname, 'userland', 'settings'), cb)
   }
-
-  // builtin pages
-  if (requestUrl === 'beaker://assets/builtin-pages.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages.css'))
-  }
   if (requestUrl.startsWith('beaker://assets/img/onboarding/')) {
     let imgPath = requestUrl.slice('beaker://assets/img/onboarding/'.length)
     return cb(200, 'OK', 'image/png', path.join(__dirname, `assets/img/onboarding/${imgPath}`))
-  }
-  if (requestUrl === 'beaker://swarm-debugger/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/swarm-debugger.css'))
-  }
-  if (requestUrl === 'beaker://swarm-debugger/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/swarm-debugger.build.js'))
-  }
-  if (requestUrl === 'beaker://swarm-debugger/' || requestUrl.startsWith('beaker://swarm-debugger/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/swarm-debugger.html'))
-  }
-  if (requestUrl === 'beaker://watchlist/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/watchlist.css'))
-  }
-  if (requestUrl === 'beaker://watchlist/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/watchlist.build.js'))
-  }
-  if (requestUrl === 'beaker://watchlist/') {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/watchlist.html'))
-  }
-  if (requestUrl === 'beaker://editor/main.css') {
-    return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/stylesheets/builtin-pages/editor.css'))
-  }
-  if (requestUrl === 'beaker://editor/main.js') {
-    return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/build/editor.build.js'))
   }
   if (requestUrl === 'beaker://assets/monaco.js') {
     return cb(200, 'OK', 'application/javascript; charset=utf-8', path.join(__dirname, 'assets/js/editor/monaco.js'))
@@ -316,8 +280,9 @@ async function beakerProtocol (request, respond) {
     let filePath = requestUrl.slice('beaker://assets/vs/'.length)
     return cb(200, 'OK', 'text/css; charset=utf-8', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
   }
-  if (requestUrl.startsWith('beaker://editor/')) {
-    return cb(200, 'OK', 'text/html; charset=utf-8', path.join(__dirname, 'fg/builtin-pages/editor.html'))
+  if (requestUrl.startsWith('beaker://assets/vs/') && requestUrl.endsWith('.ttf')) {
+    let filePath = requestUrl.slice('beaker://assets/vs/'.length)
+    return cb(200, 'OK', 'font/ttf', path.join(__dirname, `assets/js/editor/vs/${filePath}`))
   }
 
   // debugging

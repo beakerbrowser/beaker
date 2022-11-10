@@ -18,65 +18,52 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   var searchEngine = searchEngines.find(se => se.selected) || searchEngines[0]
   var {vWithProtocol, vSearch, isProbablyUrl, isGuessingTheScheme} = examineLocationInput(ctx.inputValue || '/')
 
+  // optimistically set the input-based results to ensure responsiveness
+  {
+    if (ctx.results) ctx.results = ctx.results.filter(r => !r.search && !r.isGoto)
+    ctx.results = ctx.results || []
+    let gotoResult = { url: vWithProtocol, title: 'Go to ' + (ctx.inputValue || '/'), isGuessingTheScheme, isGoto: true }
+    let searchResult = {
+      search: ctx.inputValue,
+      title: `Search ${searchEngine.name} for "${ctx.inputValue}"`,
+      url: searchEngine.url + vSearch
+    }
+    if (ctx.inputValue.includes(' ')) ctx.results.unshift(searchResult)
+    else if (isProbablyUrl) ctx.results = [gotoResult, searchResult].concat(ctx.results)
+    else ctx.results = [searchResult, gotoResult].concat(ctx.results)
+    onResults(true)
+  }
+  
   var [historyResults, bookmarks] = await Promise.all([
     ctx.inputValue ? bg.history.search(ctx.inputValue) : [],
     ctx.bookmarksFetch
   ])
-
-  var bookmarkResults = [];
-  {
-    let query = ctx.inputValue.toLowerCase()
-    for (let bookmark of bookmarks) {
-      let titleIndex = bookmark.title.toLowerCase().indexOf(query)
-      let hrefIndex = bookmark.href.indexOf(query)
-      if (titleIndex === -1 && hrefIndex === -1) {
-        continue
-      }
-
-      var titleDecorated = undefined
-      if (titleIndex !== -1) {
-        let t = bookmark.title
-        let start = titleIndex
-        let end = start + query.length
-        titleDecorated = [t.slice(0, start), t.slice(start, end), t.slice(end)]
-      }
-
-      var urlDecorated = undefined
-      if (hrefIndex !== -1) {
-        let h = bookmark.href
-        let start = hrefIndex
-        let end = start + query.length
-        urlDecorated = [h.slice(0, start), h.slice(start, end), h.slice(end)]
-      }
-
-      bookmarkResults.push({
-        isBookmark: true,
-        url: bookmark.href,
-        urlDecorated,
-        title: bookmark.title,
-        titleDecorated
-      })
-    }
-  }
 
   // abort if changes to the input have occurred since triggering these queries
   if (queryId !== ctx.queryIdCounter) return
 
   // decorate results with bolded regions
   var searchTerms = ctx.inputValue.replace(/[:^*-./]/g, ' ').split(' ').filter(Boolean)
+  var searchTermsRe = new RegExp(`(${searchTerms.join('|')})`, 'gi')
   historyResults.forEach(r => highlightHistoryResult(searchTerms, r))
 
-  finalResults = bookmarkResults.concat(historyResults)
-  finalResults = _uniqWith(finalResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
-  finalResults = finalResults.slice(0, 10) // apply limit
+  if (ctx.inputValue) {
+    finalResults = _uniqWith(historyResults, (a, b) => normalizeURL(a.url) === normalizeURL(b.url)) // remove duplicates
+    finalResults = finalResults.slice(0, 10) // apply limit
+  } else {
+    finalResults = bookmarks
+  }
 
   // see if we have any URL guesses
   // we only do this if the input changed, in case the user deleted our suggested guess
   ctx.urlGuess = undefined
   if (ctx.lastInputValue !== ctx.inputValue) {
     for (let res of finalResults) {
-      let start = res.url.indexOf('://') + 3 // skip the scheme
-      if (res.url.slice(start).startsWith('www.')) {
+      let start = 0
+      if (!ctx.inputValue.includes('://')) {
+        start = res.url.indexOf('://') + 3 // skip the scheme
+      }
+      if (!ctx.inputValue.includes('www.') && res.url.slice(start).startsWith('www.')) {
         start += 4 // skip the www.
       }
       let index = res.url.indexOf(ctx.inputValue, start)
@@ -114,6 +101,7 @@ export async function queryAutocomplete (bg, ctx, onResults) {
   ctx.lastInputValue = ctx.inputValue
   onResults()
 }
+
 
 // helper for history search results
 // - takes in the current search (tokenized) and a result object

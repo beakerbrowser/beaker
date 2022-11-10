@@ -1,4 +1,4 @@
-import { app, Menu, clipboard, BrowserWindow, BrowserView, dialog } from 'electron'
+import { app, Menu, clipboard, BrowserWindow, dialog } from 'electron'
 import path from 'path'
 import * as tabManager from './tabs/manager'
 import * as modals from './subwindows/modals'
@@ -62,7 +62,7 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Open in Pane Right',
           click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = targetTab && targetTab.findPane(webContents)
             if (targetTab && pane) {
               let lastStack = targetTab.layout.stacks[targetTab.layout.stacks.length - 1]
               if (targetTab.layout.stacks.length > 1 && !lastStack.panes.find(p => p === pane)) {
@@ -78,7 +78,7 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Open in Pane Below',
           click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = targetTab && targetTab.findPane(webContents)
             if (targetTab && pane) {
               targetTab.createPane({url: props.linkURL, setActive: true, after: pane, splitDir: 'horz'})
             }
@@ -97,7 +97,7 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Open in Pane Right',
           click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = targetTab && targetTab.findPane(webContents)
             if (targetTab && pane) {
               targetTab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'vert'})
             }
@@ -106,7 +106,7 @@ export default function registerContextMenu () {
         menuItems.push({
           label: 'Open in Pane Below',
           click () {
-            var pane = targetTab && targetTab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = targetTab && targetTab.findPane(webContents)
             if (targetTab && pane) {
               targetTab.createPane({url: props.srcURL, setActive: true, after: pane, splitDir: 'horz'})
             }
@@ -214,7 +214,7 @@ export default function registerContextMenu () {
 
       if (isHyperdrive) {
         menuItems.push({
-          label: 'Edit Source',
+          label: 'Edit Page Source',
           click: async (item, win) => {
             if (targetTab) targetTab.createOrFocusPaneByOrigin({url: 'beaker://editor/', setActive: true})
           }
@@ -268,7 +268,7 @@ export function createMenuItem (id, {tab, webContents, x, y}) {
       return {
         label: 'Split Pane Vertically',
         click () {
-          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          var pane = tab && tab.findPane(webContents)
           if (tab && pane) tab.splitPane(pane, 'vert')
         }
       }
@@ -276,7 +276,7 @@ export function createMenuItem (id, {tab, webContents, x, y}) {
       return {
         label: 'Split Pane Horizontally',
         click () {
-          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          var pane = tab && tab.findPane(webContents)
           if (tab && pane) tab.splitPane(pane, 'horz')
         }
       }
@@ -287,7 +287,7 @@ export function createMenuItem (id, {tab, webContents, x, y}) {
         submenu: [{
           label: 'To a New Tab',
           click () {
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = tab && tab.findPane(webContents)
             if (tab && pane) {
               tab.detachPane(pane)
               tabManager.create(tab.browserWindow, null, {setActive: true, initialPanes: [pane]})
@@ -298,25 +298,25 @@ export function createMenuItem (id, {tab, webContents, x, y}) {
         }, {
           label: 'Up',
           click () {
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = tab && tab.findPane(webContents)
             if (tab && pane) tab.movePane(pane, 'up')
           }
         }, {
           label: 'Down',
           click () {
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = tab && tab.findPane(webContents)
             if (tab && pane) tab.movePane(pane, 'down')
           }
         }, {
           label: 'Left',
           click () {
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = tab && tab.findPane(webContents)
             if (tab && pane) tab.movePane(pane, 'left')
           }
         }, {
           label: 'Right',
           click () {
-            var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+            var pane = tab && tab.findPane(webContents)
             if (tab && pane) tab.movePane(pane, 'right')
           }
         }]
@@ -325,7 +325,7 @@ export function createMenuItem (id, {tab, webContents, x, y}) {
       return {
         label: 'Close Pane',
         click () {
-          var pane = tab && tab.findPane(BrowserView.fromWebContents(webContents))
+          var pane = tab && tab.findPane(webContents)
           if (tab && pane) tab.removePane(pane)
         }
       }

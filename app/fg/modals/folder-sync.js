@@ -165,7 +165,8 @@ class FolderSyncModal extends LitElement {
     .revision-indicator.mod { background: #fac800; }
     .revision-indicator.del { background: #d93229; }
 
-    .ignores {
+    .ignores,
+    .log {
       height: 100px;
     }
 
@@ -231,6 +232,8 @@ class FolderSyncModal extends LitElement {
     this.changes = undefined
     this.showSkippedFiles = false
     this.closeAfterSync = false
+    this.syncStream = undefined
+    this.syncLog = []
   }
 
   async init (params, cbs) {
@@ -317,6 +320,30 @@ class FolderSyncModal extends LitElement {
     return false
   }
 
+  async doSync () {
+    this.syncLog.unshift('-- New sync started --')
+    this.requestUpdate()
+    try {
+      this.syncStream = await bg.folderSync.sync(this.url)
+      this.requestUpdate()
+      await new Promise((resolve, reject) => {
+        this.syncStream.on('data', ({op, path}) => {
+          this.syncLog.unshift(`${op} ${path}`)
+          this.requestUpdate()
+        })
+        this.syncStream.on('error', reject)
+        this.syncStream.on('close', resolve)
+        this.syncStream.on('end', resolve)
+      })
+      this.syncLog.unshift('-- Sync completed --')
+    } catch (e) {
+      this.syncLog.unshift('-- Sync aborted --')
+    } finally {
+      this.syncStream = undefined
+      this.requestUpdate()
+    }
+  }
+
   updated () {
     this.adjustHeight()
   }
@@ -365,11 +392,28 @@ class FolderSyncModal extends LitElement {
               >${this.ignoredFiles.join('\n')}</textarea>
             </details>
           ` : ''}
+            <details @toggle=${this.adjustHeight}>
+              <summary>
+                Sync log
+              </summary>
+              <textarea
+                class="log"
+                @input=${_debounce(this.onChangeIgnores, 1e3)}
+                disabled
+              >${this.syncLog.join('\n')}</textarea>
+            </details>
         </main>
         <div class="form-actions">
           <button type="button" @click=${this.onClickClose} class="cancel" tabindex="6">Close</button>
           <span>
-            ${this.isAutoSyncing ? html`
+            ${this.syncStream ? html`
+              <button tabindex="5" @click=${this.onClickAbortSync}>
+                Abort
+              </button>
+              <button type="submit" class="primary" tabindex="4" disabled>
+                <span class="spinner"></span> Syncing
+              </button>
+            ` : this.isAutoSyncing ? html`
               <button tabindex="5" @click=${this.onClickStopAutosync}>
                 Stop Autosync
               </button>
@@ -426,7 +470,7 @@ class FolderSyncModal extends LitElement {
             <div class="change ${change.type === 'dir' ? 'clickable' : ''} ${isIgnored ? 'ignored' : ''}">
               ${subdirSpacers()}
               <span class="path" @click=${onClick}>
-                ${!isIgnored ? html`<span class="revision-indicator ${change.change}"></span>` : ''}
+                ${!isIgnored ? html`<span class="revision-indicator ${change.change} tooltip-right" data-tooltip=${changeAsLabel(change.change)}></span>` : ''}
                 ${icon()}
                 ${filename}
               </span>
@@ -484,7 +528,7 @@ class FolderSyncModal extends LitElement {
 
   async onClickSync () {
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `<div class="spinner"></div> Syncing`
-    await bg.folderSync.sync(this.url)
+    await this.doSync()
     this.shadowRoot.querySelector('button[type="submit"]').innerHTML = `Sync`
     if (this.closeAfterSync) return this.cbs.resolve()
     this.changes = []
@@ -493,10 +537,14 @@ class FolderSyncModal extends LitElement {
   }
 
   async onClickStartAutosync () {
-    await bg.folderSync.sync(this.url)
+    await this.doSync()
     await bg.folderSync.enableAutoSync(this.url)
     if (this.closeAfterSync) return this.cbs.resolve()
     this.load()
+  }
+
+  onClickAbortSync () {
+    this.syncStream.close()
   }
 
   async onClickStopAutosync () {
@@ -511,6 +559,14 @@ class FolderSyncModal extends LitElement {
 }
 
 customElements.define('folder-sync-modal', FolderSyncModal)
+
+function changeAsLabel (change) {
+  return ({
+    add: 'Add',
+    mod: 'Modify',
+    del: 'Delete'
+  })[change] || change
+}
 
 function sortAlphaAndFolders (a, b) {
   for (let i = 0; i < Math.min(a.path.length, b.path.length); i++) {

@@ -36,6 +36,20 @@ export const PERMS = {
     requiresRefresh: false,
     experimental: false
   },
+  tagDrive: {
+    persist: false,
+    idempotent: false,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: false
+  },
+  listDrives: {
+    persist: 'allow', // dont persist 'deny'
+    idempotent: true,
+    alwaysDisallow: false,
+    requiresRefresh: false,
+    experimental: false
+  },
   media: {
     persist: false,
     idempotent: true,
@@ -150,13 +164,6 @@ export const PERMS = {
     requiresRefresh: false,
     experimental: true
   },
-  contactsList: {
-    persist: 'allow', // dont persist 'deny'
-    idempotent: true,
-    alwaysDisallow: false,
-    requiresRefresh: false,
-    experimental: false
-  },
   panesCreate: {
     persist: 'allow', // dont persist 'deny'
     idempotent: true,
@@ -186,6 +193,8 @@ export const PERM_ICONS = {
   createDrive: 'fas fa-folder-open',
   modifyDrive: 'fas fa-folder-open',
   deleteDrive: 'fas fa-folder-open',
+  tagDrive: 'fas fa-tag',
+  listDrives: 'fas fa-folder-open',
   media: 'fas fa-video',
   geolocation: 'fas fa-map-marked',
   notifications: 'fas fa-bell',
@@ -202,7 +211,6 @@ export const PERM_ICONS = {
   experimentalDatPeers: 'fas fa-exchange-alt',
   experimentalCapturePage: 'fas fa-camera',
   dangerousAppControl: 'fas fa-flask',
-  contactsList: 'fas fa-user-friends',
   panesCreate: 'fas fa-columns',
   panesAttach: 'fas fa-columns',
   panesInject: 'fas fa-columns'
@@ -231,7 +239,6 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'experimentalLibrary': return 'Read and modify your Library'
     case 'experimentalDatPeers': return 'Send and receive messages with peers'
     case 'dangerousAppControl': return 'Read and write your data, including bookmarks, archives, and files'
-    case 'contactsList': return 'Read your address-book in Beaker'
     case 'panesCreate': return 'Open a page in a new pane'
     case 'panesAttach': return 'Attach to other open pages and navigate them'
     case 'panesInject': return 'Inject code into other open pages'
@@ -244,8 +251,9 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
       return html`<span>Download ${permOpts.filename}</span>`
 
     case 'createDrive':
-      if (permOpts.title) return `Create a new Site, "${permOpts.title}"`
-      return 'Create a new Site'
+      if (permOpts.tags) return `Create a new hyperdrive tagged "${permOpts.tags.join(', ')}"`
+      if (permOpts.title) return `Create a new hyperdrive, "${permOpts.title}"`
+      return 'Create a new hyperdrive'
 
     case 'modifyDrive':
       {
@@ -256,8 +264,18 @@ export function renderPermDesc ({html, bg, url, permId, permParam, permOpts}) {
     case 'deleteDrive':
       {
         let viewArchive = openUrl(permParam)
-        return html`<span>Delete the archive <a @click=${viewArchive}>${permOpts.title}</a></span>`
+        return html`<span>Remove the hyperdrive <a @click=${viewArchive}>${permOpts.title}</a> from your library</span>`
       }
+
+    case 'tagDrive':
+      {
+        let viewArchive = openUrl(permParam)
+        return html`<span>Add the tags "${permOpts.tags.join(', ')}" to the hyperdrive <a @click=${viewArchive}>${permOpts.title}</a></span>`
+      }
+
+    case 'listDrives':
+      if (permParam) return `Read the hyperdrives tagged "${permParam}" in your library`
+      return `Read all the hyperdrives in your library`
 
     case 'experimentalLibraryRequestAdd':
       {

@@ -4,6 +4,7 @@ import * as bg from './bg-process-rpc'
 import _debounce from 'lodash.debounce'
 import { ipcRenderer } from 'electron'
 import './setup'
+import './add-drive'
 import './create-drive'
 import './fork-drive'
 import './folder-sync'
@@ -14,8 +15,7 @@ import './prompt'
 import './basic-auth'
 import './user-editor'
 import './user-select'
-import './add-contact'
-import './select-contact'
+import './create-session'
 
 class ModalsWrapper extends LitElement {
   static get properties () {
@@ -73,6 +73,8 @@ class ModalsWrapper extends LitElement {
     switch (this.currentModal) {
       case 'setup':
         return html`<setup-modal></setup-modal>`
+      case 'add-drive':
+        return html`<add-drive-modal></add-drive-modal>`
       case 'create-drive':
         return html`<create-drive-modal></create-drive-modal>`
       case 'fork-drive':
@@ -93,10 +95,8 @@ class ModalsWrapper extends LitElement {
         return html`<user-editor-modal></user-editor-modal>`
       case 'user-select':
         return html`<user-select-modal></user-select-modal>`
-      case 'add-contact':
-        return html`<add-contact-modal></add-contact-modal>`
-      case 'select-contact':
-        return html`<select-contact-modal></select-contact-modal>`
+      case 'create-session':
+        return html`<create-session-modal></create-session-modal>`
     }
     return html`<div></div>`
   }

@@ -41,6 +41,13 @@ appleId=pfrazee@gmail.com
 appleIdPassword={be paul to have this}
 ```
 
+On Windows, these two env vars:
+
+```
+$env:CSC_LINK = "\path\to\.pfx"
+$env:CSC_KEY_PASSWORD = "{be paul to have this}"
+```
+
 ## It's just that easy
 
 Boy how about that.

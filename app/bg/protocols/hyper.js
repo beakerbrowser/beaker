@@ -108,16 +108,16 @@ export const protocolHandler = async function (request, respond) {
         'Access-Control-Allow-Origin': corsHeader,
         'Allow-CSP-From': '*',
         'Cache-Control': 'no-cache',
-        'Content-Security-Policy': `default-src beaker:; img-src * data: asset: blob:; media-src * data: asset: blob:;`,
+        'Content-Security-Policy': `default-src beaker:; img-src * data: asset: blob:; media-src * data: asset: blob:; style-src beaker: 'unsafe-inline';`,
         'Beaker-Trusted-Interface': '1' // see wc-trust.js
       },
       data: intoStream(`<!doctype html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="beaker://drive-view/css/main.css">
-  <script type="module" src="beaker://drive-view/js/main.js"></script>
-</head>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="beaker://app-stdlib/css/fontawesome.css">
+    <script type="module" src="beaker://drive-view/index.js"></script>
+  </head>
 </html>`)
     })
   }
@@ -300,13 +300,18 @@ export const protocolHandler = async function (request, respond) {
     // 404
     if (!entry) {
       logger.silly('Not found', {url: request.url})
-      if (wantsHTML) { 
-        logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
-        return respondBuiltinFrontend()
+      // try to establish what the issue is
+      let res = await checkoutFS.pda.stat('/.ui/ui.html').catch(err => ({err}))
+      if (res?.err && /(not available|connectable)/i.test(res?.err.toString())) {
+        return respondError(404, 'File Not Available', {
+          errorDescription: 'File Not Available',
+          errorInfo: `Beaker could not find any peers to access ${urlp.path}`,
+          title: 'File Not Available'
+        })
       }
       return respondError(404, 'File Not Found', {
         errorDescription: 'File Not Found',
-        errorInfo: `Beaker could not find the file ${urlp.path}`,
+        errorInfo: `Beaker could not find the file at ${urlp.path}`,
         title: 'File Not Found'
       })
     }
@@ -329,12 +334,6 @@ export const protocolHandler = async function (request, respond) {
     }
     if (!canExecuteHTML && mimeType.includes('text/html')) {
       mimeType = 'text/plain'
-    }
-
-    if (wantsHTML && !mimeType.includes('text/html')) {
-      // builtin frontend when not viewing an html file
-      logger.silly(`Serving builtin frontend ${logUrl}`, {url: request.url})
-      return respondBuiltinFrontend()
     }
 
     // handle range
@@ -401,7 +400,7 @@ export const protocolHandler = async function (request, respond) {
     if (!mimeType) {
       let chunk;
       for await (const part of checkoutFS.session.drive.createReadStream(entry.path, { start: 0, length: 512 })) {
-        chunk = chunk ? Buffer.concat(chunk, part) : part;
+        chunk = chunk ? Buffer.concat([chunk, part]) : part;
       }
       mimeType = mime.identify(entry.path, chunk)
     }

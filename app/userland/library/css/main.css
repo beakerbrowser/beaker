@@ -5,7 +5,7 @@ body {
   --text-color--nav--highlight: #445;
   --bg-color--header-search: #fafafd;
   --bg-color--new-btn--highlight: #fafafd;
-  --bg-color--nav--highlight: #e3f2fd;
+  --bg-color--nav--highlight: #e3e6fd;
 
   font-size: 13px;
   background: #fff;
@@ -15,12 +15,12 @@ body {
 
 @media (prefers-color-scheme: dark) {
   body {
-    --text-color--nav--highlight: #bbc;
-    --bg-color--header-search: #303040;
-    --bg-color--new-btn--highlight: #303040;
-    --bg-color--nav--highlight: #334;
+    --text-color--nav--highlight: #bbb;
+    --bg-color--header-search: #303030;
+    --bg-color--new-btn--highlight: #303030;
+    --bg-color--nav--highlight: #333;
 
-    background: #223;
-    color: #ccd;
+    background: #222;
+    color: #ccc;
   }
 }

@@ -94,6 +94,7 @@ class LocationBar extends LitElement {
             }
           </div>
           <div class="list">
+            ${searchLink('Beaker', `beaker://desktop/?q=${encodeURIComponent(this.query)}`)}
             ${searchLink('Twitter', `https://twitter.com/search?q=${encodeURIComponent(this.query)}`)}
             ${searchLink('Reddit', `https://reddit.com/search?q=${encodeURIComponent(this.query)}`)}
             ${searchLink('GitHub', `https://github.com/search?q=${encodeURIComponent(this.query)}`)}
@@ -151,6 +152,11 @@ class LocationBar extends LitElement {
       <div class="provenance">
         ${toNiceUrl(r.urlDecorated ? unsafeHTML(joinSegments(r.urlDecorated)) : r.url)}
       </div>
+      ${r.origin ? html`
+        <div class="origin">
+          <span class="fa-fw ${r.origin.icon}"></span> ${r.origin.label}
+        </div>
+      ` : ''}
     `
   }
 
@@ -208,9 +214,10 @@ class LocationBar extends LitElement {
 }
 LocationBar.styles = [css`
 .wrapper {
-  background: #fff;
+  background: var(--bg-color--default);
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
+  color: var(--text-color--default);
 }
 
 .autocomplete-results {
@@ -244,7 +251,7 @@ LocationBar.styles = [css`
 .result .icon .fas,
 .result .icon .far {
   font-size: 13px;
-  color: #707070;
+  color: var(--text-color--result-icon);
 }
 
 .result .icon .fa-arrow-right {
@@ -253,7 +260,8 @@ LocationBar.styles = [css`
 
 .result .title,
 .result .provenance,
-.result .spacer {
+.result .spacer,
+.origin {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -261,7 +269,7 @@ LocationBar.styles = [css`
 }
 
 .result .title {
-  color: #222;
+  color: var(--text-color--result-title);
   font-size: 14px;
   letter-spacing: 0.2px;
 }
@@ -271,22 +279,28 @@ LocationBar.styles = [css`
 }
 
 .result .provenance {
-  color: #1f55c1;
+  color: var(--text-color--result-provenance);
   font-size: 12px;
 }
 
+.result .origin {
+  margin-left: 6px;
+  color: var(--text-color--result-origin);
+}
+
 .result:hover {
-  background: #f0f0f0;
+  background: var(--bg-color--result--hover);
 }
 
 .result.selected {
-  background: #105de8;
+  background: var(--bg-color--result--selected);
   color: #fff;
 }
 
 .result.selected .icon *,
 .result.selected .title,
-.result.selected .provenance {
+.result.selected .provenance,
+.result.selected .origin {
   color: #fff;
 }
 
@@ -316,12 +330,13 @@ LocationBar.styles = [css`
 }
 
 .search-engines .list a:hover {
-  background: #f0f0f8;
+  background: var(--bg-color--search-engine--hover);
 }
 
 .search-engines .list a img {
   width: 24px;
   height: 24px;
+  image-rendering: -webkit-optimize-contrast;
 }
 `]
 

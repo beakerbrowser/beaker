@@ -11,8 +11,7 @@ import buttonsCSS from './buttons2.css'
 const SHORTCUTS = [
   {url: 'virtual:my-device', title: 'My Device', icon: 'fas fa-laptop'},
   {url: 'virtual:my-drives', title: 'My Drives', icon: 'far fa-hdd'},
-  {url: 'virtual:hosting', title: 'Hosting', icon: 'fas fa-share-alt'},
-  {url: 'virtual:contacts', title: 'Contacts', icon: 'fas fa-users'},
+  {url: 'virtual:hosting', title: 'Hosting', icon: 'fas fa-share-alt'}
 ]
 
 class SelectFileModal extends LitElement {
@@ -252,11 +251,11 @@ class SelectFileModal extends LitElement {
 
     // state
     this.drives = []
-    this.contacts = []
     this.path = '/'
     this.files = []
     this.selectedPaths = []
     this.driveInfo = null
+    this.reloadInterval = undefined
 
     // params
     this.saveMode = false
@@ -272,7 +271,6 @@ class SelectFileModal extends LitElement {
       networked: undefined
     }
     this.allowMultiple = false
-    this.disallowCreate = false
     this.cbs = null
   }
 
@@ -297,7 +295,6 @@ class SelectFileModal extends LitElement {
       }
     }
     this.allowMultiple = !this.saveMode && params.allowMultiple
-    this.disallowCreate = params.disallowCreate
     if (!this.title) {
       if (this.saveMode) {
         this.title = 'Save file...'
@@ -330,11 +327,27 @@ class SelectFileModal extends LitElement {
     this.drives = await bg.drives.list()
     this.drives.push({url: 'hyper://private/', info: {title: 'My Private Drive', writable: true}})
     this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
-    this.contacts = await bg.contacts.list()
-    this.contacts.push(await bg.hyperdrive.getInfo((await bg.beakerBrowser.getProfile()).key))
-    this.contacts.sort((a, b) => (a.title || '').toLowerCase().localeCompare(b.title || ''))
     if (this.isVirtualListing) {
       this.readvirtual()
+    }
+
+    if (!this.reloadInterval) {
+      // periodically reload to keep listing updated
+      this.reloadInterval = setInterval(this.reload.bind(this), 3e3)
+    }
+  }
+
+  async reload () {
+    this.drives = await bg.drives.list()
+    this.drives.push({url: 'hyper://private/', info: {title: 'My Private Drive', writable: true}})
+    this.drives.sort((a, b) => (a.info.title || '').toLowerCase().localeCompare(b.info.title || ''))
+    this.requestUpdate()
+  }
+
+  cleanup () {
+    if (this.reloadInterval) {
+      clearInterval(this.reloadInterval)
+      this.reloadInterval = undefined
     }
   }
 
@@ -376,8 +389,7 @@ class SelectFileModal extends LitElement {
       case 'virtual:my-device':
         this.files = [
           vfile('virtual:my-drives', 'far fa-hdd', 'My Drives'),
-          vfile('virtual:hosting', 'fas fa-share-alt', 'Hosting'),
-          vfile('virtual:contacts', 'fas fa-users', 'Contacts')
+          vfile('virtual:hosting', 'fas fa-share-alt', 'Hosting')
         ]
         break
       case 'virtual:my-drives':
@@ -385,9 +397,6 @@ class SelectFileModal extends LitElement {
         break
       case 'virtual:hosting':
         this.files = this.drives.filter(d => !d.info.writable).map(drive => vfile(drive.url, undefined, drive.info.title))
-        break
-      case 'virtual:contacts':
-        this.files = this.contacts.map(contact => vfile(contact.url, undefined, contact.title || 'Anonymous'))
         break
     }
   }
@@ -502,7 +511,9 @@ class SelectFileModal extends LitElement {
             </div>
 
             <div class="form-actions">
-              <div class="left"></div>
+              <div class="left">
+              <button type="button" @click=${this.onClickNewDrive} class="btn">Create new drive</button>
+              </div>
               <div class="right">
                 <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
                 <button ?disabled=${!this.hasValidSelection} type="submit" class="btn primary" tabindex="5">
@@ -625,8 +636,15 @@ class SelectFileModal extends LitElement {
     }
   }
 
+  onClickNewDrive (e) {
+    e.preventDefault()
+    this.cleanup()
+    this.cbs.resolve({gotoCreateDrive: true})
+  }
+
   onClickCancel (e) {
     e.preventDefault()
+    this.cleanup()
     this.cbs.reject(new Error('Canceled'))
   }
 
@@ -649,12 +667,14 @@ class SelectFileModal extends LitElement {
           return
         }
       }
+      this.cleanup()
       this.cbs.resolve(makeSelectionObj(path))
     } else {
       if (this.select.includes('folder') && this.selectedPaths.length === 0) {
         // use current location
         this.selectedPaths = [this.path]
       }
+      this.cleanup()
       this.cbs.resolve(this.selectedPaths.map(makeSelectionObj))
     }
   }

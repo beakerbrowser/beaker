@@ -1,4 +1,3 @@
-import { BrowserView } from 'electron'
 import emitStream from 'emit-stream'
 import * as tabManager from '../../ui/tabs/manager'
 import * as permissions from '../../ui/permissions'
@@ -104,10 +103,9 @@ export default {
 }
 
 function getPaneObjects (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  var tab = tabManager.findContainingTab(view)
+  var tab = tabManager.findTab(sender)
   if (!tab) throw new Error('Requesting pane not active')
-  var senderPane = tab.findPane(view)
+  var senderPane = tab.findPane(sender)
   if (!senderPane) throw new Error('Requesting pane not active')
   return {tab, senderPane}
 }

@@ -3,7 +3,7 @@ import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directive
 import * as QP from './lib/query-params.js'
 import css from '../css/main.css.js'
 import './views/general.js'
-import './views/devices.js'
+import './views/blocking.js'
 import './views/info.js'
 import './views/network.js'
 import './views/fs-audit-log.js'
@@ -62,7 +62,7 @@ class SettingsApp extends LitElement {
     }
     return html`
       ${item('general', 'fas fa-cog', 'General')}
-      ${item('devices', 'fas fa-sync', 'Sync Devices')}
+      ${item('blocking', 'fas fa-ban', 'Content Blocking')}
       <hr>
       ${item('general-logs', 'fas fa-clipboard-list', 'General Logs')}
       ${item('network', 'fas fa-share-alt', 'Network Stats')}
@@ -77,8 +77,8 @@ class SettingsApp extends LitElement {
     switch (this.currentSubview) {
       case 'general':
         return html`<general-settings-view loadable></general-settings-view>`
-      case 'devices':
-        return html`<devices-view loadable></devices-view>`
+      case 'blocking':
+        return html`<blocking-settings-view loadable></blocking-settings-view>`
       case 'info':
         return html`<info-settings-view loadable></info-settings-view>`
       case 'network':

@@ -1,24 +1,39 @@
-import { session } from 'electron'
-// import { initialize, containsAds } from 'contains-ads'
+import { FiltersEngine, Request } from '@cliqz/adblocker'
+import fetch from 'cross-fetch'
+import * as settingsDb from '../bg/dbs/settings'
+
+const beakerUrls = /^(beaker|blob)/
+
+// globals
+// =
+
+var blocker
 
 // exported API
+// =
 
-export function setup () {
-  /*
-  temporarily disabled due to https://github.com/bbondy/bloom-filter-cpp/issues/7
-    "contains-ads": "^0.2.5",
+export async function setup () {
+  const adblockLists = await settingsDb.get('adblock_lists')
+  const activeLists = adblockLists.filter(list => list.selected)
 
-  initialize() // contains-ads
+  blocker = undefined
+  if (activeLists.length >= 1) {
+    blocker = await FiltersEngine.fromLists(fetch, activeLists.map(list => list.url))
+  }
+}
 
-  const beakerUrls = /^(beaker|blob)/
-  session.defaultSession.webRequest.onBeforeRequest(['*://*./*'], (details, callback) => {
-    const shouldBeBlocked = !details.url.match(beakerUrls) && containsAds(details.url)
+export function onBeforeRequest (details, callback) {
+  if (!blocker) {
+    return callback({cancel: false})
+  }
 
-    if (shouldBeBlocked) {
-      callback({cancel: true})
-    } else {
-      callback({cancel: false})
-    }
-  })
-  */
+  // Matching network filters
+  const {
+    match, // `true` if there is a match
+    redirect, // data url to redirect to if any
+    // exception, // instance of NetworkFilter exception if any
+    // filter, // instance of NetworkFilter which matched
+  } = blocker.match(Request.fromRawDetails({ url: details.url }))
+  const shouldBeBlocked = !details.url.match(beakerUrls) && match
+  callback({cancel: shouldBeBlocked, redirectURL: redirect})
 }

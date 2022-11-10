@@ -12,12 +12,11 @@ class ShellWindowNavbar extends LitElement {
     return {
       activeTabIndex: {type: Number},
       activeTab: {type: Object},
+      isSidebarHidden: {type: Boolean, attribute: 'is-sidebar-hidden'},
       isUpdateAvailable: {type: Boolean, attribute: 'is-update-available'},
       numWatchlistNotifications: {type: Number, attribute: 'num-watchlist-notifications'},
       isHolepunchable: {type: Boolean, attribute: 'is-holepunchable'},
       isDaemonActive: {type: Boolean, attribute: 'is-daemon-active'},
-      userProfileUrl: {type: String},
-      isNetworkMenuOpen: {type: Boolean},
       isBrowserMenuOpen: {type: Boolean}
     }
   }
@@ -26,12 +25,11 @@ class ShellWindowNavbar extends LitElement {
     super()
     this.activeTabIndex = -1
     this.activeTab = null
+    this.isSidebarHidden = false
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
     this.isDaemonActive = false
-    this.userProfileUrl = undefined
-    this.isNetworkMenuOpen = false
     this.isBrowserMenuOpen = false
   }
 
@@ -70,7 +68,7 @@ class ShellWindowNavbar extends LitElement {
   render () {
     return html`
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
-      <div class="buttons" style="padding-right: 6px">
+      <div class="buttons" style="padding: 0 6px">
         ${this.backBtn}
         ${this.forwardBtn}
         ${this.reloadBtn}
@@ -88,7 +86,6 @@ class ShellWindowNavbar extends LitElement {
         siteTrust="${_get(this, 'activeTab.siteTrust', '')}"
         driveDomain="${_get(this, 'activeTab.driveDomain', '')}"
         driveIdent=${_get(this, 'activeTab.driveIdent', '')}
-        ?is-subscribed=${_get(this, 'activeTab.isSubscribed', false)}
         ?writable=${_get(this, 'activeTab.writable', false)}
         folder-sync-path="${_get(this, 'activeTab.folderSyncPath') || ''}"
         peers="${_get(this, 'activeTab.peers', 0)}"
@@ -105,11 +102,9 @@ class ShellWindowNavbar extends LitElement {
         active-match="${_get(this, 'activeTab.currentInpageFindResults.activeMatchOrdinal', '0')}"
         num-matches="${_get(this, 'activeTab.currentInpageFindResults.matches', '0')}"
       ></shell-window-navbar-inpage-find>
-      <div class="buttons" style="padding-left: 6px">
+      <div class="buttons">
         ${this.watchlistBtn}
         ${this.daemonInactiveBtn}
-        ${this.networkMenuBtn}
-        ${this.profileBtn}
         ${this.browserMenuBtn}
       </div>
     `
@@ -117,7 +112,7 @@ class ShellWindowNavbar extends LitElement {
 
   get backBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack} style="margin: 0px 2px">
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoBack} @click=${this.onClickGoBack} style="margin: 0px 2px" title="Back">
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -135,7 +130,7 @@ class ShellWindowNavbar extends LitElement {
 
   get forwardBtn () {
     return html`
-      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward} style="margin: 0px 2px">
+      <button class="nav-arrow-btn" ?disabled=${!this.canGoForward} @click=${this.onClickGoForward} style="margin: 0px 2px" title="Forward">
         <svg
           class="icon nav-arrow"
           width="9" height="16"
@@ -153,7 +148,7 @@ class ShellWindowNavbar extends LitElement {
   get reloadBtn () {
     if (this.isLoading) {
       return html`
-        <button @click=${this.onClickStop} style="margin: 0px 2px">
+        <button @click=${this.onClickStop} style="margin: 0px 2px" title="Refresh">
           <svg
             class="icon close"
             width="12"
@@ -191,7 +186,7 @@ class ShellWindowNavbar extends LitElement {
 
   get updogBtn () {
     return html`
-      <button @click=${this.onClickUpdog} ?disabled=${!this.canGoUp} style="margin: 0 0 0 4px">
+      <button @click=${this.onClickUpdog} ?disabled=${!this.canGoUp} style="margin: 0 0 0 4px" title="Up">
         <span class="fas fa-level-up-alt"></span>
       </button>
     `
@@ -199,7 +194,7 @@ class ShellWindowNavbar extends LitElement {
 
   get homeBtn () {
     return html`
-      <button @click=${this.onClickHome} style="margin: 0 6px">
+      <button @click=${this.onClickHome} style="margin: 0 6px" title="Home">
         <span class="fas fa-home"></span>
       </button>
     `
@@ -225,33 +220,15 @@ class ShellWindowNavbar extends LitElement {
       </button>
     `
   }
-  
-  get networkMenuBtn () {
-    const cls = classMap({'network-btn': true, pressed: this.isNetworkMenuOpen})
-    return html`
-      <button class=${cls} @click=${this.onClickNetworkMenu} style="margin: 0px 2px">
-        <span class="fas fa-wifi"></span>
-        ${!this.isHolepunchable ? html`<span class="fas fa-circle"></span>` : ''}
-      </button>
-    `
-  }
-
-  get profileBtn () {
-    if (!this.userProfileUrl) return html``
-    return html`
-      <button class="user-profile-btn" @click=${this.onClickUserProfile}>
-        <img src="asset:thumb:${this.userProfileUrl}?cache_buster=${Date.now()}">
-      </button>
-    `
-  }
 
   get browserMenuBtn () {
-    const cls = classMap({pressed: this.isBrowserMenuOpen})
+    const cls = classMap({'browser-menu-btn': true, pressed: this.isBrowserMenuOpen})
     return html`
       <button class=${cls} @click=${this.onClickBrowserMenu} style="margin: 0px 2px">
         ${this.isUpdateAvailable
           ? html`<span class="fas fa-arrow-alt-circle-up"></span>`
           : html`<span class="fa fa-bars"></span>`}
+        ${!this.isHolepunchable ? html`<span class="fas fa-circle"></span>` : ''}
       </button>
     `
   }
@@ -301,18 +278,6 @@ class ShellWindowNavbar extends LitElement {
     bg.views.createTab('beaker://settings', {setActive: true})
   }
 
-  onClickUserProfile (e) {
-    bg.views.createTab(this.userProfileUrl, {setActive: true})
-  }
-
-  async onClickNetworkMenu (e) {
-    if (Date.now() - (this.lastMenuClick||0) < 100) return
-    this.isNetworkMenuOpen = true
-    await bg.views.toggleMenu('network')
-    this.isNetworkMenuOpen = false
-    this.lastMenuClick = Date.now()
-  }
-
   async onClickBrowserMenu (e) {
     if (Date.now() - (this.lastMenuClick||0) < 100) return
     this.isBrowserMenuOpen = true
@@ -327,7 +292,7 @@ ShellWindowNavbar.styles = css`
   background: var(--bg-color--foreground);
   height: 28px;
   padding: 6px 0;
-  border-bottom: 1px solid var(--border-color--toolbar);
+  border-bottom: 1px solid var(--border-color--navbar);
 }
 
 ${buttonResetCSS}
@@ -392,26 +357,17 @@ svg.icon.refresh {
   padding: 0 3px;
 }
 
-.network-btn .fa-circle {
+.browser-menu-btn {
+  position: relative;
+}
+
+.browser-menu-btn .fa-circle {
   position: absolute;
   font-size: 8px;
   right: 2px;
   bottom: 4px;
   color: var(--text-color--navbar-btn--warning);
   -webkit-text-stroke: 2px var(--bg-color--foreground);
-}
-
-.user-profile-btn {
-  margin: 0 2px;
-}
-
-.user-profile-btn img {
-  position: relative;
-  top: 1px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
 }
 `
 customElements.define('shell-window-navbar', ShellWindowNavbar)

@@ -1,3 +1,4 @@
+import { app } from 'electron'
 import * as os from 'os'
 import * as p from 'path'
 import { promises as fs } from 'fs'
@@ -13,7 +14,7 @@ const logger = baseLogger.child({category: 'hyper', subcategory: 'daemon'})
 const SETUP_RETRIES = 100
 const GARBAGE_COLLECT_SESSIONS_INTERVAL = 30e3
 const MAX_SESSION_AGE = 300e3 // 5min
-const HYPERSPACE_BIN_PATH = require.resolve('hyperspace/bin.js')
+const HYPERSPACE_BIN_PATH = require.resolve('hyperspace/bin/index.js')
 const HYPERSPACE_STORAGE_DIR = p.join(os.homedir(), '.hyperspace', 'storage')
 const HYPERDRIVE_STORAGE_DIR = p.join(os.homedir(), '.hyperdrive', 'storage', 'cores')
 
@@ -83,6 +84,10 @@ export function getClient () {
   return client
 }
 
+export function getHyperspaceClient () {
+  return client._client
+}
+
 export function isActive () {
   if (isFirstConnect) {
     // avoid the "inactive daemon" indicator during setup
@@ -147,19 +152,20 @@ export async function setup () {
   // Check which storage directory to use.
   // If .hyperspace/storage exists, use that. Otherwise use .hyperdrive/storage/cores
   const storageDir = await getDaemonStorageDir()
-
-  // TODO: Enable migration before release.
-  var daemonProcessArgs = ['-s', storageDir, '--no-migrate']
-
-  daemonProcess = childProcess.spawn(HYPERSPACE_BIN_PATH, daemonProcessArgs, {
-    stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
+  var daemonProcessArgs = [HYPERSPACE_BIN_PATH, '-s', storageDir, '--no-migrate']
+  logger.info(`Daemon: spawn ${app.getPath('exe')} ${daemonProcessArgs.join(' ')}`)
+  daemonProcess = childProcess.spawn(app.getPath('exe'), daemonProcessArgs, {
+    // stdio: [process.stdin, process.stdout, process.stderr], // DEBUG
     env: Object.assign({}, process.env, {
       ELECTRON_RUN_AS_NODE: 1,
       ELECTRON_NO_ASAR: 1
     })
   })
+  daemonProcess.stdout.on('data', data => logger.info(`Daemon: ${data}`))
+  daemonProcess.stderr.on('data', data => logger.info(`Daemon (stderr): ${data}`))
   daemonProcess.on('error', (err) => logger.error(`Hyperspace Daemon error: ${err.toString()}`))
   daemonProcess.on('close', () => {
+    logger.info(`Daemon process has closed`)
     isDaemonActive = false
     daemonProcess = undefined
     events.emit('daemon-stopped')
@@ -177,9 +183,24 @@ export function requiresShutdown () {
 }
 
 export async function shutdown () {
-  if (isControllingDaemonProcess) {
+  if (isControllingDaemonProcess && isDaemonActive) {
+    let promise = new Promise((resolve) => {
+      daemonProcess.on('close', () => resolve())
+    })
     isShuttingDown = true
     daemonProcess.kill()
+    
+    // HACK: the daemon has a bug that causes it to stay open sometimes, give it the double tap -prf
+    let i = setInterval(() => {
+      if (!isDaemonActive) {
+        clearInterval(i)
+      } else {
+        daemonProcess.kill()
+      }
+    }, 2e3)
+    i.unref()
+
+    await promise
   }
 }
 
@@ -265,16 +286,9 @@ export function closeHyperdriveSession (opts) {
   }
 }
 
-export async function getPeerCount (key) {
-  if (!client) return 0
-  var res = await client.drive.peerCounts([key])
-  return res[0]
-}
-
-export async function listPeerAddresses (key) {
-  if (!client) return []
-  var peers = await client.peers.listPeers(key)
-  return peers.map(p => p.remoteAddress)
+export function listPeerAddresses (key) {
+  let peers = getHyperdriveSession({key})?.session?.drive?.metadata?.peers
+  if (peers) return peers.map(p => ({type: p.type, remoteAddress: p.remoteAddress}))
 }
 
 // internal methods

@@ -3,9 +3,7 @@
 
 body {
   --border-color--focused: #7599ff;
-  --border-color--unread: #94bbf5;
   --text-color--nav--highlight: #445;
-  --text-color--link: blue;
   --bg-color--nav-count: #E91E63;
 
   font-size: 13px;
@@ -16,9 +14,7 @@ body {
 @media (prefers-color-scheme: dark) {
   body {
     --border-color--focused: #7599ff;
-    --border-color--unread: #94bbf5;
     --text-color--nav--highlight: #bbc;
-    --text-color--link: #1043da;
     --bg-color--nav-count: #E91E63;
   }
 }

@@ -92,7 +92,7 @@ export class FileDisplay extends LitElement {
 
   renderIcon (icon) {
     return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
+      <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
       <div class="icon">
         <span class="${icon}"></span>
         ${this.info.subicon ? html`<span class="subicon ${this.info.subicon}"></span>` : ''}
@@ -102,7 +102,7 @@ export class FileDisplay extends LitElement {
 
   async renderAndRenderMount () {
     return html`
-      <link rel="stylesheet" href="/css/font-awesome.css">
+      <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
       <div class="mount">
         <img src="asset:thumb:${this.info.mount.url}?cache_buster=${Date.now()}">
         <div class="info">
@@ -124,7 +124,7 @@ export class FileDisplay extends LitElement {
       }
       if (this.pathname.endsWith('.goto') && this.renderMode !== 'raw') {
         return html`
-          <link rel="stylesheet" href="/css/font-awesome.css">
+          <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
           <div class="goto">
             <div class="title"><span class="fas fa-external-link-alt"></span> ${this.info.stat.metadata.title || this.info.name}</div>
             <div class="description">${this.info.stat.metadata.href}</div>

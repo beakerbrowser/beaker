@@ -60,7 +60,7 @@ export class DrivesView extends LitElement {
         }
       })
     }
-    drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
+    drives.sort((a, b) => (a.info.title.localeCompare(b.info.title)))
     console.log(drives)
 
     this.drives = drives
@@ -95,7 +95,7 @@ export class DrivesView extends LitElement {
       },
       {type: 'separator'},
       {
-        label: 'Site Properties',
+        label: 'Drive Properties',
         click: () => this.driveProps(drive)
       },
       {
@@ -160,12 +160,16 @@ export class DrivesView extends LitElement {
         ` : ''}
         <div class="drives">
           ${repeat(drives, drive => this.renderDrive(drive))}
-          ${drives.length === 0 && this.filter ? html`
-            <div class="empty"><div>No matches found for "${this.filter}".</div></div>
-          ` : ''}
+          ${drives.length === 0 ?
+            this.filter ? html`
+              <div class="empty"><div>No matches found for "${this.filter}".</div></div>
+            ` : html`
+              <div class="empty"><span class="fas fa-sitemap"></span><div>You have not created any Hyperdrives.</div></div>
+            `
+          : ''}
         </div>
       ` : html`
-        ${''/*<div class="loading"><span class="spinner"></span></div>*/}
+        <div class="loading"><span class="spinner"></span></div>
       `}
     `
   }
@@ -197,11 +201,10 @@ export class DrivesView extends LitElement {
         <img class="favicon" src="asset:favicon:${drive.url}">
         <div class="title">
           ${drive.info.title || html`<em>Untitled</em>`}
+          ${drive.forkOf?.label ? html`[${drive.forkOf.label}]` : ''}
+          ${drive.tags.map(tag => html`<span class="tag">${tag}</span>`)}
         </div>
         <div class="description">
-          ${drive.forkOf ? html`
-            <span class="fork-label">${drive.forkOf.label || 'no label'}</span></div>
-          ` : ''}
           ${drive.info.description.slice(0, 50)}
         </div>
         <div class="owner">${drive.info.writable ? 'Mine' : ''}</div>

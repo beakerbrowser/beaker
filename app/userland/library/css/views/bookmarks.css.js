@@ -46,7 +46,7 @@ a {
   display: flex;
   align-items: center;
   padding: 6px 14px;
-  color: var(--text-color--lightish);
+  color: var(--text-color--light);
   border-bottom: 1px solid var(--border-color--light);
 }
 
@@ -54,9 +54,19 @@ a {
   border-top: 1px solid var(--border-color--light);
 }
 
+.bookmark.private {
+  background: var(--bg-color--private-light);
+  color: var(--text-color--private-default);
+  border-color: var(--border-color--private-light);
+}
+
 .bookmark:hover {
   text-decoration: none;
   background: var(--bg-color--light);
+}
+
+.bookmark.private:hover {
+  background: var(--bg-color--private-semi-light);
 }
 
 .bookmark > * {
@@ -78,16 +88,20 @@ a {
   flex: 1;
   font-size: 14px;
   margin-right: 0px;
+  color: var(--text-color--default);
+}
+
+.bookmark.private .title {
 }
 
 .bookmark .href {
   flex: 1;
-  color: #99a;
+  color: inherit;
 }
 
 .bookmark .info {
   flex: 0 0 100px;
-  color: #99a;
+  color: inherit;
 }
 
 .bookmark .ctrls {

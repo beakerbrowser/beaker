@@ -5,11 +5,10 @@ const logger = logLib.get().child({category: 'hyper', subcategory: 'filesystem'}
 import hyper from '../hyper/index'
 import * as db from '../dbs/profile-data-db'
 import * as archivesDb from '../dbs/archives'
-import * as bookmarks from './bookmarks'
 import * as trash from './trash'
 import * as modals from '../ui/subwindows/modals'
-import { PATHS } from '../../lib/const'
 import lock from '../../lib/lock'
+import { isSameOrigin } from '../../lib/urls'
 
 // typedefs
 // =
@@ -20,6 +19,7 @@ import lock from '../../lib/lock'
  * 
  * @typedef {Object} DriveConfig
  * @property {string} key
+ * @property {string[]} tags
  * @property {Object} [forkOf]
  * @property {string} [forkOf.key]
  * @property {string} [forkOf.label]
@@ -27,8 +27,6 @@ import lock from '../../lib/lock'
  * @typedef {Object} DriveIdent
  * @property {boolean} internal
  * @property {boolean} system
- * @property {boolean} profile
- * @property {boolean?} contact
  */
 
 // globals
@@ -36,7 +34,6 @@ import lock from '../../lib/lock'
 
 var browsingProfile
 var rootDrive
-var profileDriveUrl
 var drives = []
 
 // exported api
@@ -54,14 +51,7 @@ export function get () {
  * @returns {boolean}
  */
 export function isRootUrl (url) {
-  return url === browsingProfile.url || url === 'hyper://private/'
-}
-
-/**
- * @returns {String}
- */
-export function getProfileUrl () {
-  return profileDriveUrl
+  return isSameOrigin(url, browsingProfile.url) || isSameOrigin(url, 'hyper://private/')
 }
 
 /**
@@ -83,36 +73,30 @@ export async function setup () {
   if (!browsingProfile.url.endsWith('/')) browsingProfile.url += '/'
 
   // load root drive
+  logger.info('Loading root drive', {url: browsingProfile.url})
   hyper.dns.setLocal('private', browsingProfile.url)
   rootDrive = await hyper.drives.getOrLoadDrive(browsingProfile.url, {persistSession: true})
+
+  // default pinned bookmarks
+  if (isInitialCreation) {
+    await rootDrive.pda.mkdir('/bookmarks')
+    await rootDrive.pda.writeFile(`/bookmarks/patreon-com-paul_maf_and_andrew.goto`, '', {metadata: {href: 'https://patreon.com/paul_maf_and_andrew', title: 'Support Beaker'}})
+    await rootDrive.pda.writeFile(`/bookmarks/beaker-dev-docs-templates.goto`, '', {metadata: {href: 'https://beaker.dev/docs/templates/', title: 'Hyperdrive Templates'}})
+    await rootDrive.pda.writeFile(`/bookmarks/twitter.goto`, '', {metadata: {href: 'https://twitter.com/', title: 'Twitter'}})
+    await rootDrive.pda.writeFile(`/bookmarks/reddit.goto`, '', {metadata: {href: 'https://reddit.com/', title: 'Reddit'}})
+    await rootDrive.pda.writeFile(`/bookmarks/youtube.goto`, '', {metadata: {href: 'https://youtube.com/', title: 'YouTube'}})
+    await rootDrive.pda.mkdir('/beaker')
+    await rootDrive.pda.writeFile(`/beaker/pins.json`, JSON.stringify([
+      'https://patreon.com/paul_maf_and_andrew',
+      'https://beaker.dev/docs/templates/',
+      'https://twitter.com/',
+      'https://reddit.com/',
+      'https://youtube.com/'
+    ], null, 2))
+  }
   
-  // enforce root files structure
-  logger.info('Loading root drive', {url: browsingProfile.url})
-  try {
-    // ensure common dirs & data
-    await ensureDir(PATHS.BOOKMARKS)
-
-    // default bookmarks
-    if (isInitialCreation) {
-      await bookmarks.add({href: 'beaker://explorer/', title: 'Explore Files', pinned: true})
-      await bookmarks.add({href: 'beaker://webterm/', title: 'Terminal', pinned: true})
-      await bookmarks.add({href: 'https://userlist.beakerbrowser.com/', title: 'User Directory', pinned: true})
-      await bookmarks.add({href: 'hyper://a8e9bd0f4df60ed5246a1b1f53d51a1feaeb1315266f769ac218436f12fda830/', title: 'Blahbity Blog', pinned: true})
-      await bookmarks.add({href: 'https://docs.beakerbrowser.com/', title: 'Beaker Documentation', pinned: true})
-      await bookmarks.add({href: 'https://beaker.dev/', title: 'Beaker Developer Portal', pinned: true})
-    }
-  } catch (e) {
-    console.error('Error while constructing the root drive', e.toString())
-    logger.error('Error while constructing the root drive', {error: e.toString()})
-  }
-
   // load drive config
-  let profileObj = await getProfile()
   let hostKeys = []
-  if (profileObj) {
-    hostKeys.push(profileObj.key)
-    profileDriveUrl = `hyper://${profileObj.key}/`
-  }
   try {
     drives = JSON.parse(await rootDrive.pda.readFile('/drives.json')).drives
     hostKeys = hostKeys.concat(drives.map(drive => drive.key))
@@ -122,24 +106,16 @@ export async function setup () {
     }
   }
   hyper.drives.ensureHosting(hostKeys)
+  await migrateAddressBook()
 }
 
 /**
  * @param {string} url 
- * @param {boolean} [includeContacts]
  * @returns {DriveIdent | Promise<DriveIdent>}
  */
-export function getDriveIdent (url, includeContacts = false) {
+export function getDriveIdent (url) {
   var system = isRootUrl(url)
-  var profile = url === profileDriveUrl
-  if (!system && includeContacts) {
-    return getAddressBook().then(addressBook => {
-      var key = /[0-9a-f]{64}/.exec(url)[0]
-      var contact = !!addressBook.contacts.find(c => c.key === key)
-      return {system, profile, internal: system || profile, contact}
-    })
-  }
-  return {system, profile, internal: system || profile, contact: undefined}
+  return {system, internal: system}
 }
 
 /**
@@ -150,7 +126,7 @@ export function getDriveIdent (url, includeContacts = false) {
 export function listDrives ({includeSystem} = {includeSystem: false}) {
   var d = drives.slice()
   if (includeSystem) {
-    d.unshift({key: rootDrive.url.slice('hyper://'.length)})
+    d.unshift({key: 'private'})
   }
   return d
 }
@@ -174,9 +150,10 @@ export function getDriveConfig (key) {
  * @param {string} url
  * @param {Object} [opts]
  * @param {Object} [opts.forkOf]
+ * @param {string[]} [opts.tags]
  * @returns {Promise<void>}
  */
-export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
+export async function configDrive (url, {forkOf, tags} = {forkOf: undefined, tags: undefined}) {
   var release = await lock('filesystem:drives')
   try {
     var key = await hyper.drives.fromURLToKey(url, true)
@@ -186,6 +163,9 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
       let manifest = await drive.pda.readManifest().catch(_ => ({}))
 
       driveCfg = /** @type DriveConfig */({key})
+      if (tags && Array.isArray(tags) && tags.every(t => typeof t === 'string')) {
+        driveCfg.tags = tags.filter(Boolean)
+      }
       if (forkOf && typeof forkOf === 'object') {
         driveCfg.forkOf = forkOf
       }
@@ -220,6 +200,13 @@ export async function configDrive (url, {forkOf} = {forkOf: undefined}) {
 
       drives.push(driveCfg)
     } else {
+      if (typeof tags !== 'undefined') {
+        if (tags && Array.isArray(tags) && tags.every(t => typeof t === 'string')) {
+          driveCfg.tags = tags.filter(Boolean)
+        } else {
+          delete driveCfg.tags
+        }
+      }
       if (typeof forkOf !== 'undefined') {
         if (forkOf && typeof forkOf === 'object') {
           driveCfg.forkOf = forkOf
@@ -291,85 +278,25 @@ export async function ensureDir (path, drive = rootDrive) {
   }
 }
 
-export async function setupDefaultProfile ({title, description, thumbBase64, thumbExt}) {
-  var drive = await hyper.drives.createNewDrive({title, description})
-  if (thumbBase64) {
-    await drive.pda.writeFile(`/thumb.${thumbExt || 'png'}`, thumbBase64, 'base64')
-  }
-  await drive.pda.writeFile('/index.html', `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <link rel="icon" type="image/png" sizes="32x32" href="/thumb">
-  </head>
-  <body>
-    <main>
-      <header>
-        <img src="/thumb">
-        <h1>${title}</h1>
-      </header>
-      <p>${description || 'Welcome to my profile!'}</p>
-    </main>
-  </body>
-  <style>
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Ubuntu, Cantarell, "Oxygen Sans", "Helvetica Neue", sans-serif;
-    }
-    main {
-      margin: 0 auto;
-      padding: 20px;
-      box-sizing: border-box;
-      max-width: 800px;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      height: 80px;
-    }
-    header img {
-      border-radius: 4px;
-      height: 80px;
-      margin-right: 20px;
-    }
-  </style>
-</html>`)
-
-  await ensureAddressBook(drive.key.toString('hex'))
-  profileDriveUrl = drive.url
-}
-
-export async function getAddressBook () {
+export async function migrateAddressBook () {
   var addressBook
   try { addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse) }
-  catch (e) { addressBook = {} }
+  catch (e) {
+    return
+  }
   addressBook.profiles = addressBook.profiles && Array.isArray(addressBook.profiles) ? addressBook.profiles : []
   addressBook.contacts = addressBook.contacts && Array.isArray(addressBook.contacts) ? addressBook.contacts : []
-  return addressBook
-}
-
-export async function ensureAddressBook (profileKey) {
-  var addressBook = await getAddressBook()
-  if (!addressBook.profiles.find(p => p.key === profileKey)) {
-    addressBook.profiles.push({key: profileKey})
-  }
-  await rootDrive.pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
-}
-
-export async function getProfile () {
-  try {
-    var addressBook = await rootDrive.pda.readFile('/address-book.json').then(JSON.parse)
-    var profile = addressBook?.profiles?.[0]
-    if (profile) {
-      let info = await hyper.drives.getDriveInfo(profile.key)
-      profile.url = info.url
-      profile.title = info.title
-      profile.description = info.description
-      return profile
+  var profiles = addressBook.profiles.concat(addressBook.contacts)
+  for (let profile of profiles) {
+    let existing = drives.find(d => d.key === profile.key)
+    if (!existing) {
+      drives.push({key: profile.key, tags: ['contact']})
+    } else {
+      existing.tags = (existing.tags || []).concat(['contact'])
     }
-  } catch (e) {
-    return undefined
   }
+  await rootDrive.pda.writeFile('/drives.json', JSON.stringify({drives}, null, 2))
+  await rootDrive.pda.unlink('/address-book.json')
 }
 
 // internal methods

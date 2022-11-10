@@ -1,5 +1,5 @@
 import * as modals from './subwindows/modals'
-import shellWebAPI from '../web-apis/bg/shell'
+import * as shellWebAPI from '../web-apis/bg/shell'
 import drivesWebAPI from '../web-apis/bg/drives'
 import hyper from '../hyper/index'
 import * as filesystem from '../filesystem/index'

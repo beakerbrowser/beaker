@@ -43,7 +43,7 @@ h1 {
   margin-right: 5px;
   animation: rotate 1s infinite linear;
   color: #000;
-  border: 1.5px solid;
+  border: 2px solid;
   border-right-color: transparent;
   border-radius: 50%;
   transition: color 0.25s;

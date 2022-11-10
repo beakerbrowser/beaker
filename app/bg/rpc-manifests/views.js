@@ -32,6 +32,7 @@ export default {
   showLocationBar: 'promise',
   hideLocationBar: 'promise',
   runLocationBarCmd: 'promise',
+  toggleSidebarHidden: 'promise',
   showMenu: 'promise',
   toggleMenu: 'promise',
   updateMenu: 'promise',

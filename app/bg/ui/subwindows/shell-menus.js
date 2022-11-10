@@ -10,20 +10,21 @@
 
 import path from 'path'
 import Events from 'events'
-import { BrowserWindow, BrowserView } from 'electron'
+import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { createShellWindow } from '../windows'
 import * as tabManager from '../tabs/manager'
 import * as modals from './modals'
-import { getToolbarMenu, triggerMenuItemById } from '../window-menu'
+import { triggerMenuItemById } from '../window-menu'
 import shellMenusRPCManifest from '../../rpc-manifests/shell-menus'
+import { findWebContentsParentWindow } from '../../lib/electron'
 
 // globals
 // =
 
 const IS_OSX = process.platform === 'darwin'
 const MARGIN_SIZE = 10
-const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'network', 'peers', 'share', 'site', 'donate']
+const IS_RIGHT_ALIGNED = ['browser', 'bookmark', 'peers', 'share', 'site', 'donate']
 var events = new Events()
 var views = {} // map of {[parentWindow.id] => BrowserView}
 
@@ -45,7 +46,7 @@ export function setup (parentWindow) {
 
 export function destroy (parentWindow) {
   if (get(parentWindow)) {
-    get(parentWindow).destroy()
+    get(parentWindow).webContents.destroy()
     delete views[parentWindow.id]
   }
 }
@@ -77,36 +78,22 @@ export function reposition (parentWindow) {
       setBounds({
         x: 10,
         y: 72,
-        width: 230,
+        width: 270,
         height: 350
-      })
-    } else if (view.menuId === 'network') {
-      setBounds({
-        x: 70,
-        y: 72,
-        width: 230,
-        height: 400
       })
     } else if (view.menuId === 'bookmark') {
       setBounds({
         x: view.boundsOpt.rightOffset,
         y: 72,
         width: 250,
-        height: 225
+        height: 195
       })
     } else if (view.menuId === 'bookmark-edit') {
       setBounds({
         x: view.boundsOpt.left,
         y: view.boundsOpt.top,
         width: 250,
-        height: 225
-      })
-    } else if (view.menuId === 'toolbar') {
-      setBounds({
-        x: view.boundsOpt.left,
-        y: view.boundsOpt.top,
-        width: 250,
-        height: 550
+        height: 195
       })
     } else if (view.menuId === 'donate') {
       setBounds({
@@ -157,7 +144,7 @@ export async function update (parentWindow, opts) {
     view.boundsOpt = opts && opts.bounds ? opts.bounds : view.boundsOpt
     reposition(parentWindow)
     var params = opts && opts.params ? opts.params : {}
-    await view.webContents.executeJavaScript(`updateMenu(${JSON.stringify(params)})`)
+    await view.webContents.executeJavaScript(`updateMenu(${JSON.stringify(params)}); undefined`)
   }
 }
 
@@ -171,7 +158,7 @@ export async function show (parentWindow, menuId, opts) {
     view.isVisible = true
 
     var params = opts && opts.params ? opts.params : {}
-    await view.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)})`)
+    await view.webContents.executeJavaScript(`openMenu('${menuId}', ${JSON.stringify(params)}); undefined`)
     view.webContents.focus()
 
     // await till hidden
@@ -184,7 +171,7 @@ export async function show (parentWindow, menuId, opts) {
 export function hide (parentWindow) {
   var view = get(parentWindow)
   if (view) {
-    view.webContents.executeJavaScript(`reset('${view.menuId}')`)
+    view.webContents.executeJavaScript(`reset('${view.menuId}'); undefined`)
     parentWindow.removeBrowserView(view)
     view.currentDimensions = null
     view.isVisible = false
@@ -197,7 +184,7 @@ export function hide (parentWindow) {
 
 rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   async close () {
-    hide(getParentWindow(this.sender))
+    hide(findWebContentsParentWindow(this.sender))
   },
 
   async createWindow (opts) {
@@ -205,7 +192,7 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   },
 
   async createTab (url) {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     hide(win) // always close the menu
     tabManager.create(win, url, {setActive: true})
   },
@@ -215,27 +202,24 @@ rpc.exportAPI('background-process-shell-menus', shellMenusRPCManifest, {
   },
 
   async loadURL (url) {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     hide(win) // always close the menu
     tabManager.getActive(win).loadURL(url)
   },
 
   async resizeSelf (dimensions) {
-    var view = BrowserView.fromWebContents(this.sender)
-    if (!view.isVisible) return
+    var win = findWebContentsParentWindow(this.sender)
+    var view = win ? views[win.id] : undefined
+    if (!view || !view.isVisible) return
     adjustDimensions(dimensions)
     view.currentDimensions = dimensions
-    reposition(getParentWindow(this.sender))
+    reposition(findWebContentsParentWindow(this.sender))
   },
 
   async showInpageFind () {
-    var win = getParentWindow(this.sender)
+    var win = findWebContentsParentWindow(this.sender)
     var tab = tabManager.getActive(win)
     if (tab) tab.showInpageFind()
-  },
-
-  async getWindowMenu () {
-    return getToolbarMenu()
   },
 
   async triggerWindowMenuItemById (menu, id) {
@@ -258,14 +242,4 @@ function adjustPosition (bounds, view, parentWindow) {
 function adjustDimensions (bounds) {
   bounds.width = bounds.width + (MARGIN_SIZE * 2),
   bounds.height = bounds.height + MARGIN_SIZE
-}
-
-function getParentWindow (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  for (let id in views) {
-    if (views[id] === view) {
-      return BrowserWindow.fromId(+id)
-    }
-  }
-  throw new Error('Parent window not found')
 }

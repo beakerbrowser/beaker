@@ -9,7 +9,7 @@ import buttonResetCSS from './button-reset.css'
 import tooltipCSS from './tooltip.css'
 import './site-info'
 
-const isDatHashRegex = /^[a-z0-9]{64}/i
+const isHyperHashRegex = /^[a-z0-9]{64}/i
 const NETWORK_STATS_POLL_INTERVAL = 5000 // ms
 
 class NavbarLocation extends LitElement {
@@ -24,7 +24,6 @@ class NavbarLocation extends LitElement {
       siteTrust: {type: String},
       driveDomain: {type: String},
       driveIdent: {type: String},
-      isSubscribed: {type: Boolean, attribute: 'is-subscribed'},
       writable: {type: Boolean},
       folderSyncPath: {type: String, attribute: 'folder-sync-path'},
       peers: {type: Number},
@@ -53,7 +52,6 @@ class NavbarLocation extends LitElement {
     this.siteTrust = ''
     this.driveDomain = ''
     this.driveIdent = ''
-    this.isSubscribed = false
     this.writable = false
     this.folderSyncPath = undefined
     this.peers = 0
@@ -83,7 +81,7 @@ class NavbarLocation extends LitElement {
     setInterval(async () => {
       if (!this.url.startsWith('hyper://')) return
       var state = await bg.views.getNetworkState('active')
-      this.peers = state ? state.peers : 0
+      this.peers = state?.peers?.length || 0
       this.requestUpdate()
     }, NETWORK_STATS_POLL_INTERVAL)
 
@@ -153,7 +151,6 @@ class NavbarLocation extends LitElement {
         siteTrust=${this.siteTrust}
         driveDomain=${this.driveDomain}
         driveIdent=${this.driveIdent}
-        ?is-subscribed=${this.isSubscribed}
         ?writable=${this.writable}
         .loadError=${this.loadError}
         ?hide-origin=${this.hasExpanded}
@@ -216,7 +213,7 @@ class NavbarLocation extends LitElement {
             host = match[1]
             hostVersion = '+' + match[2]
           }
-          if (isDatHashRegex.test(host)) {
+          if (isHyperHashRegex.test(host)) {
             host = prettyHash(host)
           }
         }
@@ -356,7 +353,7 @@ class NavbarLocation extends LitElement {
   // events
   // =
 
-  onCommand (e, cmd) {
+  onCommand (e, cmd, ...args) {
     if (cmd === 'create-bookmark') {
       this.onClickBookmark()
     }
@@ -366,6 +363,9 @@ class NavbarLocation extends LitElement {
     }
     if (cmd === 'unfocus-location') {
       this.unfocusLocation()
+    }
+    if (cmd === 'set-search-engines') {
+      this.autocompleteState.searchEnginesPromise = JSON.parse(args[0])
     }
   }
 
@@ -439,6 +439,7 @@ class NavbarLocation extends LitElement {
   async onKeydownLocation (e) {
     if (e.key === 'Enter') {
       e.preventDefault()
+      this.autocompleteState.queryIdCounter = -1 // cancel any active queries
       bg.views.runLocationBarCmd('choose-selection')
       e.currentTarget.blur()
       return
@@ -464,11 +465,11 @@ class NavbarLocation extends LitElement {
     bg.views.showLocationBarContextMenu('active')
   }
 
-  onAutocompleteResults () {
+  onAutocompleteResults (isPartialResults = false) {
     if (!this.isAutocompleteOpen) {
       let rect = this.getClientRects()[0]
       bg.views.runLocationBarCmd('show', {
-        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0)},
+        bounds: {x: (rect.left|0), y: (rect.bottom|0), width: (rect.width|0) + 1},
         query: this.autocompleteState.inputValue,
         results: this.autocompleteState.results
       })
@@ -480,7 +481,7 @@ class NavbarLocation extends LitElement {
         results: this.autocompleteState.results
       })
     }
-    if (this.autocompleteState.urlGuess) {
+    if (!isPartialResults && this.autocompleteState.urlGuess) {
       // we have a "URL guess"
       let rangeStart = this.autocompleteState.inputValue.length
       let input = this.shadowRoot.querySelector('input')
@@ -701,43 +702,8 @@ button.folder-sync .fa-sync {
   top: -3px;
 }
 
-.subscribe-btn-group {
-  display: flex;
-  border: 1px solid var(--border-color--navbar-subscribe-btn);
-  border-radius: 4px;
-  margin: 3px 4px;
-}
-
-.subscribe-btn-group button {
-  width: auto;
-  font-size: 12px;
-}
-
-.subscribe-btn-group button.subscribe {
-  width: auto;
-  font-size: 11px;
-  letter-spacing: 0.6px;
-  line-height: 18px;
-  padding: 0 7px;
-  background: var(--bg-color--navbar-subscribe-btn);
-  color: var(--text-color--navbar-subscribe-btn);
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-
-.subscribe-btn-group button.subscribe:hover {
-  background: var(--bg-color--navbar-subscribe-btn--hover);
-}
-
-.subscribe-btn-group button i {
-  font-size: 9px;
-  position: relative;
-  top: -1px;
-}
-
-.subscribe-btn-group button.subscribers {
-  font-size: 11px;
-  padding: 0 8px;
+button.folder-sync .fa-folder-open {
+  transform: translateY(.5px);
 }
 
 button.site .fa-angle-down {

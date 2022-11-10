@@ -49,10 +49,10 @@ class Identity extends LitElement {
               </div>
             </div>
           ` : this.cert.ident.system ? html`
-            <div class="field-group"><div class="identity">This is your private site</div></div>
+            <div class="field-group"><div class="identity">This is your private drive</div></div>
           ` : this.cert.driveInfo.writable ? html`
             <div class="field-group">
-              <div class="identity">You created this site</div>
+              <div class="identity">You created this Hyperdrive</div>
             </div>
           ` : html`
             <div class="field-group">No identity information found</div>
@@ -61,21 +61,6 @@ class Identity extends LitElement {
       ` : html`
         <div class="field-group">No identity information found</div>
       `}
-      ${this.cert?.subscribers && !this.cert.ident.system ? html`
-        <div class="subscribers">
-          <h4>Subscribers You Know (${this.cert.subscribers.length})</h4>
-          ${this.cert?.subscribers?.length > 0 ? html`<div>${repeat(this.cert.subscribers, this.renderSubscriber)}</div>` : ''}
-        </div>
-      ` : ''}
-    `
-  }
-
-  renderSubscriber (site) {
-    return html`
-      <a class="subscriber" href=${site.url} title=${site.title || 'Untitled'} target="_blank">
-        <img class="thumb" src="asset:thumb:${site.url}"/>
-        <span class="title">${site.title}</span>
-      </a>
     `
   }
 
@@ -95,16 +80,6 @@ class Identity extends LitElement {
 
   // events
   // =
-
-  async onToggleSaveContact (e) {
-    var isContact = this.cert && this.cert.ident ? this.cert.ident.contact : false
-    if (isContact) {
-      await beaker.contacts.remove(this.url)
-    } else {
-      await beaker.contacts.requestAddContact(this.url)
-    }
-    emit(this, 'change-url', {detail: {url: this.url}})
-  }
 }
 
 customElements.define('identity-signals', Identity)

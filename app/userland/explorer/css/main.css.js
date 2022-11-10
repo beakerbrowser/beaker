@@ -90,67 +90,67 @@ ${spinnerCSS}
 
 @media (prefers-color-scheme: dark) {
   .layout {  
-    --primary-bg: #223;
-    --primary-color: #eef;
-    --header-color: #f5f5ff;
+    --primary-bg: #222;
+    --primary-color: #eee;
+    --header-color: #f5f5f5;
     --button-color: #eee;
-    --empty-bg: #334;
-    --loading-color: #dde;
-    --empty-color: #dde;
+    --empty-bg: #333;
+    --loading-color: #ddd;
+    --empty-color: #ddd;
     --error-bg: #ffeeee0d;
     --error-color: #ff1010;
     --error-pre-bg: rgba(0, 0, 0, 0.29);
 
-    --nav-bg: #334;
-    --nav-section-bg: #223;
-    --nav-border-color: #556;
-    --nav-hr-color: #445;
-    --nav-help-color: #889;
-    --nav-help-input-bg: #556;
-    --nav-help-input-color: #ccd;
-    --nav-kv-input-bg: #223;
-    --nav-kv-input-color: #eef;
-    --nav-kv-input-placeholder-color: #889;
-    --nav-drives-list--link-current: #223;
-    --nav-drives-list--link-hover: #223;
+    --nav-bg: #333;
+    --nav-section-bg: #222;
+    --nav-border-color: #555;
+    --nav-hr-color: #444;
+    --nav-help-color: #888;
+    --nav-help-input-bg: #555;
+    --nav-help-input-color: #ccc;
+    --nav-kv-input-bg: #222;
+    --nav-kv-input-color: #eee;
+    --nav-kv-input-placeholder-color: #888;
+    --nav-drives-list--link-current: #222;
+    --nav-drives-list--link-hover: #222;
 
-    --base-files-view--h4-border-color: #6e6e80;
-    --base-files-view--h4-color: #babac5;
-    --base-files-view--drag-bg: #334;
+    --base-files-view--h4-border-color: #6e6e6e;
+    --base-files-view--h4-color: #bababa;
+    --base-files-view--drag-bg: #333;
 
-    --file-list--item-border-color: #223;
-    --file-list--color-drive: #ccd;
+    --file-list--item-border-color: #222;
+    --file-list--color-drive: #ccc;
     --file-list--color-folder: #9ec2e0;
     --file-list--color-file: none;
     --file-list--color-goto: #fff;
     --file-list--color-subicon: #fff;
-    --file-list--color-itemname: #f5f5ff;
-    --file-list--color-itemprop: #dde;
+    --file-list--color-itemname: #f5f5f5;
+    --file-list--color-itemprop: #ddd;
     --file-list--color-viewfile: #ffffff;
     --file-list--color-viewfile-outline: none;
     --file-list--color-subicon-selected: #fff;
     --file-list--color-itemname-selected: #fff;
     --file-list--color-itemprop-selected: rgba(255, 255, 255, 0.7);
     --file-list--color-selected-bg: #4379e4;
-    --inline-file-list--color-selected-bg: #445;
-    --inline-file-list--color-iteminfo: #99a;
-    --inline-file-list--color-itemprop: #f5f5ff;
+    --inline-file-list--color-selected-bg: #444;
+    --inline-file-list--color-iteminfo: #999;
+    --inline-file-list--color-itemprop: #f5f5f5;
     --inline-file-list--color-border: #333;
 
-    --file-grid--color-drive: #ccd;
+    --file-grid--color-drive: #ccc;
     --file-grid--color-folder: #9ec2e0;
-    --file-grid--color-file: #bbbbcc;
-    --file-grid--color-goto: #ccccde;
-    --file-grid--color-itemname: #f5f5ff;
-    --file-grid--color-itemdrive: #99a;
+    --file-grid--color-file: #bbbbbb;
+    --file-grid--color-goto: #cccccc;
+    --file-grid--color-itemname: #f5f5f5;
+    --file-grid--color-itemdrive: #999;
     --file-grid--color-viewfile: #ffffff;
     --file-grid--color-viewfile-outline: none;
     --file-grid--color-selected-fg: #fff;
     --file-grid--color-selected-bg: #4379e4;
-    --file-grid--color-selected-bg-icon: #445;
-    --inline-file-grid--color-selected-bg: #445;
-    --inline-file-grid--color-itemname: #f5f5ff;
-    --inline-file-grid--color-itemauthor: #99a;
+    --file-grid--color-selected-bg-icon: #444;
+    --inline-file-grid--color-selected-bg: #444;
+    --inline-file-grid--color-itemname: #f5f5f5;
+    --inline-file-grid--color-itemauthor: #999;
   }
 }
 
@@ -205,7 +205,7 @@ table {
 }
 
 main {
-  margin: 0px 370px 0px 210px;
+  margin: 0px 370px 0px 16px;
   position: relative;
 }
 
@@ -355,9 +355,9 @@ nav h4 code {
 
 nav img {
   display: inline-block;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
   object-fit: cover;
   margin-right: 10px;
 }
@@ -419,19 +419,28 @@ nav section.drives-list {
 
 nav section.drives-list h5 {
   margin: 16px 10px 4px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 nav section.drives-list a {
-  display: block;
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  overflow: hidden;
   padding: 6px 10px;
   margin-bottom: 4px;
   border-radius: 4px;
 }
 
+nav section.drives-list img {
+  flex: 0 0 30px;
+  margin-right: 10px;
+}
+
 nav section.drives-list span {
-  display: block;
-  padding: 8px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 nav section.drives-list a.current {

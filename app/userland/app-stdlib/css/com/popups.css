@@ -1,4 +1,4 @@
-@import "../buttons.css";
+@import "../buttons2.css";
 @import "../inputs.css";
 
 .popup-wrapper {
@@ -14,7 +14,7 @@
 }
 
 .popup-inner {
-  background: #fff;
+  background: var(--bg-color--default);
   box-shadow: 0 2px 25px rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(0, 0, 0, 0.55);
   border-radius: 4px;
@@ -31,10 +31,10 @@
 
 .popup-inner .head {
   position: relative;
-  background: #f1f1f6;
+  background: var(--bg-color--semi-light);
   padding: 7px 12px;
   width: 100%;
-  border-bottom: 1px solid #e0e0ee;
+  border-bottom: 1px solid var(--border-color--light);
   border-radius: 4px 4px 0 0;
 }
 
@@ -93,7 +93,7 @@
 
 .popup-inner label {
   margin-bottom: 3px;
-  color: rgba(51, 51, 51, 0.9);
+  color: var(--text-color--light);
 }
 
 .popup-inner textarea,
@@ -112,7 +112,7 @@
   align-items: center;
   margin-top: 15px;
   padding-top: 10px;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color--light);
 }
 
 .popup-inner .actions .left,

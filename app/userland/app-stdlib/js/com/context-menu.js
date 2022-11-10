@@ -40,7 +40,7 @@ create({
   parent: document.body,
 
   // url to fontawesome css
-  fontAwesomeCSSUrl: 'beaker://assets/font-awesome.css',
+  fontAwesomeCSSUrl: '/css/font-awesome.css',
 
   // menu items
   items: [
@@ -121,7 +121,7 @@ export class BeakerContextMenu extends LitElement {
     this.noBorders = noBorders || false
     this.customStyle = style || undefined
     this.items = items
-    this.fontAwesomeCSSUrl = fontAwesomeCSSUrl || 'beaker://assets/font-awesome.css'
+    this.fontAwesomeCSSUrl = fontAwesomeCSSUrl || '/vendor/beaker-app-stdlib/css/fontawesome.css'
     this.customRender = render
   }
 

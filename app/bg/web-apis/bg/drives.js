@@ -11,7 +11,7 @@ export default {
   async get (key) {
     key = await drives.fromURLToKey(key, true)
     var drive = listDrives().find(drive => drive.key === key)
-    var info = await drives.getDriveInfo(key).catch(e => ({}))
+    var info = await drives.getDriveInfo(key, {onlyCache: true}).catch(e => ({}))
     var url = `hyper://${key}/`
     var ident = getDriveIdent(url)
     return {
@@ -26,11 +26,6 @@ export default {
 
   async list (opts) {
     return assembleRecords(listDrives(opts))
-  },
-
-  async getPeerCount (url) {
-    var key = hyper.drives.fromURLToKey(url)
-    return hyper.daemon.getPeerCount(Buffer.from(key, 'hex'))
   },
 
   async getForks (key) {
@@ -121,7 +116,8 @@ async function assembleRecords (drivesList) {
     records.push({
       key: drive.key,
       url,
-      info: await drives.getDriveInfo(drive.key),
+      tags: drive.tags || [],
+      info: await drives.getDriveInfo(drive.key, {onlyCache: true}),
       saved: true,
       forkOf: drive ? drive.forkOf : undefined,
       ident

@@ -1,4 +1,4 @@
-import {app, BrowserWindow, BrowserView, ipcMain, webContents, dialog} from 'electron'
+import {app, BrowserWindow, ipcMain, webContents, dialog, nativeTheme} from 'electron'
 import {defaultBrowsingSessionState, defaultWindowState} from './default-state'
 import SessionWatcher, { getLastRecordedPositioning } from './session-watcher'
 import jetpack from 'fs-jetpack'
@@ -9,7 +9,6 @@ import {
   registerGlobalKeybinding
 } from './keybindings'
 import path from 'path'
-import { updateWindowToolbar } from '../browser'
 import * as openURL from '../open-url'
 import * as downloads from './downloads'
 import * as permissions from './permissions'
@@ -115,11 +114,9 @@ export async function setup () {
     }
 
     // handle tab webcontents
-    var parentView = BrowserView.fromWebContents(wc)
-    if (!parentView) return
-    var parentWindow = findWebContentsParentWindow(parentView)
+    var parentWindow = findWebContentsParentWindow(wc)
     if (!parentWindow) {
-      parentWindow = tabManager.findContainingWindow(parentView)
+      parentWindow = tabManager.findContainingWindow(wc)
       if (!parentWindow) {
         return
       }
@@ -188,7 +185,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   var frameSettings = {
     titleBarStyle: 'hidden',
     trafficLightPosition: {x: 12, y: 20},
-    frame: IS_LINUX,
+    frame: IS_LINUX || IS_WIN,
     title: undefined
   }
   var win = new BrowserWindow(Object.assign({
@@ -202,7 +199,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     height,
     minWidth,
     minHeight,
-    backgroundColor: '#ddd',
+    backgroundColor: '#fff',
     webPreferences: {
       preload: PRELOAD_PATH,
       defaultEncoding: 'utf-8',
@@ -220,7 +217,6 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
   }, frameSettings))
   win.once('ready-to-show', () => {
     win.show()
-    updateWindowToolbar()
     if (!hasFirstWindowLoaded) {
       hasFirstWindowLoaded = true
       app.emit('custom-ready-to-show')
@@ -244,6 +240,7 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
     for (let k in subwindows) {
       subwindows[k].destroy(win)
     }
+    tabManager.destroyAll(win)
   })
 
   async function handlePagesReady ({ sender }) {
@@ -263,6 +260,9 @@ export function createShellWindow (windowState, createOpts = {dontInitPages: fal
       }
       if (state.isShellInterfaceHidden) {
         setShellInterfaceHidden(win, true)
+      }
+      if (state.isSidebarHidden) {
+        setSidebarHidden(win, true)
       }
       win.emit('custom-pages-ready')
 
@@ -399,6 +399,17 @@ export function setShellInterfaceHidden (win, isShellInterfaceHidden) {
     win.setWindowButtonVisibility(!isShellInterfaceHidden)
   }
   sessionWatcher.updateState(win, {isShellInterfaceHidden})
+  tabManager.emitReplaceState(win)
+  win.emit('resize')
+}
+
+export function toggleSidebarHidden (win) {
+  setSidebarHidden(win, !getAddedWindowSettings(win).isSidebarHidden)
+}
+
+export function setSidebarHidden (win, isSidebarHidden) {
+  updateAddedWindowSettings(win, {isSidebarHidden})
+  sessionWatcher.updateState(win, {isSidebarHidden})
   tabManager.emitReplaceState(win)
   win.emit('resize')
 }

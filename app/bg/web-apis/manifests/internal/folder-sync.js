@@ -7,7 +7,7 @@ export default {
   remove: 'promise',
   compare: 'promise',
   restoreFile: 'promise',
-  sync: 'promise',
+  sync: 'readable',
   enableAutoSync: 'promise',
   disableAutoSync: 'promise',
 }

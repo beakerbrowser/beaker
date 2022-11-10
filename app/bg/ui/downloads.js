@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import { app, dialog, shell, BrowserView } from 'electron'
+import { app, dialog, shell } from 'electron'
 import speedometer from 'speedometer'
 import emitStream from 'emit-stream'
 import EventEmitter from 'events'
@@ -49,8 +49,7 @@ export function registerListener (win, opts = {}) {
     if (!wc.getURL()) {
       // download was triggered when the user opened a new tab
       // close the tab and do the download instead
-      let view = BrowserView.fromWebContents(wc)
-      let tab = view ? findTab(view) : undefined
+      let tab = findTab(wc)
       if (tab) removeTab(tab.browserWindow, tab)
     }
 

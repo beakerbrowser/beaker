@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
 import { createShellWindow, toggleShellInterface, getActiveWindow, getFocusedDevToolsHost } from './windows'
 import { runSelectFileDialog, runForkFlow, runDrivePropertiesFlow, exportDriveToFilesystem, importFilesystemToDrive } from './util'
+import { getEnvVar } from '../lib/env'
 import * as tabManager from './tabs/manager'
 import * as viewZoom from './tabs/zoom'
 import * as shellMenus from './subwindows/shell-menus'
@@ -555,7 +556,7 @@ export function buildWindowMenu (opts = {}) {
       {type: 'separator'},
       {
         id: 'driveProperties',
-        label: 'Site Properties',
+        label: 'Drive Properties',
         enabled: !!isDriveSite,
         async click (item) {
           if (win) runDrivePropertiesFlow(win, hyper.drives.fromURLToKey(url))
@@ -618,26 +619,6 @@ export function buildWindowMenu (opts = {}) {
     label: 'Developer',
     submenu: [
       {
-        type: 'submenu',
-        label: 'Advanced Tools',
-        submenu: [
-          {
-            label: 'Reload Shell-Window',
-            enabled: !noWindows,
-            click: function () {
-              win.webContents.reloadIgnoringCache()
-            }
-          },
-          {
-            label: 'Toggle Shell-Window DevTools',
-            enabled: !noWindows,
-            click: function () {
-              win.webContents.openDevTools({mode: 'detach'})
-            }
-          }
-        ]
-      },
-      {
         id: 'toggleDevTools',
         label: 'Toggle DevTools',
         enabled: !noWindows,
@@ -666,6 +647,14 @@ export function buildWindowMenu (opts = {}) {
         }
       },
       {
+        id: 'toggleHypercoreDevtools',
+        label: 'Toggle Hypercore Devtools',
+        enabled: !noWindows,
+        click: async function (item) {
+          if (tab) tab.togglePaneByOrigin({url: 'beaker://hypercore-tools/'})
+        }
+      },
+      {
         id: 'toggleLiveReloading',
         label: 'Toggle Live Reloading',
         enabled: !!isDriveSite,
@@ -676,10 +665,33 @@ export function buildWindowMenu (opts = {}) {
     ]
   }
 
+  if (getEnvVar('BEAKER_DEV_MODE')) {
+    developerMenu.submenu.unshift({
+      type: 'submenu',
+      label: 'Advanced Tools',
+      submenu: [
+        {
+          label: 'Reload Shell-Window',
+          enabled: !noWindows,
+          click: function () {
+            win.webContents.reloadIgnoringCache()
+          }
+        },
+        {
+          label: 'Toggle Shell-Window DevTools',
+          enabled: !noWindows,
+          click: function () {
+            win.webContents.openDevTools({mode: 'detach'})
+          }
+        }
+      ]
+    })
+  }
+
   const gotoTabShortcut = index => ({
     label: `Tab ${index}`,
     enabled: !noWindows,
-    accelerator: `CmdOrCtrl+${index + 1}`,
+    accelerator: `CmdOrCtrl+${index}`,
     click: function (item) {
       if (win) {
         shellMenus.hide(win) // HACK: closes the background tray if it's open
@@ -760,14 +772,6 @@ export function buildWindowMenu (opts = {}) {
         label: 'Tab Shortcuts',
         type: 'submenu',
         submenu: [
-          {
-            label: `Background Tabs`,
-            enabled: !noWindows,
-            accelerator: `CmdOrCtrl+1`,
-            click: function (item) {
-              if (win) shellMenus.toggle(win, 'background-tray')
-            }
-          },
           gotoTabShortcut(1),
           gotoTabShortcut(2),
           gotoTabShortcut(3),
@@ -775,6 +779,7 @@ export function buildWindowMenu (opts = {}) {
           gotoTabShortcut(5),
           gotoTabShortcut(6),
           gotoTabShortcut(7),
+          gotoTabShortcut(8),
           {
             label: `Last Tab`,
             enabled: !noWindows,
@@ -818,13 +823,6 @@ export function buildWindowMenu (opts = {}) {
           if (win) tabManager.create(win, 'https://docs.beakerbrowser.com/', {setActive: true})
         }
       },
-      {
-        id: 'developerPortal',
-        label: 'Developer Portal',
-        click: function (item) {
-          if (win) tabManager.create(win, 'https://beaker.dev/', {setActive: true})
-        }
-      },
       {type: 'separator'},
       {
         id: 'reportIssue',
@@ -857,35 +855,6 @@ export function buildWindowMenu (opts = {}) {
   var menus = [fileMenu, editMenu, viewMenu, driveMenu, historyMenu, developerMenu, windowMenu, helpMenu]
   if (process.platform === 'darwin') menus.unshift(darwinMenu)
   return menus
-}
-
-export function getToolbarMenu () {
-  if (!currentMenuTemplate) return {}
-  const get = label => toToolbarItems(currentMenuTemplate.find(menu => menu.label === label).submenu)
-  function toToolbarItems (items){
-    items = items.map(item => {
-      if (item.type === 'separator') {
-        return {separator: true}
-      }
-      if (!item.id) return false
-      return {
-        id: item.id,
-        label: item.label,
-        accelerator: item.accelerator,
-        enabled: typeof item.enabled === 'boolean' ? item.enabled : true
-      }
-    }).filter(Boolean)
-    while (items[0].separator) items.shift()
-    while (items[items.length - 1].separator) items.pop()
-    return items
-  }
-  return {
-    File: get('File'),
-    Drive: get('Drive'),
-    Developer: get('Developer'),
-    Window: get('Window'),
-    Help: get('Help')
-  }
 }
 
 export function triggerMenuItemById (menuLabel, id) {

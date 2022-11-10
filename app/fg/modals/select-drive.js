@@ -12,7 +12,7 @@ class SelectDriveModal extends LitElement {
       currentTitleFilter: {type: String},
       title: {type: String},
       description: {type: String},
-      selectedDriveUrl: {type: String}
+      selection: {type: Array}
     }
   }
 
@@ -64,7 +64,7 @@ class SelectDriveModal extends LitElement {
         z-index: 3;
       }
 
-      .drive-picker .type-container {
+      .drive-picker .tag-container {
         margin-bottom: 10px;
         background: #eee;
         padding: 10px;
@@ -123,22 +123,14 @@ class SelectDriveModal extends LitElement {
 
       .drive .thumb {
         display: block;
-        width: 32px;
-        height: 32px;
+        width: 16px;
+        height: 16px;
         margin-right: 16px;
       }
 
-      .drives-list .drive .info {
-        flex: 1;
-      }
-      
       .drives-list .drive .title {
-        font-size: 15px;
-        font-weight: 500;
-      }
-      
-      .drives-list .drive .description {
-        letter-spacing: -0.2px;
+        flex: 1;
+        font-size: 13px;
       }
 
       .drives-list .drive.selected {
@@ -146,15 +138,15 @@ class SelectDriveModal extends LitElement {
         color: #fff;
       }
 
-      .drives-list .drive.selected .thumb {
+      .tag {
+        display: inline-block;
+        padding: 1px 5px;
+        background: #4CAF50;
+        color: #fff;
+        text-shadow: 0 1px 0px #0004;
         border-radius: 4px;
-        box-shadow: 0 1px 2px #0003;
-      }
-
-      .drives-list .drive.selected .info .hash,
-      .drives-list .drive.selected .info .readonly {
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 100;
+        font-size: 10px;
+        margin-right: 2px;
       }
     `]
   }
@@ -164,14 +156,16 @@ class SelectDriveModal extends LitElement {
 
     // state
     this.currentTitleFilter = ''
-    this.selectedDriveUrl = ''
+    this.selection = []
     this.drives = undefined
+    this.reloadInterval = undefined
 
     // params
     this.customTitle = ''
     this.buttonLabel = 'Select'
-    this.type = null
+    this.tag = null
     this.writable = undefined
+    this.allowMultiple = undefined
     this.cbs = null
   }
 
@@ -179,29 +173,40 @@ class SelectDriveModal extends LitElement {
     this.cbs = cbs
     this.customTitle = params.title || ''
     this.buttonLabel = params.buttonLabel || 'Select'
-    this.type = params.type
+    this.tag = params.tag
     this.writable = params.writable
+    this.allowMultiple = params.allowMultiple
     await this.requestUpdate()
     this.adjustHeight()
 
-    this.drives = await bg.drives.list({includeSystem: true})
+    this.drives = await bg.drives.list({includeSystem: false})
+    this.drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
 
-    // move forks onto their parents
-    this.drives = this.drives.filter(drive => {
-      if (drive.forkOf) {
-        let parent = this.drives.find(d => d.key === drive.forkOf.key)
-        if (parent) {
-          parent.forks = parent.forks || []
-          parent.forks.push(drive)
-          return false
-        }
-      }
-      return true
-    })
-    this.drives.sort((a, b) => (a.info.type || '').localeCompare(b.info.type || '') || (a.info.title).localeCompare(b.info.title))
+    if (this.writable !== false && !!params.template && this.filteredDrives.length === 0) {
+      // autobounce to create
+      return this.cbs.resolve({gotoCreate: true})
+    }
 
     await this.requestUpdate()
     this.adjustHeight()
+
+    if (!this.reloadInterval) {
+      // periodically reload to keep listing updated
+      this.reloadInterval = setInterval(this.reload.bind(this), 3e3)
+    }
+  }
+
+  async reload () {
+    this.drives = await bg.drives.list({includeSystem: false})
+    this.drives.sort((a, b) => (a.info.title).localeCompare(b.info.title))
+    this.requestUpdate()
+  }
+
+  cleanup () {
+    if (this.reloadInterval) {
+      clearInterval(this.reloadInterval)
+      this.reloadInterval = undefined
+    }
   }
 
   adjustHeight () {
@@ -210,8 +215,20 @@ class SelectDriveModal extends LitElement {
     bg.modals.resizeSelf({height})
   }
 
+  get filteredDrives () {
+    var filtered = this.drives
+    if (this.tag) filtered = filtered.filter(drive => drive.tags.includes(this.tag))
+    if (typeof this.writable === 'boolean') {
+      filtered = filtered.filter(drive => drive.info.writable === this.writable)
+    }
+    if (this.currentTitleFilter) {
+      filtered = filtered.filter(a => a.info.title && a.info.title.toLowerCase().includes(this.currentTitleFilter))
+    }
+    return filtered
+  }
+
   get hasValidSelection () {
-    return !!this.selectedDriveUrl || isDriveUrl(this.currentTitleFilter)
+    return this.selection.length > 0 || isDriveUrl(this.currentTitleFilter)
   }
 
   // rendering
@@ -222,13 +239,13 @@ class SelectDriveModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <form @submit=${this.onSubmit}>
-          <h1 class="title">${this.customTitle || 'Select a site'}</h1>
+          <h1 class="title">${this.customTitle || 'Select a drive'}</h1>
 
           <div class="view drive-picker">
             ${this.renderFilters()}
             <div class="filter-container">
               <i class="fa fa-search"></i>
-              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a site">
+              <input @keyup=${this.onChangeTitleFilter} id="filter" class="filter" type="text" placeholder="Search or enter the URL of a hyperdrive">
             </div>
             ${isDriveUrl(this.currentTitleFilter) ? html`
             ` : html`
@@ -238,9 +255,11 @@ class SelectDriveModal extends LitElement {
 
           <div class="form-actions">
             <div class="left">
-              <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
-                Create new drive
-              </button>
+              ${this.writable !== false && !this.allowMultiple ? html`
+                <button type="button" @click=${this.onClickCreate} data-content="newdrive" class="btn">
+                  Create new drive
+                </button>
+              ` : ''}
             </div>
             <div class="right">
               <button type="button" @click=${this.onClickCancel} class="btn cancel" tabindex="4">Cancel</button>
@@ -255,15 +274,16 @@ class SelectDriveModal extends LitElement {
   }
 
   renderFilters () {
-    if (!this.type && typeof this.writable === 'undefined') return ''
+    if (!this.tag && typeof this.writable === 'undefined') return ''
     return html`
-      <div class="type-container">
+      <div class="tag-container">
         <strong>
+          Showing drives which are
           ${typeof this.writable !== 'undefined' ? html`
-            ${this.writable ? 'Editable' : 'Read-only'}
+            ${this.writable ? 'editable' : 'read-only'}
           ` : ''}
-          ${this.type ? Array.isArray(this.type) ? this.type.join(', ') : this.type : ''}
-          only
+          ${typeof this.writable !== 'undefined' && this.tag ? ' and ' : ''}
+          ${this.tag ? html`tagged "${this.tag}"` : ''}
         </strong>
       </div>`
   }
@@ -273,14 +293,7 @@ class SelectDriveModal extends LitElement {
       return html`<ul class="drives-list"><li class="loading"><span class="spinner"></span> Loading...</li></ul>`
     }
 
-    var filtered = this.drives
-    if (this.type) filtered = filtered.filter(drive => drive.info.type === this.type)
-    if (typeof this.writable === 'boolean') {
-      filtered = filtered.filter(drive => drive.info.writable === this.writable)
-    }
-    if (this.currentTitleFilter) {
-      filtered = filtered.filter(a => a.info.title && a.info.title.toLowerCase().includes(this.currentTitleFilter))
-    }
+    var filtered = this.filteredDrives
 
     if (!filtered.length) {
       return html`<div class="drives-list"><div class="empty">No drives found</div></div>`
@@ -290,7 +303,7 @@ class SelectDriveModal extends LitElement {
   }
 
   renderDrive (drive) {
-    var isSelected = this.selectedDriveUrl === drive.url
+    var isSelected = this.selection.includes(drive.url)
     return html`
       <div
         class="drive ${isSelected ? 'selected' : ''}"
@@ -298,20 +311,11 @@ class SelectDriveModal extends LitElement {
         @dblclick=${this.onDblClickdrive}
         data-url=${drive.url}
       >
-        <img
-          class="thumb"
-          srcset="
-            beaker://assets/img/drive-types/files.png 1x,
-            beaker://assets/img/drive-types/files-64.png 2x
-          "
-        >
-        <div class="info">
-          <div class="title">
-            ${drive.info.title || html`<em>Untitled</em>`}
-          </div>
-          <div class="details">
-            <div class="description">${drive.info.description.slice(0, 60)}</div>
-          </div>
+        <img class="thumb" src="asset:favicon:${drive.url}">
+        <div class="title">
+          ${drive.info.title || html`<em>Untitled</em>`}
+          ${drive.forkOf?.label ? html`[${drive.forkOf.label}]` : ''}
+          ${drive.tags.map(tag => html`<span class="tag">${tag}</span>`)}
         </div>
       </div>
     `
@@ -322,33 +326,55 @@ class SelectDriveModal extends LitElement {
 
   onChangeTitleFilter (e) {
     this.currentTitleFilter = e.target.value.toLowerCase()
-    if (this.selectedDriveUrl && isDriveUrl(this.currentTitleFilter)) {
-      this.selectedDriveUrl = undefined
-    }
   }
 
   onChangeSelecteddrive (e) {
-    this.selectedDriveUrl = e.currentTarget.dataset.url
+    var url = e.currentTarget.dataset.url
+    if (this.allowMultiple) {
+      if (this.selection.includes(url)) {
+        this.selection = this.selection.filter(u => u !== url)
+      } else {
+        this.selection = this.selection.concat([url])
+      }
+    } else {
+      this.selection = [url]
+    }
   }
 
   onDblClickdrive (e) {
     e.preventDefault()
-    this.selectedDriveUrl = e.currentTarget.dataset.url
+    this.selection = [e.currentTarget.dataset.url]
     this.onSubmit()
   }
 
   onClickCancel (e) {
     e.preventDefault()
+    this.cleanup()
     this.cbs.reject(new Error('Canceled'))
   }
 
   onClickCreate (e) {
+    this.cleanup()
     this.cbs.resolve({gotoCreate: true})
   }
 
   onSubmit (e) {
     if (e) e.preventDefault()
-    this.cbs.resolve({url: this.selectedDriveUrl ? this.selectedDriveUrl : (new URL(this.currentTitleFilter)).origin})
+    this.cleanup()
+    if (this.selection.length) {
+      if (this.allowMultiple) {
+        this.cbs.resolve({urls: this.selection})
+      } else {
+        this.cbs.resolve({url: this.selection[0]})
+      }
+    } else {
+      let url = (new URL(this.currentTitleFilter)).origin
+      if (this.allowMultiple) {
+        this.cbs.resolve({urls: [url]})
+      } else {
+        this.cbs.resolve({url})
+      }
+    }
   }
 }
 
@@ -360,14 +386,5 @@ function isDriveUrl (v = '') {
     return urlp.protocol === 'hyper:'
   } catch (e) {
     return false
-  }
-}
-
-function toOrigin (v = '') {
-  try {
-    var urlp = new URL(v)
-    return urlp.protocol + '//' + urlp.hostname
-  } catch (e) {
-    return ''
   }
 }

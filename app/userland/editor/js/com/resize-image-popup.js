@@ -34,7 +34,7 @@ export class ResizeImagePopup extends BasePopup {
   // =
 
   renderTitle () {
-    return `Update your profile photo`
+    return `Resize Photo`
   }
 
   renderBody () {
@@ -74,9 +74,10 @@ export class ResizeImagePopup extends BasePopup {
   // canvas handling
   // =
 
-  loadImg (url) {
+  async loadImg (url) {
+    var base64buf = await beaker.hyperdrive.readFile(url, 'base64')
     this.img = document.createElement('img')
-    this.img.src = url
+    this.img.src = `data:image/${url.split('.').pop()};base64,${base64buf}`
     this.img.onload = () => {
       this.width = this.img.width
       this.height = this.img.height

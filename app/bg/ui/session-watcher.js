@@ -1,4 +1,4 @@
-import {BrowserWindow, ipcMain} from 'electron'
+import {BrowserWindow} from 'electron'
 import EventEmitter from 'events'
 import debounce from 'lodash.debounce'
 import _isEqual from 'lodash.isequal'

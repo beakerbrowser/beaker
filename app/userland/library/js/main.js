@@ -2,16 +2,11 @@ import { LitElement, html } from 'beaker://app-stdlib/vendor/lit-element/lit-ele
 import * as toast from 'beaker://app-stdlib/js/com/toast.js'
 import { findParent } from 'beaker://app-stdlib/js/dom.js'
 import { EditBookmarkPopup } from 'beaker://app-stdlib/js/com/popups/edit-bookmark.js'
-import { AddContactPopup } from './com/add-contact-popup.js'
-import { NewPagePopup } from 'beaker://app-stdlib/js/com/popups/new-page.js'
-import * as contextMenu from 'beaker://app-stdlib/js/com/context-menu.js'
 import mainCSS from '../css/main.css.js'
 import './views/drives.js'
 import './views/bookmarks.js'
-import './views/address-book.js'
 import './views/history.js'
 import './views/downloads.js'
-import './views/pages.js'
 
 export class LibraryApp extends LitElement {
   static get properties () {
@@ -33,7 +28,7 @@ export class LibraryApp extends LitElement {
     this.view = ''
     const getView = () => {
       var view = location.pathname.slice(1)
-      return view === '' ? 'bookmarks' : view
+      return view === '' ? 'drives' : view
     }
     this.setView(getView())
     window.addEventListener('popstate', (event) => {
@@ -93,23 +88,18 @@ export class LibraryApp extends LitElement {
       <div class="layout">
         <nav>
           <div class="page-nav">
+            ${pageNav('drives', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Hyperdrives</span>`)}
             ${pageNav('bookmarks', html`<span class="far fa-fw fa-star"></span> <span class="label">Bookmarks</span>`)}
-            ${pageNav('sites', html`<span class="fas fa-fw fa-sitemap"></span> <span class="label">Sites</span>`)}
-            ${pageNav('pages', html`<span class="far fa-fw fa-file-alt"></span> <span class="label">Pages</span>`)}
-            ${pageNav('address-book', html`<span class="far fa-fw fa-address-card"></span> <span class="label">Address Book</span>`)}
             ${pageNav('history', html`<span class="fas fa-fw fa-history"></span> <span class="label">History</span>`)}
             ${pageNav('downloads', html`<span class="fas fa-fw fa-arrow-down"></span> <span class="label">Downloads</span>`)}
           </div>
         </nav>
         <main>
-          ${this.view === 'sites' ? html`
+          ${this.view === 'drives' ? html`
             <drives-view class="full-size" .filter=${this.filter} loadable></drives-view>
           ` : ''}
           ${this.view === 'bookmarks' ? html`
             <bookmarks-view class="full-size" .filter=${this.filter} loadable></bookmarks-view>
-          ` : ''}
-          ${this.view === 'address-book' ? html`
-            <address-book-view class="full-size" .filter=${this.filter} loadable></address-book-view>
           ` : ''}
           ${this.view === 'history' ? html`
             <history-view class="full-size" .filter=${this.filter} loadable></history-view>
@@ -117,23 +107,15 @@ export class LibraryApp extends LitElement {
           ${this.view === 'downloads' ? html`
             <downloads-view class="full-size" .filter=${this.filter} loadable></downloads-view>
           ` : ''}
-          ${this.view === 'pages' ? html`
-            <pages-view class="full-size" .filter=${this.filter} loadable></pages-view>
-          ` : ''}
         </main>
       </div>
     `
   }
 
   renderNewBtn () {
-    if (this.view === 'sites') {
+    if (this.view === 'drives') {
       return html`
-        <span class="new-btn"><button @click=${this.onCreateSite}>New Site</button></span>
-      `
-    }
-    if (this.view === 'pages') {
-      return html`
-        <span class="new-btn"><button @click=${this.onNewPage}>New Page</button></span>
+        <span class="new-btn"><button @click=${this.onCreateDrive}>New Hyperdrive</button></span>
       `
     }
     if (this.view === 'bookmarks') {
@@ -141,61 +123,19 @@ export class LibraryApp extends LitElement {
         <span class="new-btn"><button @click=${this.onCreateBookmark}>New Bookmark</button></span>
       `
     }
-    if (this.view === 'address-book') {
-      return html`
-        <span class="new-btn"><button @click=${this.onAddContact}>Add Contact</button></span>
-      `
-    }
+
   }
 
   // events
   // =
 
-  async onCreateSite () {
+  async onCreateDrive () {
     var drive = await beaker.hyperdrive.createDrive()
     toast.create('Drive created')
     beaker.browser.openUrl(drive.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
-  }
-
-  async onNewPage (e) {
-    var rect = e.currentTarget.getClientRects()[0]
-    e.preventDefault()
-    e.stopPropagation()
-    const doNewPage = async (opts) => {
-      try {
-        var res = await NewPagePopup.create(opts)
-        beaker.browser.openUrl(res.url, {setActive: true, addedPaneUrls: ['beaker://editor/']})
-        if (this.view === 'pages') {
-          this.shadowRoot.querySelector('pages-view').load()
-        }
-      } catch (e) {
-        // ignore
-        console.log(e)
-      }
+    if (this.view === 'drives') {
+      this.shadowRoot.querySelector('drives-view').load()
     }
-    const items = [
-      {icon: 'fa-fw far fa-file-alt', label: 'New Page Draft', click: () => doNewPage({type: 'page', draft: true})},
-      {
-
-        icon: html`
-          <span class="icon-stack" style="position: relative;">
-            <i class="far fa-file-alt fa-fw" style="position: relative; left: -2px;"></i>
-            <i class="fas fa-lock" style="position: absolute; width: 4px; font-size: 50%; bottom: 0; left: 6px; background: #fff; padding: 0 1px"></i>
-          </span>
-        `,
-        label: 'New Private Page',
-        click: () => doNewPage({type: 'page', private: true})
-      }
-    ]
-    contextMenu.create({
-      x: rect.right,
-      y: rect.bottom,
-      right: true,
-      noBorders: true,
-      roomy: true,
-      style: `padding: 6px 0`,
-      items
-    })
   }
 
   async onCreateBookmark () {
@@ -203,14 +143,6 @@ export class LibraryApp extends LitElement {
     toast.create('Bookmark added')
     if (this.view === 'bookmarks') {
       this.shadowRoot.querySelector('bookmarks-view').load()
-    }
-  }
-
-  async onAddContact () {
-    await AddContactPopup.create()
-    toast.create('Contact added')
-    if (this.view === 'address-book') {
-      this.shadowRoot.querySelector('address-book-view').load()
     }
   }
 }

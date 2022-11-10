@@ -3,15 +3,14 @@ export default {
   getInfo: 'promise',
   getDaemonStatus: 'promise',
   getDaemonNetworkStatus: 'promise',
-  getProfile: 'promise',
   checkForUpdates: 'promise',
   restartBrowser: 'sync',
 
   getSettings: 'promise',
   getSetting: 'promise',
   setSetting: 'promise',
+  updateAdblocker: 'promise',
   updateSetupState: 'promise',
-  setupDefaultProfile: 'promise',
   migrate08to09: 'promise',
   setStartPageBackgroundImage: 'promise',
   
@@ -28,7 +27,6 @@ export default {
 
   fetchBody: 'promise',
   downloadURL: 'promise',
-  readFile: 'promise',
 
   convertDat: 'promise',
 
@@ -36,7 +34,6 @@ export default {
   getCertificate: 'promise',
 
   executeShellWindowCommand: 'promise',
-  updateWindowToolbar: 'promise',
   toggleSiteInfo: 'promise',
   toggleLiveReloading: 'promise',
   setWindowDimensions: 'promise',
@@ -48,6 +45,8 @@ export default {
   closeWindow: 'promise',
   resizeSiteInfo: 'promise',
   refreshTabState: 'promise',
+
+  spawnAndExecuteJs: 'promise',
 
   showOpenDialog: 'promise',
   showContextMenu: 'promise',

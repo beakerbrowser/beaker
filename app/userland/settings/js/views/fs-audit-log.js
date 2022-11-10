@@ -90,11 +90,15 @@ class FsAuditLogView extends LitElement {
               ${tsDiff > 5e3 ? html`<tr class="gap-row"><td colspan="6"></td></tr>` : ''}
               <tr class="logger-row ${row.runtime > 250 ? 'badish' : ''} ${row.runtime > 1e3 ? 'bad' : ''}">
                 <td class="caller">
-                  ${!row.caller.startsWith('-') ? html`
-                    <a href=${row.caller} target="_blank">${toNiceDomain(row.caller)}</a>
+                  ${row.caller && !row.caller.startsWith('-') ? html`
+                    <a href=${row.caller} target="_blank">${toNiceDomain(row.caller || '')}</a>
                   ` : row.caller}
                 </td>
-                <td class="target"><a href=${'hyper://' + row.target} target="_blank">${toNiceDomain(row.target)}</a></td>
+                <td class="target">
+                  ${row.target ? html`
+                    <a href=${'hyper://' + row.target} target="_blank">${toNiceDomain(row.target)}</a>
+                  ` : ''}
+                </td>
                 <td class="ts"><code>${timeDifference(row.ts, true)}</code></td>
                 <td class="runtime"><code>${row.runtime}ms</code></td>
                 <td class="method"><code>${row.method}</code></td>
@@ -105,9 +109,6 @@ class FsAuditLogView extends LitElement {
         </table>
       </div>
     `
-  }
-
-  renderRow (row, i) {
   }
 
   // events

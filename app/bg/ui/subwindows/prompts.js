@@ -8,7 +8,7 @@
  */
 
 import path from 'path'
-import { BrowserWindow, BrowserView } from 'electron'
+import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import * as tabManager from '../tabs/manager'
 import promptsRPCManifest from '../../rpc-manifests/prompts'
@@ -32,7 +32,7 @@ export function destroy (parentWindow) {
   // destroy all under this window
   for (let tab of tabManager.getAll(parentWindow)) {
     if (tab.id in views) {
-      views[tab.id].destroy()
+      views[tab.id].webContents.destroy()
       delete views[tab.id]
     }
   }
@@ -42,27 +42,14 @@ export function reposition (parentWindow) {
   // reposition all under this window
   for (let tab of tabManager.getAll(parentWindow)) {
     if (tab.id in views) {
-      setBounds(views[tab.id], tab, parentWindow)
+      setBounds(views[tab.id], tab)
     }
   }
 }
 
 export async function create (webContents, promptName, params = {}) {
-  // find parent window & tab
-  var parentWindow = BrowserWindow.fromWebContents(webContents)
-  var parentView = BrowserView.fromWebContents(webContents)
-  var tab
-  if (parentView && !parentWindow) {
-    // if there's no window, then a web page or "sub-window" created the prompt
-    // use its containing window
-    tab = tabManager.findTab(parentView)
-    parentWindow = findWebContentsParentWindow(tab.webContents)
-  } else if (!parentView) {
-    // if there's no view, then the shell window created the prompt
-    // attach it to the active view
-    tab = tabManager.getActive(parentWindow)
-    parentWindow = tab.browserWindow
-  }
+  var parentWindow = findWebContentsParentWindow(webContents)
+  var tab = tabManager.getActive(parentWindow)
 
   // make sure a prompt window doesnt already exist
   if (tab.id in views) {
@@ -85,7 +72,7 @@ export async function create (webContents, promptName, params = {}) {
   if (tabManager.getActive(parentWindow).id === tab.id) {
     parentWindow.addBrowserView(view)
   }
-  setBounds(view, tab, parentWindow)
+  setBounds(view, tab)
   view.webContents.on('console-message', (e, level, message) => {
     console.log('Prompts window says:', message)
   })
@@ -101,30 +88,28 @@ export function get (tab) {
 export function show (tab) {
   if (tab.id in views) {
     var view = views[tab.id]
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(view.webContents)
-    if (win) {
-      win.addBrowserView(view)
-      setBounds(view, tab, win)
+    if (tab.browserWindow) {
+      tab.browserWindow.addBrowserView(view)
+      setBounds(view, tab)
     }
   }
 }
 
 export function hide (tab) {
   if (tab.id in views) {
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    if (win) win.removeBrowserView(views[tab.id])
+    if (tab.browserWindow) {
+      tab.browserWindow.removeBrowserView(views[tab.id])
+    }
   }
 }
 
 export function close (tab) {
   if (tab.id in views) {
     var view = views[tab.id]
-    var win = tabManager.findContainingWindow(tab)
-    if (!win) win = findWebContentsParentWindow(views[tab.id].webContents)
-    if (win) win.removeBrowserView(view)
-    view.destroy()
+    if (tab.browserWindow) {
+      tab.browserWindow.removeBrowserView(view)
+    }
+    view.webContents.destroy()
     delete views[tab.id]
   }
 }
@@ -134,12 +119,7 @@ export function close (tab) {
 
 rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
   async close () {
-    close(getTabForSender(this.sender))
-  },
-
-  async closeEditProfilePromptForever () {
-    close(getTabForSender(this.sender))
-    await setupFlow.setHasVisitedProfile()
+    close(tabManager.findTab(this.sender))
   },
 
   async createTab (url) {
@@ -156,16 +136,6 @@ rpc.exportAPI('background-process-prompts', promptsRPCManifest, {
 // internal methods
 // =
 
-function getTabForSender (sender) {
-  var view = BrowserView.fromWebContents(sender)
-  for (let id in views) {
-    if (views[id] === view) {
-      return view.tab
-    }
-  }
-  return undefined
-}
-
 function getDefaultWidth (view) {
   return 380
 }
@@ -174,11 +144,11 @@ function getDefaultHeight (view) {
   return 80
 }
 
-function setBounds (view, tab, parentWindow, {width, height} = {}) {
-  var parentBounds = parentWindow.getContentBounds()
+function setBounds (view, tab, {width, height} = {}) {
+  var parentBounds = tab.browserWindow.getContentBounds()
   width = Math.min(width || getDefaultWidth(view), parentBounds.width - 20)
   height = Math.min(height || getDefaultHeight(view), parentBounds.height - 20)
-  var y = getAddedWindowSettings(parentWindow).isShellInterfaceHidden ? 10 : 105
+  var y = getAddedWindowSettings(tab.browserWindow).isShellInterfaceHidden ? 10 : 95
   view.setBounds({
     x: parentBounds.width - width - (MARGIN_SIZE * 2),
     y,

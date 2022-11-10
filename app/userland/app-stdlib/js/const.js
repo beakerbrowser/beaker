@@ -1,4 +1,4 @@
-import { html } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
+import { html } from '../vendor/lit-element/lit-element.js'
 
 export const HELP = {
   files: () => html`<p>Files drives are shareable folders.</p>`,

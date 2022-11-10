@@ -19,6 +19,7 @@ export function setup () {
   Object.defineProperty(window, 'prompt', {
     get: () => (message, def) => window.__internalPrompt__.prompt(message, def),
     set: () => {}
-  })
+  });
+  undefined
   `)
 }

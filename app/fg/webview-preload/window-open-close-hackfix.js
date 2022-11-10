@@ -20,6 +20,7 @@ export default function () {
       window.__internalOpen__.close()
     },
     set: () => {}
-  })
+  });
+  undefined
   `)
 }

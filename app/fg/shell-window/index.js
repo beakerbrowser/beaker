@@ -4,11 +4,9 @@ import { ipcRenderer } from 'electron'
 import { LitElement, html } from '../vendor/lit-element/lit-element'
 import * as bg from './bg-process-rpc'
 import { fromEventStream } from '../../bg/web-apis/fg/event-target'
-import './win32'
 import './tabs'
 import './navbar'
 import './panes'
-import './toolbar-menu'
 import './resize-hackfix'
 
 // setup
@@ -27,24 +25,23 @@ class ShellWindowUI extends LitElement {
       isDaemonActive: {type: Boolean},
       isShellInterfaceHidden: {type: Boolean},
       isFullscreen: {type: Boolean},
+      hasBgTabs: {type: Boolean},
       hasLocationExpanded: {type: Boolean},
-      userProfileUrl: {type: String}
     }
   }
 
   constructor () {
     super()
     this.tabs = []
-    this.toolbar = []
     this.isUpdateAvailable = false
     this.numWatchlistNotifications = 0
     this.isHolepunchable = true
     this.isDaemonActive = true
     this.isShellInterfaceHidden = false
     this.isFullscreen = false
+    this.hasBgTabs = false
     this.hasLocationExpanded = false
     this.activeTabIndex = -1
-    this.userProfileUrl = undefined
     this.setup()
   }
 
@@ -73,11 +70,13 @@ class ShellWindowUI extends LitElement {
 
     // listen to state updates to the window's tabs states
     var viewEvents = fromEventStream(bg.views.createEventStream())
-    viewEvents.addEventListener('replace-state', ({tabs, isFullscreen, isDaemonActive, isShellInterfaceHidden}) => {
-      this.tabs = tabs
-      this.isFullscreen = isFullscreen
-      this.isShellInterfaceHidden = isShellInterfaceHidden
-      this.isDaemonActive = isDaemonActive
+    viewEvents.addEventListener('replace-state', state => {
+      this.tabs = state.tabs
+      this.isFullscreen = state.isFullscreen
+      this.isShellInterfaceHidden = state.isShellInterfaceHidden
+      this.isSidebarHidden = state.isSidebarHidden
+      this.isDaemonActive = state.isDaemonActive
+      this.hasBgTabs = state.hasBgTabs
       this.stateHasChanged()
     })
     viewEvents.addEventListener('update-state', ({index, state}) => {
@@ -96,7 +95,6 @@ class ShellWindowUI extends LitElement {
     // listen to state updates on the auto-updater
     var browserEvents = fromEventStream(bg.beakerBrowser.createEventsStream())
     browserEvents.addEventListener('updater-state-changed', this.onUpdaterStateChange.bind(this))
-    browserEvents.addEventListener('toolbar-changed', this.onToolbarChange.bind(this))
 
     // listen to state updates on the watchlist
     var wlEvents = fromEventStream(bg.watchlist.createEventsStream())
@@ -116,26 +114,9 @@ class ShellWindowUI extends LitElement {
 
     // fetch initial tab state
     this.isUpdateAvailable = browserInfo.updater.state === 'downloaded'
-    ;[this.tabs, this.userProfileUrl] = await Promise.all([
-      bg.views.getState(),
-      bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
-    ])
+    this.tabs = await bg.views.getState()
     this.stateHasChanged()
     getDaemonStatus()
-
-    // HACK
-    // periodically check to see if the user profile URL has changed
-    // or the hole-punchability has changed
-    // (would be better to have an event trigger this!)
-    // -prf
-    setInterval(async () => {
-      getDaemonStatus()
-      var userProfileUrl = await bg.beakerBrowser.getProfile().then(p => p ? `hyper://${p.key}/` : undefined)
-      if (this.userProfileUrl !== userProfileUrl) {
-        this.userProfileUrl = userProfileUrl
-        this.stateHasChanged()
-      }
-    }, 15e3)
   }
 
   get activeTab () {
@@ -149,7 +130,6 @@ class ShellWindowUI extends LitElement {
     await this.requestUpdate()
     if (!this.isShellInterfaceHidden) {
       this.shadowRoot.querySelector('shell-window-tabs').requestUpdate()
-      this.shadowRoot.querySelector('shell-window-toolbar-menu').requestUpdate()
       if (this.activeTab) {
         this.shadowRoot.querySelector('shell-window-navbar').requestUpdate()
       }
@@ -164,23 +144,16 @@ class ShellWindowUI extends LitElement {
     return html`
       ${this.isWindows ? html`<shell-window-win32></shell-window-win32>` : ''}
       ${this.isShellInterfaceHidden ? '' : html`
-        <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen}></shell-window-tabs>
+        <shell-window-tabs .tabs=${this.tabs} ?is-fullscreen=${this.isFullscreen} ?has-bg-tabs=${this.hasBgTabs}></shell-window-tabs>
         <shell-window-navbar
           .activeTabIndex=${this.activeTabIndex}
           .activeTab=${this.activeTab}
-          .userProfileUrl=${this.userProfileUrl}
+          ?is-sidebar-hidden=${this.isSidebarHidden}
           ?is-update-available=${this.isUpdateAvailable}
           ?is-holepunchable=${this.isHolepunchable}
           ?is-daemon-active=${this.isDaemonActive}
           num-watchlist-notifications="${this.numWatchlistNotifications}"
         ></shell-window-navbar>
-      `}
-      ${this.isShellInterfaceHidden ? '' : html`
-        <shell-window-toolbar-menu
-          .activeTabIndex=${this.activeTabIndex}
-          .activeTab=${this.activeTab}
-          .toolbar=${this.toolbar}
-        ></shell-window-toolbar-menu>
       `}
       <shell-window-panes .activeTab=${this.activeTab}></shell-window-panes>
     `
@@ -191,12 +164,6 @@ class ShellWindowUI extends LitElement {
 
   onUpdaterStateChange (e) {
     this.isUpdateAvailable = (e && e.state === 'downloaded')
-  }
-
-  onToolbarChange (e) {
-    var el = this.shadowRoot.querySelector('shell-window-toolbar-menu')
-    this.toolbar = el.toolbar = e && e.toolbar
-    el.requestUpdate()
   }
 }
 

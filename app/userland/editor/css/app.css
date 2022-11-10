@@ -19,9 +19,9 @@ editor-app button {
 
 editor-app .empty {
   height: 100vh;
-  background: #223;
+  background: #222;
   font-style: italic;
-  color: #eef7;
+  color: #eee7;
   padding: 10px 16px;
 }
 
@@ -65,7 +65,7 @@ editor-app #loading-notice {
   right: 10px;
   top: 40px;
   display: inline-block;
-  background: #223;
+  background: #222;
   color: #fff;
   padding: 7px 16px;
   border: 1px solid #fff4;

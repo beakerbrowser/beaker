@@ -7,7 +7,7 @@ export default css`
   width: 14px;
   animation: rotate 1s infinite linear;
   color: #aaa;
-  border: 1.5px solid;
+  border: 2px solid;
   border-right-color: transparent;
   border-radius: 50%;
   transition: color 0.25s;

@@ -1,7 +1,7 @@
 /* globals customElements */
 import { LitElement, html, css } from '../vendor/lit-element/lit-element'
 import { repeat } from '../vendor/lit-element/lit-html/directives/repeat'
-import prettyHash from 'pretty-hash'
+import { shorten } from '../../lib/strings'
 import * as bg from './bg-process-rpc'
 import commonCSS from './common.css'
 import inputsCSS from './inputs.css'
@@ -21,6 +21,8 @@ class ForkDriveModal extends LitElement {
       label: {type: String},
       title: {type: String},
       description: {type: String},
+      tags: {type: String},
+      isTemplate: {type: Boolean},
       isDetached: {type: Boolean}
     }
   }
@@ -42,6 +44,10 @@ class ForkDriveModal extends LitElement {
       font-style: normal;
       border-bottom: 1px solid #ccd;
       color: rgba(0, 0, 0, 0.6);
+    }
+
+    h1 {
+      margin-top: 0;
     }
 
     .tabbed-nav {
@@ -127,6 +133,12 @@ class ForkDriveModal extends LitElement {
     input + .help {
       margin-top: -8px;
     }
+
+    .help a {
+      cursor: pointer;
+      color: blue;
+      text-decoration: underline;
+    }
     
     hr {
       border: 0;
@@ -160,6 +172,7 @@ class ForkDriveModal extends LitElement {
     this.label = ''
     this.title = ''
     this.description = ''
+    this.tags = ''
     this.isDetached = false
   }
 
@@ -169,13 +182,15 @@ class ForkDriveModal extends LitElement {
     this.forks = params.forks
     this.base = this.forks.find(fork => fork.url === params.url) || this.forks[0]
     this.isDetached = params.detached || false
+    this.isTemplate = params.isTemplate || false
     this.label = params.label || ''
     await this.requestUpdate()
 
     // fetch drive info
     this.driveInfo = await bg.hyperdrive.getInfo(this.base.url)
-    this.title =  params.title || this.driveInfo.title || ''
-    this.description = params.description || this.driveInfo.description || ''
+    this.title =  typeof params.title === 'string' ? params.title : (this.driveInfo.title || '')
+    this.description = typeof params.description === 'string' ? params.description : (this.driveInfo.description || '')
+    this.tags = params.tags ? (Array.isArray(params.tags) ? params.tags.join(' ') : params.tags) : this.driveInfo.tags?.join(' ') || ''
     await this.requestUpdate()
     this.adjustHeight()
   }
@@ -228,19 +243,34 @@ class ForkDriveModal extends LitElement {
       <link rel="stylesheet" href="beaker://assets/font-awesome.css">
       <div class="wrapper">
         <form @submit=${this.onSubmit}>
-          <div class="tabbed-nav">
-            <span></span>
-            ${navItem(false, 'Fork')}
-            ${navItem(true, 'Copy')}
-            <span class="spacer"></span>
-          </div>
+          ${this.isTemplate ? html`
+            <h1>Create a new drive</h1>
+          ` : html`
+            <div class="tabbed-nav">
+              <span></span>
+              ${navItem(false, 'Fork')}
+              ${navItem(true, 'Copy')}
+              <span class="spacer"></span>
+            </div>
+          `}
           
           ${this.isDetached ? html`
-            <p class="help with-icon"><span class="fas fa-fw fa-info"></span> Make an independent copy of the drive.</p>
+            <p class="help with-icon">
+              <span class="fas fa-fw fa-info"></span>
+              ${this.isTemplate
+                ? html`
+                  Using
+                  <a @click=${this.onClickTemplate}>${shorten(this.driveInfo.title, 20)}</a>
+                  as a template.
+                `
+                : 'Make an independent copy of the drive.'}
+            </p>
             <label for="title">Title</label>
             <input autofocus name="title" tabindex="1" value=${this.title || ''} @change=${this.onChangeTitle} required placeholder="Title" />
             <label for="desc">Description</label>
             <input name="desc" tabindex="2" @change=${this.onChangeDescription} value=${this.description || ''} placeholder="Description (optional)">
+            <label for="tags">Tags</label>
+            <input name="tags" tabindex="3" @change=${this.onChangeTags} value=${this.tags || ''} placeholder="Tags (optional, separated by spaces)">
           ` : html`
             <p class="help with-icon"><span class="fas fa-fw fa-info"></span> A fork is a linked copy of the drive which is used for making changes and then merging into the original.</p>
             <div class="columns">
@@ -268,6 +298,9 @@ class ForkDriveModal extends LitElement {
                   required
                 />
                 <p class="help">The label will help you identify the fork.</p>
+
+                <label for="tags">Tags</label>
+                <input name="tags" tabindex="3" @change=${this.onChangeTags} value=${this.tags || ''} placeholder="Tags (optional, separated by spaces)">
               </div>
             </div>
           `}
@@ -306,6 +339,10 @@ class ForkDriveModal extends LitElement {
   // event handlers
   // =
 
+  onClickTemplate (e) {
+    bg.beakerBrowser.openUrl(this.driveInfo.url, {setActive: true})
+  }
+
   onSetDetached (v) {
     this.isDetached = v
   }
@@ -326,6 +363,10 @@ class ForkDriveModal extends LitElement {
 
   onChangeDescription (e) {
     this.description = e.target.value
+  }
+
+  onChangeTags (e) {
+    this.tags = e.target.value
   }
 
   onClickCancel (e) {
@@ -351,6 +392,7 @@ class ForkDriveModal extends LitElement {
         detached: this.isDetached,
         title: this.isDetached ? this.title : this.driveInfo.title,
         description: this.isDetached ? this.description : this.driveInfo.description,
+        tags: this.tags.split(' '),
         label: this.label,
         prompt: false
       })

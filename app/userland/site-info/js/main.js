@@ -1,18 +1,17 @@
 import { LitElement, html } from '../../app-stdlib/vendor/lit-element/lit-element.js'
 import { classMap } from '../../app-stdlib/vendor/lit-element/lit-html/directives/class-map.js'
-import { toNiceDomain, pluralize } from '../../app-stdlib/js/strings.js'
+import { toNiceDomain } from '../../app-stdlib/js/strings.js'
 import { writeToClipboard } from '../../app-stdlib/js/clipboard.js'
 import * as contextMenu from '../../app-stdlib/js/com/context-menu.js'
 import * as toast from '../../app-stdlib/js/com/toast.js'
 import _get from 'lodash.get'
 import * as beakerPermissions from '../../../lib/permissions'
 import mainCSS from '../css/main.css.js'
-import './com/user-session.js'
-import './com/requested-perms.js'
+import './com/site-perms.js'
 import './com/identity.js'
 import './com/drive-forks.js'
 
-const isDatHashRegex = /^[a-z0-9]{64}/i
+const isHyperHashRegex = /^[a-z0-9]{64}/i
 
 class SiteInfoApp extends LitElement {
   static get properties () {
@@ -163,7 +162,7 @@ class SiteInfoApp extends LitElement {
       this.requestedPerms = await Promise.all(Object.entries(perms).map(async ([perm, value]) => {
         var opts = {}
         var permParam = beakerPermissions.getPermParam(perm)
-        if (isDatHashRegex.test(permParam)) {
+        if (isHyperHashRegex.test(permParam)) {
           let driveInfo
           try { driveInfo = await beaker.beaker.hyperdrive.drive(permParam).getInfo() }
           catch (e) { /* ignore */ }
@@ -220,7 +219,7 @@ class SiteInfoApp extends LitElement {
                 </button>
               ` : html`
                 <button @click=${this.onToggleSaveDrive}>
-                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Hosting` : html`<span class="fas fa-fw fa-share-alt"></span> Host This Drive`}
+                  ${isSaved ? html`<span class="fas fa-fw fa-times"></span> Stop Hosting` : html`<span class="fas fa-fw fa-share-alt"></span> Host This Site`}
                 </button>
               `}
             ` : ''}
@@ -270,10 +269,10 @@ class SiteInfoApp extends LitElement {
         ` : ''}
 
         ${this.view === 'permissions' ? html`
-          <requested-perms
+          <site-perms
             origin=${this.origin}
-            .perms=${this.requestedPerms}
-          ></requested-perms>
+            .requestedPerms=${this.requestedPerms}
+          ></site-perms>
         ` : ''}
 
         ${this.view === 'forks' ? html`
@@ -364,7 +363,7 @@ class SiteInfoApp extends LitElement {
         } : undefined,
         {
           icon: 'far fa-fw fa-list-alt',
-          label: 'Site Properties',
+          label: 'Hyperdrive Properties',
           click: () => this.onDriveProps()
         }
       ].filter(Boolean)

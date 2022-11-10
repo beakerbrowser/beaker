@@ -105,7 +105,7 @@ nav .page-nav a:hover {
 
 nav .page-nav a.current {
   background: var(--bg-color--nav--highlight);
-  color: #2187f3;
+  color: var(--text-color--link);
   font-weight: bold;
 }
 
@@ -126,7 +126,7 @@ history-view {
   padding-bottom: 100px;
 }
 
-@media (max-width: 840px) {
+@media (max-width: 960px) {
   header {
     grid-template-columns: 120px 1fr auto;
     padding: 5px;

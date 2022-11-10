@@ -23,10 +23,10 @@ var activeCaptures = {} // [url] => Promise<NativeImage>
 
 export function setup () {
   var DEFAULTS = {
-    favicon: {type: 'image/png', data: NOT_FOUND},
-    thumb: {type: 'image/jpeg', data: NOT_FOUND},
-    cover: {type: 'image/jpeg', data: NOT_FOUND},
-    screenshot: {type: 'image/png', data: NOT_FOUND}
+    favicon: {type: 'image/png', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}},
+    thumb: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}},
+    cover: {type: 'image/jpeg', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}},
+    screenshot: {type: 'image/png', data: NOT_FOUND, headers: {'Content-Type': 'image/jpeg', 'Cache-Control': 'no-cache'}}
   }
 
   // load defaults
@@ -34,8 +34,8 @@ export function setup () {
     if (err) { console.error('Failed to load default favicon', path.join(__dirname, './assets/img/default-favicon.png'), err) }
     if (buf) { DEFAULTS.favicon.data = buf }
   })
-  fs.readFile(path.join(__dirname, './assets/img/default-screenshot.jpg'), (err, buf) => {
-    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-screenshot.jpg'), err) }
+  fs.readFile(path.join(__dirname, './assets/img/default-thumb.jpg'), (err, buf) => {
+    if (err) { console.error('Failed to load default thumb', path.join(__dirname, './assets/img/default-thumb.jpg'), err) }
     if (buf) {
       DEFAULTS.thumb.data = buf
       DEFAULTS.screenshot.data = buf
@@ -74,24 +74,34 @@ export function setup () {
       let data
       if (asset === 'screenshot') {
         data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
-        if (!data && !url.startsWith('dat:')) {
-          // try to fetch the screenshot
-          let p = activeCaptures[url]
-          if (!p) {
-            p = activeCaptures[url] = capturePage(url)
-          }
-          let nativeImg = await p
-          delete activeCaptures[url]
-          if (nativeImg) {
-            data = nativeImg.toDataURL()
-            await sitedata.set(url, 'screenshot', data, {dontExtractOrigin: true, normalizeUrl: true})
-          } else {
-            return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
-          }
+
+        // DISABLED- seems to generate some pretty bad error behaviors on win7
+        // see https://github.com/beakerbrowser/beaker/issues/1872#issuecomment-739463243
+        // -prf
+        // if (!data && !url.startsWith('dat:')) {
+        //   // try to fetch the screenshot
+        //   let p = activeCaptures[url]
+        //   if (!p) {
+        //     p = activeCaptures[url] = capturePage(url)
+        //   }
+        //   let nativeImg = await p
+        //   delete activeCaptures[url]
+        //   if (nativeImg) {
+        //     data = nativeImg.toDataURL()
+        //     await sitedata.set(url, 'screenshot', data, {dontExtractOrigin: true, normalizeUrl: true})
+        //   } else {
+        //     return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
+        //   }
+        // }
+        if (!data) {
+          return serveJpg(path.join(__dirname, `./assets/img/default-screenshot.jpg`), DEFAULTS[asset], cb)
         }
       } else {
         data = await sitedata.get(url, asset)
         if (!data && asset === 'thumb') {
+          if (url.startsWith('hyper://private')) {
+            return serveJpg(path.join(__dirname, `./assets/img/default-private-screenshot.jpg`), DEFAULTS[asset], cb)
+          }
           // try fallback to screenshot
           data = await sitedata.get(url, 'screenshot', {dontExtractOrigin: true, normalizeUrl: true})
           if (!data) {
@@ -117,7 +127,7 @@ export function setup () {
           let mimeType = /data:([^;]+);base64/.exec(parts[0])[1]
           data = parts[1]
           if (data) {
-            return cb({ mimeType, data: Buffer.from(data, 'base64') })
+            return cb({mimeType, data: Buffer.from(data, 'base64'), headers: {'Cache-Control': 'no-cache'}})
           }
         }
       }
@@ -153,14 +163,14 @@ function parseAssetUrl (str) {
 
 function servePng (p, fallback, cb) {
   return fs.readFile(p, (err, buf) => {
-    if (buf) cb({mimeType: 'image/png', data: buf})
+    if (buf) cb({mimeType: 'image/png', data: buf, headers: {'Cache-Control': 'no-cache'}})
     else cb(fallback)
   })
 }
 
 function serveJpg (p, fallback, cb) {
   return fs.readFile(p, (err, buf) => {
-    if (buf) cb({mimeType: 'image/jpeg', data: buf})
+    if (buf) cb({mimeType: 'image/jpeg', data: buf, headers: {'Cache-Control': 'no-cache'}})
     else cb(fallback)
   })
 }

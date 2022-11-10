@@ -30,7 +30,7 @@ export function create (app, {x, y}) {
         <option ?selected=${id === app.sortMode} value=${id}>⇅ Sort by ${label}</option>
       `
       return html`
-        <link rel="stylesheet" href="/css/font-awesome.css">
+        <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
         <div class="settings-menu">
           ${renderModes.length ? html`
             <h5>View mode</h5>

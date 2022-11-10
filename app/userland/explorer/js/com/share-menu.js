@@ -13,7 +13,7 @@ export function create ({x, y, targetLabel, url}) {
     y,
     render () {
       return html`
-        <link rel="stylesheet" href="/css/font-awesome.css">
+        <link rel="stylesheet" href="beaker://explorer/css/font-awesome.css">
         <div class="share-menu">
           <p>Anybody with this link can view the ${targetLabel}</p>
           <p>

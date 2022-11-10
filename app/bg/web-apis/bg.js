@@ -1,4 +1,3 @@
-import { BrowserView } from 'electron'
 import * as rpc from 'pauls-electron-rpc'
 import { findTab } from '../ui/tabs/manager'
 
@@ -26,6 +25,7 @@ import datLegacyManifest from './manifests/internal/dat-legacy'
 import downloadsManifest from './manifests/internal/downloads'
 import folderSyncManifest from './manifests/internal/folder-sync'
 import historyManifest from './manifests/internal/history'
+import hyperdebugManifest from './manifests/internal/hyperdebug'
 import sitedataManifest from './manifests/internal/sitedata'
 import watchlistManifest from './manifests/internal/watchlist'
 
@@ -38,6 +38,7 @@ import beakerFilesystemAPI from './bg/beaker-filesystem'
 import datLegacyAPI from './bg/dat-legacy'
 import folderSyncAPI from './bg/folder-sync'
 import historyAPI from './bg/history'
+import hyperdebugAPI from './bg/hyperdebug'
 import { WEBAPI as sitedataAPI } from '../dbs/sitedata'
 import watchlistAPI from './bg/watchlist'
 import { WEBAPI as downloadsAPI } from '../ui/downloads'
@@ -46,24 +47,20 @@ import { WEBAPI as beakerBrowserAPI } from '../browser'
 // external manifests
 import capabilitiesManifest from './manifests/external/capabilities'
 import contactsManifest from './manifests/external/contacts'
-import databaseManifest from './manifests/external/database'
 import hyperdriveManifest from './manifests/external/hyperdrive'
 import markdownManifest from './manifests/external/markdown'
 import panesManifest from './manifests/external/panes'
 import peersocketsManifest from './manifests/external/peersockets'
 import shellManifest from './manifests/external/shell'
-import subscriptionsManifest from './manifests/external/subscriptions'
 
 // external apis
 import capabilitiesAPI from './bg/capabilities'
 import contactsAPI from './bg/contacts'
-import databaseAPI from './bg/database'
 import hyperdriveAPI from './bg/hyperdrive'
 import markdownAPI from './bg/markdown'
 import panesAPI from './bg/panes'
 import peersocketsAPI from './bg/peersockets'
-import shellAPI from './bg/shell'
-import subscriptionsAPI from './bg/subscriptions'
+import * as shellAPI from './bg/shell'
 
 // experimental manifests
 import experimentalCapturePageManifest from './manifests/external/experimental/capture-page'
@@ -89,19 +86,18 @@ export const setup = function () {
   rpc.exportAPI('drives', drivesManifest, drivesAPI, internalOnly)
   rpc.exportAPI('folder-sync', folderSyncManifest, folderSyncAPI, internalOnly)
   rpc.exportAPI('history', historyManifest, historyAPI, internalOnly)
+  rpc.exportAPI('hyperdebug', hyperdebugManifest, hyperdebugAPI, internalOnly)
   rpc.exportAPI('sitedata', sitedataManifest, sitedataAPI, internalOnly)
   rpc.exportAPI('watchlist', watchlistManifest, watchlistAPI, internalOnly)
 
   // external apis
   rpc.exportAPI('capabilities', capabilitiesManifest, capabilitiesAPI, secureOnly('capabilities'))
   rpc.exportAPI('contacts', contactsManifest, contactsAPI, secureOnly('contacts'))
-  rpc.exportAPI('database', databaseManifest, databaseAPI, secureOnly('database'))
   rpc.exportAPI('hyperdrive', hyperdriveManifest, hyperdriveAPI, secureOnly('hyperdrive'))
   rpc.exportAPI('markdown', markdownManifest, markdownAPI)
   rpc.exportAPI('panes', panesManifest, panesAPI, secureOnly('panes'))
   rpc.exportAPI('peersockets', peersocketsManifest, peersocketsAPI, secureOnly('peersockets'))
   rpc.exportAPI('shell', shellManifest, shellAPI, secureOnly('shell'))
-  rpc.exportAPI('subscriptions', subscriptionsManifest, subscriptionsAPI, secureOnly('subscriptions'))
 
   // experimental apis
   rpc.exportAPI('experimental-capture-page', experimentalCapturePageManifest, experimentalCapturePageAPI, secureOnly)
@@ -132,8 +128,7 @@ const secureOnly = apiName => (event, methodName, args) => {
 }
 
 function getSenderInfo (event) {
-  var view = BrowserView.fromWebContents(event.sender)
-  var tab = (view) ? findTab(view) : undefined
+  var tab = findTab(event.sender)
   if (tab) return tab.getIPCSenderInfo(event)
   return {isMainFrame: true, url: event.sender.getURL()}
 }

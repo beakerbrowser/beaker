@@ -1,10 +1,5 @@
-import * as modals from '../../ui/subwindows/modals'
 import * as drives from '../../hyper/drives'
-import * as filesystem from '../../filesystem/index'
-import * as permissions from '../../ui/permissions'
-import { UserDeniedError, PermissionsError } from 'beaker-error-constants'
-import { HYPERDRIVE_HASH_REGEX } from '../../../lib/const'
-import * as wcTrust from '../../wc-trust'
+import * as shellAPI from './shell.js'
 
 // typedefs
 // =
@@ -24,59 +19,41 @@ export default {
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
   async requestProfile () {
-    var addressBook = await readAddressBook()
-    addressBook.profiles = await assembleRecords(addressBook.profiles)
-
-    var res
-    try {
-      res = await modals.create(this.sender, 'select-contact', {multiple: false, showProfilesOnly: true, addressBook})
-    } catch (e) {
-      if (e.name !== 'Error') {
-        throw e // only rethrow if a specific error
-      }
+    var url = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', writable: true})
+    let info = await drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
+    return {
+      url,
+      title: info.title || '',
+      description: info.description || ''
     }
-    if (!res) throw new UserDeniedError()
-    return res && res.contacts ? res.contacts[0] : undefined
   },
 
   /**
    * @returns {Promise<BeakerContactPublicAPIContactRecord>}
    */
   async requestContact () {
-    var addressBook = await readAddressBook()
-    addressBook.profiles = await assembleRecords(addressBook.profiles)
-    addressBook.contacts = await assembleRecords(addressBook.contacts)
-
-    var res
-    try {
-      res = await modals.create(this.sender, 'select-contact', {multiple: false, addressBook})
-    } catch (e) {
-      if (e.name !== 'Error') {
-        throw e // only rethrow if a specific error
-      }
+    var url = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', writable: false})
+    let info = await drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
+    return {
+      url,
+      title: info.title || '',
+      description: info.description || ''
     }
-    if (!res) throw new UserDeniedError()
-    return res && res.contacts ? res.contacts[0] : undefined
   },
 
   /**
    * @returns {Promise<Array<BeakerContactPublicAPIContactRecord>>}
    */
   async requestContacts () {
-    var addressBook = await readAddressBook()
-    addressBook.profiles = await assembleRecords(addressBook.profiles)
-    addressBook.contacts = await assembleRecords(addressBook.contacts)
-
-    var res
-    try {
-      res = await modals.create(this.sender, 'select-contact', {multiple: true, addressBook})
-    } catch (e) {
-      if (e.name !== 'Error') {
-        throw e // only rethrow if a specific error
-      }
-    }
-    if (!res) throw new UserDeniedError()
-    return res && res.contacts ? res.contacts : undefined
+    var urls = await shellAPI.selectDriveDialog.call(this, {tag: 'contact', allowMultiple: true, writable: false})
+    let infos = await Promise.all(urls.map(url => (
+      drives.getDriveInfo(url, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
+    )))
+    return infos.map(info => ({
+      url: info.url,
+      title: info.title || '',
+      description: info.description || ''
+    }))
   },
 
   /**
@@ -84,77 +61,17 @@ export default {
    * @returns {Promise<void>}
    */
   async requestAddContact (url) {
-    var res
-    try {
-      res = await modals.create(this.sender, 'add-contact', {url})
-    } catch (e) {
-      if (e.name !== 'Error') {
-        throw e // only rethrow if a specific error
-      }
-    }
-    if (!res) throw new UserDeniedError()
-
-    var addressBook = await readAddressBook()
-    var existingContact = addressBook.contacts.find(contact => contact.key === res.key)
-    if (!existingContact) {
-      addressBook.contacts.push({key: res.key})
-    }
-    await filesystem.get().pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
-
-    if (res.host) {
-      await filesystem.configDrive(res.key)
-    }
+    return shellAPI.saveDriveDialog.call(this, url, {tags: 'contact'})
   },
 
   /**
    * @returns {Promise<Array<BeakerContactPublicAPIContactRecord>>}
    */
   async list () {
-    if (!(await permissions.requestPermission('contactsList', this.sender))) {
-      throw new UserDeniedError()
-    }
-
-    var addressBook = await readAddressBook()
-    return assembleRecords(addressBook.contacts)
+    return shellAPI.listDrives.call(this, {tag: 'contact', writable: false})
   },
 
   async remove (url) {
-    if (!wcTrust.isWcTrusted(this.sender)) {
-      throw new PermissionsError()
-    }
-    var key = await drives.fromURLToKey(url, true)
-    var addressBook = await readAddressBook()
-    var index = addressBook.contacts.findIndex(contact => contact.key === key)
-    if (index !== -1) {
-      addressBook.contacts.splice(index, 1)
-    }
-    await filesystem.get().pda.writeFile('/address-book.json', JSON.stringify(addressBook, null, 2))
+    return shellAPI.unsaveDrive.call(this, url)
   }
-}
-
-// internal methods
-// =
-
-async function readAddressBook () {
-  const sysDrive = filesystem.get().pda
-  var addressBook = await sysDrive.readFile('/address-book.json').then(JSON.parse).catch(e => undefined)
-  if (!addressBook || typeof addressBook !== 'object') addressBook = {}
-  if (!addressBook.contacts || !Array.isArray(addressBook.contacts)) addressBook.contacts = []
-  if (!addressBook.profiles || !Array.isArray(addressBook.profiles)) addressBook.profiles = []
-  return addressBook
-}
-
-async function assembleRecords (contactsList) {
-  var records = []
-  for (let contact of contactsList) {
-    if (typeof contact.key !== 'string' || !HYPERDRIVE_HASH_REGEX.test(contact.key)) continue
-    let url = `hyper://${contact.key}/`
-    let info = await drives.getDriveInfo(contact.key, {ignoreCache: false, onlyCache: true}).catch(e => ({}))
-    records.push({
-      url,
-      title: info.title || '',
-      description: info.description || ''
-    })
-  }
-  return records
 }

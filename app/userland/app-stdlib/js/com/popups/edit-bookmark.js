@@ -1,7 +1,9 @@
 /* globals beaker */
-import { html, css } from 'beaker://app-stdlib/vendor/lit-element/lit-element.js'
-import { BasePopup } from 'beaker://app-stdlib/js/com/popups/base.js'
-import popupsCSS from 'beaker://app-stdlib/css/com/popups.css.js'
+import { html, css } from '../../../vendor/lit-element/lit-element.js'
+import { BasePopup } from './base.js'
+import popupsCSS from '../../../css/com/popups.css.js'
+import { normalizeUrl, createResourceSlug, joinPath } from '../../strings.js'
+import { getAvailableName } from '../../fs.js'
 
 // exported api
 // =
@@ -10,6 +12,13 @@ export class EditBookmarkPopup extends BasePopup {
   constructor (bookmark) {
     super()
     this.bookmark = bookmark
+    if (bookmark && typeof beaker.bookmarks === 'undefined') {
+      // NOTE
+      // we're still migrating beaker-app-stdlib from being a purely internal library
+      // and the 'edit bookmark' logic needs to be updated. sorry!
+      // -prf
+      throw new Error('Can only create bookmarks with EditBookmarkPopup - edit not yet implemented')
+    }
   }
 
   static get styles () {
@@ -28,11 +37,46 @@ export class EditBookmarkPopup extends BasePopup {
       margin: 5px 0;
     }
 
+    .popup-inner input[type="text"] {
+      padding: 6px;
+    }
+
     .popup-inner input[type="checkbox"] {
       display: inline;
       height: auto;
       width: auto;
       margin: 0 10px 0 2px;
+    }
+
+    .viz-selector {
+      margin-bottom: 10px;
+    }
+
+    .viz-selector > span {
+      display: inline-flex;
+      margin-right: 5px;
+    }
+
+    .viz-selector a {
+      border: 1px solid var(--border-color--light);
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+
+    .viz-selector a:first-child {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+
+    .viz-selector a:last-child {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .viz-selector a.selected {
+      background: var(--bg-color--selected);
+      border-color: var(--bg-color--selected);
+      color: var(--bg-color--default);
     }
 
     .delete {
@@ -60,9 +104,8 @@ export class EditBookmarkPopup extends BasePopup {
   }
 
   renderBody () {
-    var isPublic = this.bookmark && this.bookmark.site.url !== 'hyper://private'
     return html`
-      <link rel="stylesheet" href="beaker://assets/font-awesome.css">
+      <link rel="stylesheet" href=${(new URL('../../../css/fontawesome.css', import.meta.url)).toString()}>
       <form @submit=${this.onSubmit}>
         <div>
           <label for="href-input">URL</label>
@@ -71,21 +114,18 @@ export class EditBookmarkPopup extends BasePopup {
           <label for="title-input">Title</label>
           <input required type="text" id="title-input" name="title" value="${this.bookmark?.title || ''}" placeholder="E.g. Beaker Browser" />
 
-          <label class="checkbox" for="public-input" @click=${this.onTogglePublic}>
-            <input type="checkbox" id="public-input" name="public" value="1" ?checked=${isPublic} />
-            Public
-          </label>
-
-          <label class="checkbox" for="pinned-input">
-            <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
-            Pin to start page
-          </label>
+          ${typeof beaker.bookmarks === 'undefined' ? '' : html`
+            <label class="checkbox" for="pinned-input">
+              <input type="checkbox" id="pinned-input" name="pinned" value="1" ?checked=${!!this.bookmark?.pinned} />
+              Pin to start page
+            </label>
+          `}
         </div>
 
         <div class="actions">
           ${this.bookmark ? html`<button type="button" class="btn delete" @click=${this.onDelete} tabindex="3">Delete</button>` : ''}
           <button type="button" class="btn" @click=${this.onReject} tabindex="2">Cancel</button>
-          <button type="submit" class="btn primary" tabindex="1">${isPublic ? 'Publish' : 'Save'}</button>
+          <button type="submit" class="btn primary" tabindex="1">Save</button>
         </div>
       </form>
     `
@@ -98,11 +138,6 @@ export class EditBookmarkPopup extends BasePopup {
   // events
   // =
 
-  onTogglePublic (e) {
-    var isPublic = this.shadowRoot.querySelector('[name="public"]').checked
-    this.shadowRoot.querySelector('button.primary').textContent = isPublic ? 'Publish' : 'Save'
-  }
-
   async onSubmit (e) {
     e.preventDefault()
     e.stopPropagation()
@@ -110,11 +145,24 @@ export class EditBookmarkPopup extends BasePopup {
     let b = {
       href: e.target.href.value,
       title: e.target.title.value,
-      pinned: e.target.pinned.checked,
-      site: e.target.public.checked ? `hyper://${(await beaker.browser.getProfile()).key}` : 'hyper://private'
+      pinned: e.target.pinned?.checked
     }
     console.log(b)
-    await beaker.bookmarks.add(b)
+    if (typeof beaker.bookmarks === 'undefined') {
+      // userland
+      b.href = normalizeUrl(b.href)
+      let drive = beaker.hyperdrive.drive('hyper://private/')
+      let slug = createResourceSlug(b.href, b.title)
+      let filename = await getAvailableName('/bookmarks', slug, drive, 'goto') // avoid collisions
+      let path = joinPath('/bookmarks', filename)
+      await drive.writeFile(path, '', {metadata: {href: b.href, title: b.title}})
+    } else {
+      // builtin
+      if (this.bookmark && b.href !== this.bookmark.href) {
+        await beaker.bookmarks.remove(this.bookmark.href)
+      }
+      await beaker.bookmarks.add(b)
+    }
 
     this.dispatchEvent(new CustomEvent('resolve'))
   }

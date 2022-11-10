@@ -9,6 +9,7 @@ import * as permissions from '../../ui/permissions'
 import * as hyperDns from '../../hyper/dns'
 import * as capabilities from '../../hyper/capabilities'
 import * as drives from '../../hyper/drives'
+import { gitCloneToTmp } from '../../lib/git'
 import * as archivesDb from '../../dbs/archives'
 import * as auditLog from '../../dbs/audit-log'
 import { timer } from '../../../lib/time'
@@ -28,11 +29,12 @@ const to = (opts) =>
     : DEFAULT_DRIVE_API_TIMEOUT
 
 export default {
-  async createDrive ({title, description, author, visibility, prompt} = {}) {
+  async createDrive ({title, description, tags, author, visibility, fromGitUrl, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
     if (!wcTrust.isWcTrusted(this.sender)) {
+      fromGitUrl = undefined
       visibility = undefined
       author = undefined // TODO _get(windows.getUserSessionFor(this.sender), 'url')
     }
@@ -41,7 +43,7 @@ export default {
       // run the creation modal
       let res
       try {
-        res = await modals.create(this.sender, 'create-drive', {title, description, author, visibility})
+        res = await modals.create(this.sender, 'create-drive', {title, description, tags, author, visibility})
         if (res && res.gotoSync) {
           await modals.create(this.sender, 'folder-sync', {url: res.url, closeAfterSync: true})
         }
@@ -53,20 +55,48 @@ export default {
       if (!res || !res.url) throw new UserDeniedError()
       newDriveUrl = res.url
     } else {
+      if (tags && typeof tags === 'string') {
+        tags = tags.split(' ')
+      } else if (tags && !Array.isArray(tags)) {
+        tags = undefined
+      }
+      tags = tags.filter(v => typeof v === 'string')
+
       // no modal, ask for permission
-      await assertCreateDrivePermission(this.sender)
+      await assertCreateDrivePermission(this.sender, {title, tags})
+
+      let importFolder = undefined
+      if (fromGitUrl) {
+        try {
+          importFolder = await gitCloneToTmp(fromGitUrl)
+        } catch (e) {
+          throw new Error('Failed to clone git repo: ' + e.toString())
+        }
+      }
 
       // create
       let newDrive
       try {
         let manifest = {title, description, /*TODO author,*/}
         newDrive = await drives.createNewDrive(manifest)
-        await filesystem.configDrive(newDrive.url)
+        await filesystem.configDrive(newDrive.url, {tags})
       } catch (e) {
         console.log(e)
         throw e
       }
       newDriveUrl = newDrive.url
+
+      // git clone if needed
+      if (importFolder) {
+        await pda.exportFilesystemToArchive({
+          srcPath: importFolder,
+          dstArchive: newDrive.session.drive,
+          dstPath: '/',
+          ignore: ['.git', '**/.git', 'index.json'],
+          inplaceImport: true,
+          dryRun: false
+        })
+      }
     }
     let newDriveKey = await lookupUrlDriveKey(newDriveUrl)
 
@@ -77,7 +107,7 @@ export default {
     return newDriveUrl
   },
 
-  async forkDrive (url, {detached, title, description, label, prompt} = {}) {
+  async forkDrive (url, {detached, title, description, tags, label, prompt} = {}) {
     var newDriveUrl
 
     // only allow these vars to be set by beaker, for now
@@ -90,7 +120,7 @@ export default {
       let res
       let forks = await drivesAPI.getForks(url)
       try {
-        res = await modals.create(this.sender, 'fork-drive', {url, title, description, forks, detached, label})
+        res = await modals.create(this.sender, 'fork-drive', {url, title, description, tags, forks, detached, label})
       } catch (e) {
         if (e.name !== 'Error') {
           throw e // only rethrow if a specific error
@@ -99,8 +129,15 @@ export default {
       if (!res || !res.url) throw new UserDeniedError()
       newDriveUrl = res.url
     } else {
+      if (tags && typeof tags === 'string') {
+        tags = tags.split(' ')
+      } else if (tags && !Array.isArray(tags)) {
+        tags = undefined
+      }
+      tags = tags.filter(v => typeof v === 'string')
+
       // no modal, ask for permission
-      await assertCreateDrivePermission(this.sender)
+      await assertCreateDrivePermission(this.sender, {title, tags})
 
       let key = await lookupUrlDriveKey(url)
 
@@ -116,6 +153,7 @@ export default {
         detached
       })
       await filesystem.configDrive(newDrive.url, {
+        tags,
         forkOf: detached ? undefined : {key, label}
       })
       newDriveUrl = newDrive.url
@@ -139,6 +177,7 @@ export default {
         var urlp = parseDriveUrl(url)
         var {driveKey, version} = await lookupDrive(this.sender, urlp.hostname, urlp.version, true)
         var info = await drives.getDriveInfo(driveKey)
+        info.tags = filesystem.getDriveConfig(driveKey)?.tags || []
         var isCap = urlp.hostname.endsWith('.cap')
 
         // request from beaker internal sites: give all data
@@ -179,20 +218,19 @@ export default {
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
         if (!settings || typeof settings !== 'object') throw new Error('Invalid argument')
 
-        // handle 'visibility' specially
-        // also, only allow beaker to set 'visibility' for now
-        if (('visibility' in settings) && wcTrust.isWcTrusted(this.sender)) {
-          // TODO uwg await datLibrary.configureDrive(drive, {visibility: settings.visibility})
+        if (('tags' in settings) && wcTrust.isWcTrusted(this.sender)) {
+          await filesystem.configDrive(drive.url, {tags: settings.tags})
         }
 
         // only allow beaker to set these manifest updates for now
         if (!wcTrust.isWcTrusted(this.sender)) {
+          delete settings.tags
           delete settings.author
         }
 
         // manifest updates
         let manifestUpdates = pick(settings, DRIVE_CONFIGURABLE_FIELDS)
-        if (Object.keys(manifestUpdates).length === 0) {
+        if (!drive.writable || Object.keys(manifestUpdates).length === 0) {
           // no manifest updates
           return
         }
@@ -236,7 +274,7 @@ export default {
         checkin('looking up drive')
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         pause() // dont count against timeout, there may be user prompts
-        await assertReadPermission(checkoutFS, this.sender)
+        await assertReadPermission(checkoutFS, this.sender, filepath)
         resume()
         checkin('stating file')
         return checkoutFS.pda.stat(filepath, opts)
@@ -253,7 +291,7 @@ export default {
         checkin('looking up drive')
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
         pause() // dont count against timeout, there may be user prompts
-        await assertReadPermission(checkoutFS, this.sender)
+        await assertReadPermission(checkoutFS, this.sender, filepath)
         resume()
         checkin('reading file')
         return checkoutFS.pda.readFile(filepath, opts)
@@ -281,14 +319,15 @@ export default {
 
         pause() // dont count against timeout, there may be user prompts
         const senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-        await assertWritePermission(drive, this.sender)
+        await assertWritePermission(drive, this.sender, filepath)
         await assertQuotaPermission(drive, senderOrigin, sourceSize)
         assertValidFilePath(filepath)
         assertUnprotectedFilePath(filepath, this.sender)
         resume()
 
         checkin('writing file')
-        return checkoutFS.pda.writeFile(filepath, data, opts)
+        var res = await checkoutFS.pda.writeFile(filepath, data, opts)
+        return res
       })
     ))
   },
@@ -304,12 +343,13 @@ export default {
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
-        await assertWritePermission(drive, this.sender)
+        await assertWritePermission(drive, this.sender, filepath)
         assertUnprotectedFilePath(filepath, this.sender)
         resume()
 
         checkin('deleting file')
-        return checkoutFS.pda.unlink(filepath)
+        var res = await checkoutFS.pda.unlink(filepath)
+        return res
       })
     ))
   },
@@ -332,13 +372,15 @@ export default {
 
         pause() // dont count against timeout, there may be user prompts
         const senderOrigin = archivesDb.extractOrigin(this.sender.getURL())
-        await assertWritePermission(dst.drive, this.sender)
+        await assertReadPermission(src.drive, this.sender, srcpath)
+        await assertWritePermission(dst.drive, this.sender, dstpath)
         assertUnprotectedFilePath(dstpath, this.sender)
         await assertQuotaPermission(dst.drive, senderOrigin, sourceSize)
         resume()
 
         checkin('copying')
-        return src.checkoutFS.pda.copy(srcpath, dst.checkoutFS.session.drive, dstpath)
+        var res = await src.checkoutFS.pda.copy(srcpath, dst.checkoutFS.session.drive, dstpath)
+        return res
       })
     ))
   },
@@ -359,14 +401,16 @@ export default {
         if (dstpath.includes('://')) dstpath = normalizeFilepath((new URL(dstpath)).pathname)
 
         pause() // dont count against timeout, there may be user prompts
-        await assertWritePermission(dst.drive, this.sender)
+        await assertWritePermission(src.drive, this.sender, srcpath)
+        await assertWritePermission(dst.drive, this.sender, dstpath)
         assertValidPath(dstpath)
         assertUnprotectedFilePath(srcpath, this.sender)
         assertUnprotectedFilePath(dstpath, this.sender)
         resume()
 
         checkin('renaming file')
-        return src.checkoutFS.pda.rename(srcpath, dst.checkoutFS.session.drive, dstpath)
+        var res = await src.checkoutFS.pda.rename(srcpath, dst.checkoutFS.session.drive, dstpath)
+        return res
       })
     ))
   },
@@ -382,12 +426,13 @@ export default {
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
-        await assertWritePermission(drive, this.sender)
+        await assertWritePermission(drive, this.sender, filepath)
         assertValidPath(filepath)
         resume()
 
         checkin('updating metadata')
-        return checkoutFS.pda.updateMetadata(filepath, metadata)
+        var res = await checkoutFS.pda.updateMetadata(filepath, metadata)
+        return res
       })
     ))
   },
@@ -403,12 +448,13 @@ export default {
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
-        await assertWritePermission(drive, this.sender)
+        await assertWritePermission(drive, this.sender, filepath)
         assertValidPath(filepath)
         resume()
 
         checkin('updating metadata')
-        return checkoutFS.pda.deleteMetadata(filepath, keys)
+        var res = await checkoutFS.pda.deleteMetadata(filepath, keys)
+        return res
       })
     ))
   },
@@ -423,7 +469,7 @@ export default {
         const {checkoutFS} = await lookupDrive(this.sender, urlp.hostname, urlp.version)
 
         pause() // dont count against timeout, there may be user prompts
-        await assertReadPermission(checkoutFS, this.sender)
+        await assertReadPermission(checkoutFS, this.sender, filepath)
         resume()
 
         checkin('reading directory')
@@ -453,7 +499,8 @@ export default {
         resume()
 
         checkin('making directory')
-        return checkoutFS.pda.mkdir(filepath, opts)
+        var res = await checkoutFS.pda.mkdir(filepath, opts)
+        return res
       })
     ))
   },
@@ -474,7 +521,8 @@ export default {
         resume()
 
         checkin('removing directory')
-        return checkoutFS.pda.rmdir(filepath, opts)
+        var res = await checkoutFS.pda.rmdir(filepath, opts)
+        return res
       })
     ))
   },
@@ -491,13 +539,15 @@ export default {
         if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
 
         pause() // dont count against timeout, there may be user prompts
-        await assertWritePermission(drive, this.sender)
+        await assertReadPermission(drive, this.sender, target)
+        await assertWritePermission(drive, this.sender, linkname)
         await assertValidPath(linkname)
         assertUnprotectedFilePath(linkname, this.sender)
         resume()
 
         checkin('symlinking')
-        return checkoutFS.pda.symlink(target, linkname)
+        var res = await checkoutFS.pda.symlink(target, linkname)
+        return res
       })
     ))
   },
@@ -521,7 +571,8 @@ export default {
         resume()
 
         checkin('mounting drive')
-        return checkoutFS.pda.mount(filepath, mount)
+        var res = await checkoutFS.pda.mount(filepath, mount)
+        return res
       })
     ))
   },
@@ -542,7 +593,8 @@ export default {
         resume()
 
         checkin('unmounting drive')
-        return checkoutFS.pda.unmount(filepath)
+        var res = await checkoutFS.pda.unmount(filepath)
+        return res
       })
     ))
   },
@@ -643,14 +695,15 @@ export default {
     var [src, dst] = await Promise.all([lookupDrive(this.sender, srcUrl), lookupDrive(this.sender, dstUrl)])
     if (!dst.drive.writable) throw new ArchiveNotWritableError('The destination drive is not writable')
     if (dst.isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    return pda.merge(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
+    var res = await pda.merge(src.checkoutFS.pda, src.filepath, dst.checkoutFS.pda, dst.filepath, opts)
+    return res
   },
 
   async importFromFilesystem (opts) {
     assertBeakerOnly(this.sender)
     var {checkoutFS, filepath, isHistoric} = await lookupDrive(this.sender, opts.dst)
     if (isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    return pda.exportFilesystemToArchive({
+    var res = await pda.exportFilesystemToArchive({
       srcPath: opts.src,
       dstArchive: checkoutFS.session ? checkoutFS.session.drive : checkoutFS,
       dstPath: filepath,
@@ -658,6 +711,7 @@ export default {
       inplaceImport: opts.inplaceImport !== false,
       dryRun: opts.dryRun
     })
+    return res
   },
 
   async exportToFilesystem (opts) {
@@ -684,7 +738,7 @@ export default {
     var src = await lookupDrive(this.sender, opts.src)
     var dst = await lookupDrive(this.sender, opts.dst)
     if (dst.isHistoric) throw new ArchiveNotWritableError('Cannot modify a historic version')
-    return pda.exportArchiveToArchive({
+    var res = await pda.exportArchiveToArchive({
       srcArchive: src.checkoutFS.session ? src.checkoutFS.session.drive : src.checkoutFS,
       srcPath: src.filepath,
       dstArchive: dst.checkoutFS.session ? dst.checkoutFS.session.drive : dst.checkoutFS,
@@ -692,6 +746,7 @@ export default {
       ignore: opts.ignore,
       skipUndownloadedFiles: opts.skipUndownloadedFiles
     })
+    return res
   }
 }
 
@@ -715,20 +770,20 @@ function assertBeakerOnly (sender) {
   }
 }
 
-async function assertCreateDrivePermission (sender) {
+async function assertCreateDrivePermission (sender, opts) {
   // beaker: always allowed
   if (wcTrust.isWcTrusted(sender)) {
     return true
   }
 
   // ask the user
-  let allowed = await permissions.requestPermission('createDrive', sender)
+  let allowed = await permissions.requestPermission('createDrive', sender, opts)
   if (!allowed) {
     throw new UserDeniedError()
   }
 }
 
-async function assertReadPermission (drive, sender) {
+async function assertReadPermission (drive, sender, filepath = undefined) {
   var driveUrl
   if (typeof drive === 'string') {
     driveUrl = `hyper://${await drives.fromURLToKey(drive, true)}/`
@@ -736,7 +791,8 @@ async function assertReadPermission (drive, sender) {
     driveUrl = drive.url
   }
 
-  if (filesystem.isRootUrl(driveUrl)) {
+  let ident = filesystem.getDriveIdent(driveUrl)
+  if (ident.system) {
     let origin = archivesDb.extractOrigin(sender.getURL()) + '/'
     if (wcTrust.isWcTrusted(sender) || filesystem.isRootUrl(origin)) {
       return true
@@ -747,10 +803,10 @@ async function assertReadPermission (drive, sender) {
   return true
 }
 
-async function assertWritePermission (drive, sender) {
-  var newDriveKey = drive.key.toString('hex')
-  var details = await drives.getDriveInfo(newDriveKey)
-  const perm = ('modifyDrive:' + newDriveKey)
+async function assertWritePermission (drive, sender, filepath = undefined) {
+  var driveKey = drive.key.toString('hex')
+  var driveUrl = `hyper://${driveKey}`
+  const perm = ('modifyDrive:' + driveKey)
 
   // beaker: always allowed
   if (wcTrust.isWcTrusted(sender)) {
@@ -759,8 +815,15 @@ async function assertWritePermission (drive, sender) {
 
   // self-modification ALWAYS allowed
   var senderDatKey = await lookupUrlDriveKey(sender.getURL())
-  if (senderDatKey === newDriveKey) {
+  if (senderDatKey === driveKey) {
     return true
+  }
+
+  let ident = filesystem.getDriveIdent(driveUrl)
+
+  // cant even ask to write the private drive 
+  if (ident.system) {
+    throw new PermissionsError('Cannot write the hyper://private/ drive')
   }
 
   // ensure the sender is allowed to write
@@ -768,6 +831,7 @@ async function assertWritePermission (drive, sender) {
   if (allowed) return true
 
   // ask the user
+  var details = await drives.getDriveInfo(driveKey)
   allowed = await permissions.requestPermission(perm, sender, { title: details.title })
   if (!allowed) throw new UserDeniedError()
   return true

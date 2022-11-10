@@ -3,6 +3,7 @@ import { BaseSlideView } from './base-slide-view.js'
 customElements.define('background-run-view', class extends BaseSlideView {
   constructor () {
     super()
+    beaker.browser.updateSetupState({profileSetup: 1})
     var checkbox = this.shadowRoot.querySelector('input')
     checkbox.checked = true
     checkbox.addEventListener('change', e => {
@@ -35,7 +36,7 @@ img {
   margin: 70px auto;
 }
 label {
-  -webkit-app-region: no-drag; */
+  -webkit-app-region: no-drag;
   margin: 0 10px;
 }
 </style>

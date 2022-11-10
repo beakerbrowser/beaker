@@ -1,15 +1,16 @@
-import { app, BrowserView } from 'electron'
+import { app, BrowserView, nativeTheme } from 'electron'
 import errorPage from '../../lib/error-page'
 import path from 'path'
 import { promises as fs } from 'fs'
 import { EventEmitter } from 'events'
 import _throttle from 'lodash.throttle'
-import { parseDriveUrl } from '../../../lib/urls'
+import { parseDriveUrl, stripUrlHash } from '../../../lib/urls'
 import { toNiceUrl } from '../../../lib/strings'
 import _get from 'lodash.get'
 import _pick from 'lodash.pick'
 import * as zoom from './zoom'
 import * as modals from '../subwindows/modals'
+import * as overlay from '../subwindows/overlay'
 import * as windowMenu from '../window-menu'
 import { getResourceContentType } from '../../browser'
 import { DRIVE_KEY_REGEX } from '../../../lib/strings'
@@ -18,7 +19,6 @@ import * as historyDb from '../../dbs/history'
 import * as folderSyncDb from '../../dbs/folder-sync'
 import * as filesystem from '../../filesystem/index'
 import * as bookmarks from '../../filesystem/bookmarks'
-import * as subscriptions from '../../filesystem/subscriptions'
 import hyper from '../../hyper/index'
 
 const ERR_ABORTED = -3
@@ -76,7 +76,6 @@ const STATE_VARS = [
   // 'isActive', tab sends this
   // 'isPinned', tab sends this
   'isBookmarked',
-  'isSubscribed',
   'isLoading',
   'isReceivingAssets',
   'canGoBack',
@@ -87,9 +86,13 @@ const STATE_VARS = [
   'currentInpageFindString',
   'currentInpageFindResults',
   'donateLinkHref',
-  'isLiveReloading',
-  'tabCreationTime'
+  'isLiveReloading'
 ]
+
+// globals
+// =
+
+var _hasSeenCommentsTip = undefined
 
 // classes
 // =
@@ -103,6 +106,7 @@ export class Pane extends EventEmitter {
         preload: path.join(__dirname, 'fg', 'webview-preload', 'index.build.js'),
         nodeIntegrationInSubFrames: true,
         contextIsolation: true,
+        worldSafeExecuteJavaScript: false, // TODO- this causes promises to fail in executeJavaScript, need to file an issue with electron
         webviewTag: false,
         sandbox: true,
         defaultEncoding: 'utf-8',
@@ -143,7 +147,6 @@ export class Pane extends EventEmitter {
     this.folderSyncPath = undefined // current folder sync path
     this.peers = 0 // how many peers does the site have?
     this.isBookmarked = false // is the active page bookmarked?
-    this.isSubscribed = false // is the active site subscribed?
     this.driveInfo = null // metadata about the site if viewing a hyperdrive
     this.donateLinkHref = null // the URL of the donate site, if set by the index.json
     this.wasDriveTimeout = false // did the last navigation result in a timed-out hyperdrive?
@@ -178,7 +181,7 @@ export class Pane extends EventEmitter {
   }
 
   get id () {
-    return this.browserView.id
+    return this.webContents.id
   }
 
   get webContents () {
@@ -199,9 +202,9 @@ export class Pane extends EventEmitter {
 
   get title () {
     var title = this.webContents.getTitle()
-    if (this.driveInfo && (!title || toOrigin(title) === this.origin)) {
+    if ((!title || toOrigin(title) === this.origin) && this.driveInfo?.title) {
       // fallback to the index.json title field if the page doesnt provide a title
-      title = this.siteTitle
+      title = this.driveInfo.title
     }
     return title
   }
@@ -217,12 +220,8 @@ export class Pane extends EventEmitter {
         hostname = hostname.replace(/\+[\d]+/, '')
       }
       if (this.driveInfo) {
-        var ident = _get(this.driveInfo, 'ident', {})
-        if (ident.system) {
-          return 'My Private Site'
-        }
-        if (this.driveInfo.title) {
-          return this.driveInfo.title
+        if (this.driveInfo.ident?.system) {
+          return 'My Private Drive'
         }
       }
       if (urlp.protocol === 'beaker:') {
@@ -252,12 +251,11 @@ export class Pane extends EventEmitter {
 
   get siteIcon () {
     if (this.driveInfo) {
-      var ident = this.driveInfo.ident || {}
-      if (ident.profile) {
+      if (this.driveInfo.ident?.profile) {
         return 'fas fa-user-circle'
       }
-      if (this.driveInfo.writable || this.isSubscribed) {
-        return 'fas fa-check-circle'
+      if (this.driveInfo.ident?.system) {
+        return 'fas fa-lock'
       }
     }
     var url = this.loadingURL || this.url
@@ -283,7 +281,7 @@ export class Pane extends EventEmitter {
         return 'untrusted'
       }
       if (urlp.protocol === 'hyper:' && this.driveInfo) {
-        if (this.driveInfo.writable || this.isSubscribed) {
+        if (this.driveInfo.ident?.internal) {
           return 'trusted'
         }
       }
@@ -343,6 +341,9 @@ export class Pane extends EventEmitter {
 
   setTab (tab) {
     this.tab = tab
+    if (this.tab !== tab) {
+      this.setAttachedPane(undefined)
+    }
   }
 
   // management
@@ -383,9 +384,12 @@ export class Pane extends EventEmitter {
   }
 
   destroy () {
+    if (this.url && !this.url.startsWith('beaker://')) {
+      historyDb.addTabClose(0, {url: this.url, title: this.title})
+    }
     this.hide()
     this.stopLiveReloading()
-    this.browserView.destroy()
+    this.browserView.webContents.destroy()
     this.emit('destroyed')
   }
 
@@ -418,14 +422,14 @@ export class Pane extends EventEmitter {
   }
 
   transferWindow (targetWindow) {
-    this.deactivate()
+    this.hide()
     this.browserWindow = targetWindow
   }
 
   async updateHistory () {
     var url = this.url
     var title = this.title
-    if (url !== 'beaker://desktop/' && url !== 'beaker://history/') {
+    if (url && !url.startsWith('beaker://')) {
       historyDb.addVisit(0, {url, title})
     }
   }
@@ -479,9 +483,8 @@ export class Pane extends EventEmitter {
   }
 
   setInpageFindString (str, dir) {
-    var findNext = this.currentInpageFindString === str
     this.currentInpageFindString = str
-    this.webContents.findInPage(this.currentInpageFindString, {findNext, forward: dir !== -1})
+    this.webContents.findInPage(this.currentInpageFindString, {findNext: true, forward: dir !== -1})
   }
 
   moveInpageFind (dir) {
@@ -613,7 +616,6 @@ export class Pane extends EventEmitter {
   async refreshState () {
     await Promise.all([
       this.fetchIsBookmarked(true),
-      this.fetchIsSubscribed(true),
       this.fetchDriveInfo(true)
     ])
     this.emitUpdateState()
@@ -624,17 +626,6 @@ export class Pane extends EventEmitter {
     this.isBookmarked = !!(await bookmarks.get(this.url))
     if (this.isBookmarked && !wasBookmarked) {
       this.captureScreenshot()
-    }
-    if (!noEmit) {
-      this.emitUpdateState()
-    }
-  }
-
-  async fetchIsSubscribed (noEmit = false) {
-    if (this.url.startsWith('hyper://')) {
-      this.isSubscribed = !!(await subscriptions.get(this.origin))
-    } else {
-      this.isSubscribed = false
     }
     if (!noEmit) {
       this.emitUpdateState()
@@ -724,7 +715,7 @@ export class Pane extends EventEmitter {
 
   async onDidNavigate (e, url, httpResponseCode) {
     // remove any active subwindows
-    modals.close(this.browserView)
+    modals.close(this.tab)
 
     // read zoom
     zoom.setZoomFromSitedata(this)
@@ -737,7 +728,6 @@ export class Pane extends EventEmitter {
     this.frameUrls = {[this.mainFrameId]: url} // drop all non-main-frame URLs
     await Promise.all([
       this.fetchIsBookmarked(),
-      this.fetchIsSubscribed(),
       this.fetchDriveInfo()
     ])
     if (httpResponseCode === 504 && url.startsWith('hyper://')) {
@@ -760,6 +750,11 @@ export class Pane extends EventEmitter {
     this.isLoading = false
     this.loadingURL = null
     this.isReceivingAssets = false
+
+    if (!this.url) {
+      // aborted load on a new tab
+      this.loadURL('about:blank')
+    }
 
     // run custom renderer apps
     this.injectCustomRenderers()
@@ -825,8 +820,8 @@ export class Pane extends EventEmitter {
 
     if (this.favicons) {
       let url = this.url
-      this.webContents.executeJavaScriptInIsolatedWorld(998, [{code: `
-        (async function () {
+      this.webContents.executeJavaScriptInIsolatedWorld(999, [{code: `
+        new Promise(async (resolve) => {
           var img = await new Promise(resolve => {
             var img = new Image()
             img.crossOrigin = 'Anonymous'
@@ -834,7 +829,7 @@ export class Pane extends EventEmitter {
             img.onerror = () => resolve(false)
             img.src = "${this.favicons[0]}"
           })
-          if (!img) return
+          if (!img) return resolve(undefined)
             
           let {width, height} = img
           var ratio = width / height
@@ -845,11 +840,11 @@ export class Pane extends EventEmitter {
           canvas.height = height
           var ctx = canvas.getContext('2d')
           ctx.drawImage(img, 0, 0, width, height)
-          return canvas.toDataURL('image/png')
-        })()
+          resolve(canvas.toDataURL('image/png'))
+        })
       `}]).then((dataUrl, err) => {
         if (err) console.log(err)
-        else {
+        else if (dataUrl) {
           sitedataDb.set(url, 'favicon', dataUrl)
         }
       })

@@ -8,6 +8,7 @@ import downloadsManifest from '../manifests/internal/downloads'
 import drivesManifest from '../manifests/internal/drives'
 import folderSyncManifest from '../manifests/internal/folder-sync'
 import historyManifest from '../manifests/internal/history'
+import hyperdebugManifest from '../manifests/internal/hyperdebug'
 import sitedataManifest from '../manifests/internal/sitedata'
 import watchlistManifest from '../manifests/internal/watchlist'
 
@@ -23,6 +24,7 @@ export const setup = function (rpc) {
   const datLegacyRPC = rpc.importAPI('dat-legacy', datLegacyManifest, opts)
   const folderSyncRPC = rpc.importAPI('folder-sync', folderSyncManifest, opts)
   const historyRPC = rpc.importAPI('history', historyManifest, opts)
+  const hyperdebugRPC = rpc.importAPI('hyperdebug', hyperdebugManifest, opts)
   const sitedataRPC = rpc.importAPI('sitedata', sitedataManifest, opts)
   const watchlistRPC = rpc.importAPI('watchlist', watchlistManifest, opts)
 
@@ -35,9 +37,11 @@ export const setup = function (rpc) {
   internal.downloads.createEventsStream = () => fromEventStream(downloadsRPC.createEventsStream())
   internal.folderSync = Object.assign({}, folderSyncRPC)
   internal.history = Object.assign({}, historyRPC)
+  internal.hyperdebug = Object.assign({}, hyperdebugRPC)
+  internal.hyperdebug.createCoreEventStream = (key) => fromEventStream(hyperdebugRPC.createCoreEventStream(key))
   internal.logger = Object.assign({}, loggerRPC)
   internal.logger.stream = (opts) => fromEventStream(loggerRPC.stream(opts))
-  internal.logger.streamAuditLog = () => fromEventStream(loggerRPC.streamAuditLog())
+  internal.logger.streamAuditLog = (opts) => fromEventStream(loggerRPC.streamAuditLog(opts))
   internal.sitedata = Object.assign({}, sitedataRPC)
   internal.watchlist = Object.assign({}, watchlistRPC)
   internal.watchlist.createEventsStream = () => fromEventStream(watchlistRPC.createEventsStream())
@@ -46,7 +50,6 @@ export const setup = function (rpc) {
   internal.drives = new EventTarget()
   internal.drives.get = drivesRPC.get
   internal.drives.list = drivesRPC.list
-  internal.drives.getPeerCount = drivesRPC.getPeerCount
   internal.drives.getForks = drivesRPC.getForks
   internal.drives.configure = drivesRPC.configure
   internal.drives.remove = drivesRPC.remove
