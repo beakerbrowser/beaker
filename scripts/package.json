@@ -1,31 +1,31 @@
 {
   "name": "beakerbrowser",
   "devDependencies": {
-    "browserify": "^16.0.0",
-    "electron": "^10.0.0",
-    "electron-builder": "^22.6.0",
-    "electron-notarize": "^0.3.0",
-    "eslint": "^4.5.0",
-    "eslint-plugin-import": "^2.7.0",
-    "eslint-plugin-node": "^5.1.1",
-    "eslint-plugin-promise": "^3.5.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "fs-jetpack": "^1.2.0",
-    "gulp": "^4.0.2",
-    "gulp-batch": "^1.0.5",
-    "gulp-less": "^4.0.1",
-    "gulp-plumber": "^1.1.0",
-    "gulp-util": "^3.0.6",
-    "gulp-watch": "^4.3.5",
-    "into-stream": "^2.0.1",
-    "pre-commit": "^1.2.2",
-    "q": "^1.4.1",
-    "rollup": "^1.23.0",
-    "yargs": "^4.2.0"
+    "browserify": "16.0.0",
+    "electron": "10.0.0",
+    "electron-builder": "22.6.0",
+    "electron-notarize": "0.3.0",
+    "eslint": "4.5.0",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-node": "5.1.1",
+    "eslint-plugin-promise": "3.5.0",
+    "eslint-plugin-standard": "3.0.1",
+    "fs-jetpack": "1.2.0",
+    "gulp": "4.0.2",
+    "gulp-batch": "1.0.5",
+    "gulp-less": "4.0.1",
+    "gulp-plumber": "1.1.0",
+    "gulp-util": "3.0.6",
+    "gulp-watch": "4.3.5",
+    "into-stream": "2.0.1",
+    "pre-commit": "1.2.2",
+    "q": "1.4.1",
+    "rollup": "1.23.0",
+    "yargs": "4.2.0"
   },
   "optionalDependencies": {
-    "appdmg": "^0.4.5",
-    "rcedit": "^0.5.0"
+    "appdmg": "0.4.5",
+    "rcedit": "0.5.0"
   },
   "build": {
     "afterSign": "./afterSignHook.js",
@@ -116,12 +116,12 @@
   },
   "homepage": "https://beakerbrowser.com/",
   "dependencies": {
-    "12": "^1.0.2",
+    "12": "1.0.2",
     "beaker-virtual-fs": "git+https://github.com/timechain-academy/beaker-virtual-fs.git",
     "builtin-pages-lib": "git+https://github.com/timechain-academy/builtin-pages-lib.git#b23ed29856324d6036bc08bc19d653d98de52003",
-    "gulp-cli": "^2.3.0",
-    "mkdirp": "^0.5.1",
-    "yo-yo": "^1.4.1"
+    "gulp-cli": "2.3.0",
+    "mkdirp": "0.5.1",
+    "yo-yo": "1.4.1"
   },
   "engines": {
     "node": ">=12.22.12 <14"
