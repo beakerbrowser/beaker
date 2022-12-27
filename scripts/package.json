@@ -3,7 +3,7 @@
   "devDependencies": {
     "browserify": "^16.0.0",
     "electron": "11.0.0-beta.18",
-    "electron-builder": "^22.6.0",
+    "electron-builder": "^22.10.4",
     "electron-notarize": "^0.3.0",
     "eslint": "^4.5.0",
     "eslint-plugin-import": "^2.7.0",
@@ -114,6 +114,5 @@
   "bugs": {
     "url": "https://github.com/beakerbrowser/beaker/issues"
   },
-  "homepage": "https://beakerbrowser.com/",
-  "dependencies": {}
+  "homepage": "https://beakerbrowser.com/"
 }

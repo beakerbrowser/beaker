@@ -87,7 +87,7 @@
     "slugify": "^1.3.5",
     "speedometer": "^1.0.0",
     "split2": "^2.2.0",
-    "sqlite3": "^4.1.0",
+    "sqlite3": "^5.0.0",
     "stream-throttle": "^0.1.3",
     "streamx": "^2.6.0",
     "textextensions": "^2.5.0",
