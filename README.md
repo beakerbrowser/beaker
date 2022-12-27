@@ -3,8 +3,6 @@ Beaker Browser
 
 # [This project is now archived.](./archive-notice.md)
 
-![logo.png](build/icons/256x256.png)
-
 Beaker was an experimental peer-to-peer Web browser. It adds new APIs for building hostless applications while remaining compatible with the rest of the Web. [Visit the website.](https://beakerbrowser.com/)
 
 ## Table of Contents
